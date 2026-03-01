@@ -1,0 +1,1 @@
+# gkk-intern-full-code
