@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitations | GKK-Hire Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        .invitation-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 16px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .invitation-card:hover {
+            border-color: var(--c-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .invitation-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar-initial {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--c-text-primary);
+        }
+
+        .user-info p {
+            margin: 2px 0 0;
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+        }
+
+        .invite-status {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Invitations</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openInviteModal()"><i class="fas fa-paper-plane"></i> Send
+                        New Invite</button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sent Invitations</h3>
+                    </div>
+                    <div id="invitationsList">
+                        <!-- Skeleton injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Send Invitation</h3>
+                <button class="modal-close" onclick="closeModal('inviteModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="inviteEmail" class="form-input" list="candidateEmails"
+                        placeholder="Enter email...">
+                    <datalist id="candidateEmails"></datalist>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assign Team (Optional)</label>
+                    <select id="inviteTeam" class="form-select">
+                        <option value="">-- No Team --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('inviteModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="sendInvitation()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+
+            if (sidebar.classList.contains('open')) {
+                sidebarOverlay.style.display = 'block';
+            } else {
+                sidebarOverlay.style.display = 'none';
+            }
+        }
+
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            toggleSidebar(); // Close it
+        });
+
+        async function init() {
+            const session = getAdminSession();
+            if (!session) return window.location.href = 'login.html';
+
+            // Show Skeleton
+            const list = document.getElementById('invitationsList');
+            if (list && typeof SkeletonUI !== 'undefined') {
+                list.innerHTML = SkeletonUI.generateCards(3);
+            }
+
+            await loadInvitations();
+            await loadTeams();
+            await loadCandidates();
+        }
+
+        async function loadInvitations() {
+            const { data } = await supabaseClient.from('invitations').select('*, teams(name)').order('created_at', { ascending: false });
+            const list = document.getElementById('invitationsList');
+
+            if (!data || !data.length) {
+                list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--c-text-muted);">No invitations sent yet.</div>';
+                return;
+            }
+
+            list.innerHTML = data.map(i => `
+                <div class="invitation-card">
+                    <div class="invitation-user">
+                        <div class="avatar-initial">${i.email[0]}</div>
+                        <div>
+                            <div style="font-weight:500;">${i.email}</div>
+                            <div style="font-size:0.85rem; color:var(--c-text-muted);">
+                                ${i.teams ? `Team: ${i.teams.name} • ` : ''} ${new Date(i.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="badge badge-${i.status === 'accepted' ? 'success' : (i.status === 'expired' ? 'error' : 'warning')}">${i.status}</span>
+                        ${i.status === 'sent' ? `<button class="btn-ghost btn-sm" onclick="revokeInvitation('${i.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadTeams() {
+            const { data } = await supabaseClient.from('teams').select('id, name');
+            if (data) {
+                document.getElementById('inviteTeam').innerHTML = '<option value="">-- No Team --</option>' +
+                    data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            }
+        }
+
+        async function loadCandidates() {
+            const { data } = await supabaseClient.from('applications').select('email').in('status', ['approved', 'shortlisted']);
+            if (data) {
+                document.getElementById('candidateEmails').innerHTML = data.map(c => `<option value="${c.email}">`).join('');
+            }
+        }
+
+        async function sendInvitation() {
+            const email = document.getElementById('inviteEmail').value;
+            if (!email) return;
+
+            const saveBtn = document.querySelector('#inviteModal .btn-primary');
+            const originalBtnText = saveBtn.innerHTML;
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+                const { error } = await supabaseClient.from('invitations').insert([{
+                    email,
+                    team_id: document.getElementById('inviteTeam').value || null,
+                    status: 'sent'
+                }]);
+
+                if (error) throw error;
+
+                closeModal('inviteModal');
+                loadInvitations();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Invitation Sent',
+                    text: `Invitation sent to ${email}`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to send invitation', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        async function revokeInvitation(id) {
+            if (confirm('Revoke?')) {
+                await supabaseClient.from('invitations').delete().eq('id', id);
+                loadInvitations();
+            }
+        }
+
+        function openInviteModal() { document.getElementById('inviteModal').classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        init();
+    </script>
+
+</body>
+
+</html>

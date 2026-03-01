@@ -1,0 +1,324 @@
+﻿/* ============================================
+   GKK INTERNS REACT - GLOBAL STYLES
+   Imports the design system + adds landing page overrides
+   ============================================ */
+
+/* Design System */
+/* Design System moved to index.html links */
+
+/* ==========================================
+   HERO VISUAL OVERRIDES
+   ========================================== */
+.hero-visual-wrapper {
+    position: relative;
+    padding: 2rem;
+}
+
+.hero-visual-accent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+    opacity: 0.5;
+    z-index: -1;
+    border-radius: 50%;
+}
+
+/* ==========================================
+   LAZY LOAD ANIMATIONS
+   ========================================== */
+.lazy-section {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    will-change: opacity, transform;
+}
+
+.lazy-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.lazy-section.visible .feature-card,
+.lazy-section.visible .grid>div {
+    animation: fadeUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================
+   NAVBAR ACTION BUTTONS
+   ========================================== */
+.nav-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    border-radius: 6px;
+    text-decoration: none;
+    line-height: 1;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.nav-btn-home {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #334155;
+}
+
+.nav-btn-home:hover {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+.nav-btn-home i {
+    font-size: 0.7rem;
+}
+
+.nav-btn-signin {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1px solid transparent;
+}
+
+.nav-btn-signin:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: #f1f5f9;
+}
+
+.nav-btn-signup {
+    background: #3b82f6;
+    color: #fff;
+    border: 1px solid #3b82f6;
+}
+
+.nav-btn-signup:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.nav-btn-apply {
+    background: #10b981;
+    color: #fff;
+    border: 1px solid #10b981;
+}
+
+.nav-btn-apply:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+.nav-btn-community {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #334155;
+}
+
+.nav-btn-community:hover {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+/* ==========================================
+   SIDEBAR STYLES
+   ========================================== */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 64px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(148, 163, 184, 0.1);
+    z-index: 1100;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar:hover {
+    width: 240px;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    flex-shrink: 0;
+    min-height: 64px;
+    overflow: hidden;
+}
+
+.sidebar-logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar:hover .sidebar-logo img {
+    width: 140px;
+    height: 104px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 12px;
+    border-radius: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+.sidebar-link:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #e2e8f0;
+}
+
+.sidebar-link.active {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+.sidebar-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-link-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s ease 0.1s;
+}
+
+.sidebar:hover .sidebar-link-label {
+    opacity: 1;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: rgba(148, 163, 184, 0.1);
+    margin: 8px 12px;
+}
+
+.sidebar-section-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #475569;
+    padding: 8px 14px 4px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease 0.1s;
+}
+
+.sidebar:hover .sidebar-section-label {
+    opacity: 1;
+}
+
+/* Push main content right to avoid sidebar overlap */
+.main-content {
+    margin-left: 64px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .hero-section {
+        text-align: center;
+    }
+
+    .hero-content {
+        margin-bottom: 3rem;
+    }
+
+    .hero-content p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-content div[style*="flex"] {
+        justify-content: center;
+    }
+
+    .hero-stats {
+        justify-content: center;
+    }
+
+    .pro-navbar-links {
+        display: none;
+    }
+
+    /* Hide sidebar on mobile */
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+/* ==========================================
+   STREAK TOAST
+   ========================================== */
+#streak-toast-container {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+}

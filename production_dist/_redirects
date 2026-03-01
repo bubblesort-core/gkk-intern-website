@@ -1,0 +1,12 @@
+/supabase-main/*  https://hjpsyxqakzrhvzegehtm.supabase.co/:splat  200
+/supabase-chat/*  https://mwnpwuxrbaousgwgoyco.supabase.co/:splat  200
+/storage-main/*   https://hjpsyxqakzrhvzegehtm.supabase.co/storage/v1/object/public/:splat  200
+/storage-chat/*   https://mwnpwuxrbaousgwgoyco.supabase.co/storage/v1/object/public/:splat  200
+/dashboard/admin/*  /admin/:splat  301
+/dashboard/css/*    /css/:splat    301
+/dashboard/js/*     /js/:splat     301
+/dashboard/apply/*  /dashboard/apply/index.html  200
+/Dashboard/*        /dashboard/:splat        301
+/dashboard/*        /dashboard/index.html        200
+/community-chat/*   /community-chat/index.html   200
+/*                  /index.html                  200

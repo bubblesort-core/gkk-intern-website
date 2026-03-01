@@ -1,0 +1,101 @@
+[build]
+  # Publish the pre-built static files only - NO BUILD STEP
+  publish = "production_dist"
+  # Explicit no-op command to prevent any framework build
+  command = "echo 'Static deployment - no build required'"
+  # Ignore any package.json scripts
+  ignore = "exit 0"
+
+[build.environment]
+  # Prevent Node.js build detection
+  NODE_VERSION = "20"
+  # Disable automatic dependency installation
+  NPM_FLAGS = "--ignore-scripts"
+
+[context.production]
+  command = "echo 'Production: Static files only'"
+
+[context.deploy-preview]
+  command = "echo 'Preview: Static files only'"
+
+[context.branch-deploy]
+  command = "echo 'Branch: Static files only'"
+
+[dev]
+  framework = "#static"
+
+# Supabase Proxies
+[[redirects]]
+  from = "/supabase-main/*"
+  to = "https://hjpsyxqakzrhvzegehtm.supabase.co/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/supabase-chat/*"
+  to = "https://mwnpwuxrbaousgwgoyco.supabase.co/:splat"
+  status = 200
+  force = true
+
+# Supabase Storage Proxies (Explicit)
+[[redirects]]
+  from = "/storage-main/*"
+  to = "https://hjpsyxqakzrhvzegehtm.supabase.co/storage/v1/object/public/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/storage-chat/*"
+  to = "https://mwnpwuxrbaousgwgoyco.supabase.co/storage/v1/object/public/:splat"
+  status = 200
+  force = true
+
+# Redirects for SPA routing
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+
+
+[[redirects]]
+  from = "/Dashboard/apply/*"
+  to = "/Dashboard/apply/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/Dashboard/*"
+  to = "/dashboard/:splat"
+  status = 301
+
+# Serve apply form static assets directly (must come before SPA fallback)
+[[redirects]]
+  from = "/apply/assets/*"
+  to = "/apply/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/apply/*.png"
+  to = "/apply/:splat.png"
+  status = 200
+
+[[redirects]]
+  from = "/apply/*.svg"
+  to = "/apply/:splat.svg"
+  status = 200
+
+[[redirects]]
+  from = "/apply/*.js"
+  to = "/apply/:splat.js"
+  status = 200
+
+[[redirects]]
+  from = "/apply/*.css"
+  to = "/apply/:splat.css"
+  status = 200
+
+# Apply form SPA routing (fallback for routes)
+[[redirects]]
+  from = "/apply/*"
+  to = "/apply/index.html"
+  status = 200

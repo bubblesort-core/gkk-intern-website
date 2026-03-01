@@ -1,0 +1,163 @@
+/* ============================================
+   SKELETON LOADER - Dark Theme Premium
+   Smooth shimmer loading placeholders
+   ============================================ */
+
+/* Base Skeleton Pulse — the primary class used across all sections */
+.skeleton-pulse {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-pulse::after {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(99, 102, 241, 0.06) 20%,
+            rgba(148, 163, 184, 0.1) 50%,
+            rgba(99, 102, 241, 0.06) 80%,
+            transparent 100%);
+    animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+
+/* Staggered animation for multiple skeletons — creates cascading wave */
+.skeleton-pulse:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.skeleton-pulse:nth-child(2)::after {
+    animation-delay: 0.1s;
+}
+
+.skeleton-pulse:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.skeleton-pulse:nth-child(3)::after {
+    animation-delay: 0.2s;
+}
+
+.skeleton-pulse:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.skeleton-pulse:nth-child(4)::after {
+    animation-delay: 0.3s;
+}
+
+.skeleton-pulse:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.skeleton-pulse:nth-child(5)::after {
+    animation-delay: 0.4s;
+}
+
+@keyframes skeletonShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Legacy .skeleton class alias (used by SkeletonUI.generateTableRows/Cards) */
+.skeleton {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton::after {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(99, 102, 241, 0.06) 20%,
+            rgba(148, 163, 184, 0.1) 50%,
+            rgba(99, 102, 241, 0.06) 80%,
+            transparent 100%);
+    animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+
+/* Shape Variants */
+.skeleton-circle {
+    border-radius: 50% !important;
+}
+
+.skeleton-rounded {
+    border-radius: 12px !important;
+}
+
+.skeleton-pill {
+    border-radius: 999px !important;
+}
+
+/* Specific Skeleton Elements */
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+    width: 80%;
+}
+
+.skeleton-text.short {
+    width: 40%;
+}
+
+.skeleton-text.title {
+    height: 1.5em;
+    width: 60%;
+    margin-bottom: 1em;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.skeleton-button {
+    height: 36px;
+    width: 100px;
+    border-radius: 8px;
+}
+
+.skeleton-card {
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.7) 100%);
+}
+
+/* Skeleton fade-out when content loads */
+.skeleton-container {
+    transition: opacity 0.3s ease;
+}
+
+.skeleton-container.loaded {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Skeleton Table Row */
+.skeleton-table-row td {
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.skeleton-table-row .skeleton-cell {
+    height: 20px;
+    width: 100%;
+}

@@ -1,0 +1,558 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements | GKK Interns - Code. Build. Deploy.</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        .announcement-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-card);
+        }
+
+        .announcement-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            opacity: 0;
+            transition: all 0.2s;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #ef4444;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .announcement-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .ann-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .ann-type-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .ann-type-info {
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .ann-type-success {
+            color: #4ade80;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .ann-type-warning {
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .ann-type-alert {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .ann-date {
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            margin-left: auto;
+        }
+
+        .ann-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            margin-bottom: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            padding-right: 40px;
+        }
+
+        .ann-content {
+            color: var(--c-text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Target Selection Styles */
+        .target-selection-box {
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .target-option {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .target-option:last-child {
+            border-bottom: none;
+        }
+
+        .target-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .target-option input {
+            margin-right: 12px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .target-search {
+            width: 100%;
+            padding: 10px;
+            background: var(--c-bg-main);
+            border: 1px solid var(--c-border);
+            border-radius: 6px;
+            color: var(--c-text-primary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Announcements</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateModal()"><i class="fas fa-plus"></i> New
+                        Announcement</button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div id="announcementsList">
+                    <!-- Skeleton injected via JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Announcement</h3>
+                <button class="modal-close" onclick="closeModal('createModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" id="annTitle" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select id="annType" class="form-select">
+                        <option value="info">Info</option>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="alert">Alert</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target Audience</label>
+                    <select id="annTargetType" class="form-select" onchange="handleTargetTypeChange()">
+                        <option value="all">All Interns</option>
+                        <option value="interns">Specific Interns</option>
+                        <option value="teams">Specific Teams</option>
+                        <option value="batches">Specific Batches</option>
+                    </select>
+
+                    <div id="targetSelectionArea" style="display:none; margin-top:12px;">
+                        <input type="text" id="targetSearch" class="target-search" placeholder="Search..."
+                            onkeyup="filterTargets()">
+                        <div id="targetList" class="target-selection-box">
+                            <!-- Options injected here -->
+                            <div style="text-align:center; padding:10px; color:var(--c-text-muted);">Loading...</div>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted); margin-top:6px; text-align:right;">
+                            Selected: <span id="selectedCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Content</label>
+                    <textarea id="annContent" class="form-textarea" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createAnnouncement()">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+
+            if (sidebar.classList.contains('open')) {
+                sidebarOverlay.style.display = 'block';
+            } else {
+                sidebarOverlay.style.display = 'none';
+            }
+        }
+
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            toggleSidebar(); // Close it
+        });
+
+        // Target Logic
+        let currentTargets = [];
+        let selectedTargetIds = new Set();
+
+        async function handleTargetTypeChange() {
+            const type = document.getElementById('annTargetType').value;
+            const area = document.getElementById('targetSelectionArea');
+            const list = document.getElementById('targetList');
+            const search = document.getElementById('targetSearch');
+
+            if (type === 'all') {
+                area.style.display = 'none';
+                selectedTargetIds.clear();
+                return;
+            }
+
+            area.style.display = 'block';
+            list.innerHTML = '<div style="text-align:center; padding:10px; color:var(--c-text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading data...</div>';
+            search.value = '';
+            selectedTargetIds.clear();
+            updateSelectedCount();
+
+            try {
+                if (type === 'interns') {
+                    currentTargets = await getAllInterns(); // from supabase-client.js
+                    // Map to common format: id, name
+                    currentTargets = currentTargets.map(u => ({ id: u.id, name: u.full_name || u.email }));
+                } else if (type === 'teams') {
+                    currentTargets = await getAllTeams(); // from supabase-client.js
+                } else if (type === 'batches') {
+                    currentTargets = await getAllBatches(); // from supabase-client.js
+                }
+
+                renderTargets();
+            } catch (e) {
+                console.error(e);
+                list.innerHTML = '<div style="color:#ef4444; padding:10px;">Error loading data.</div>';
+            }
+        }
+
+        function renderTargets() {
+            const list = document.getElementById('targetList');
+            const term = document.getElementById('targetSearch').value.toLowerCase();
+
+            const filtered = currentTargets.filter(t => t.name.toLowerCase().includes(term));
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="padding:10px; color:var(--c-text-muted); text-align:center;">No matches found.</div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(t => {
+                const isChecked = selectedTargetIds.has(t.id);
+                return `
+                    <label class="target-option">
+                        <input type="checkbox" value="${t.id}" ${isChecked ? 'checked' : ''} onchange="toggleTarget('${t.id}')">
+                        <span>${t.name}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function filterTargets() {
+            renderTargets();
+        }
+
+        function toggleTarget(id) {
+            if (selectedTargetIds.has(id)) selectedTargetIds.delete(id);
+            else selectedTargetIds.add(id);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedTargetIds.size;
+        }
+
+        async function createAnnouncement() {
+            const title = document.getElementById('annTitle').value;
+            const content = document.getElementById('annContent').value;
+            const type = document.getElementById('annType').value;
+            const targetType = document.getElementById('annTargetType').value;
+
+            if (!title || !content) return Swal.fire('Error', 'Title and Content are required', 'warning');
+
+            // Validate Target Selection
+            if (targetType !== 'all' && selectedTargetIds.size === 0) {
+                return Swal.fire('Error', 'Please select at least one target recipient', 'warning');
+            }
+
+            const saveBtn = document.querySelector('#createModal .btn-primary');
+            const originalBtnText = saveBtn.innerHTML;
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+
+                const payload = {
+                    title,
+                    content,
+                    type,
+                    target_type: targetType,
+                    target_ids: Array.from(selectedTargetIds)
+                };
+
+                const { error } = await supabaseClient.from('announcements').insert([payload]);
+                if (error) throw error;
+
+                closeModal('createModal');
+                loadAnnouncements();
+
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                Toast.fire({ icon: 'success', title: 'Announcement posted' });
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to post announcement: ' + e.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        // Lookup Maps
+        let internMap = new Map();
+        let teamMap = new Map();
+        let batchMap = new Map();
+
+        async function initLookups() {
+            try {
+                const interns = await getAllInterns();
+                interns.forEach(i => internMap.set(i.id, i.full_name || i.email));
+
+                const teams = await getAllTeams();
+                teams.forEach(t => teamMap.set(t.id, t.team_name));
+
+                const batches = await getAllBatches();
+                batches.forEach(b => batchMap.set(b.id, b.batch_name));
+            } catch (e) {
+                console.error("Error initializing lookups:", e);
+            }
+        }
+
+        // --- Modified Load to show target badges ---
+        async function loadAnnouncements() {
+            const { data } = await supabaseClient.from('announcements').select('*').order('created_at', { ascending: false });
+            const list = document.getElementById('announcementsList');
+
+            if (!data || !data.length) {
+                list.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--c-text-muted);">No announcements yet.</div>';
+                return;
+            }
+
+            list.innerHTML = data.map(a => {
+                let targetBadge = '<span class="badge" style="background:#3b82f6; color:white; font-size:0.75rem; margin-left:8px;">Everyone</span>';
+                let targetNames = '';
+
+                if (a.target_type === 'interns') {
+                    targetBadge = '<span class="badge" style="background:#8b5cf6; color:white; font-size:0.75rem; margin-left:8px;">Specific Interns</span>';
+                    const ids = typeof a.target_ids === 'string' ? JSON.parse(a.target_ids) : a.target_ids;
+                    if (ids && ids.length) {
+                        const names = ids.map(id => internMap.get(id) || 'Unknown').join(', ');
+                        targetNames = `<div style="font-size:0.85rem; color:var(--c-text-secondary); margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05);"><strong>To:</strong> ${names}</div>`;
+                    }
+                }
+                if (a.target_type === 'teams') {
+                    targetBadge = '<span class="badge" style="background:#f59e0b; color:white; font-size:0.75rem; margin-left:8px;">Specific Teams</span>';
+                    const ids = typeof a.target_ids === 'string' ? JSON.parse(a.target_ids) : a.target_ids;
+                    if (ids && ids.length) {
+                        const names = ids.map(id => teamMap.get(id) || 'Unknown').join(', ');
+                        targetNames = `<div style="font-size:0.85rem; color:var(--c-text-secondary); margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05);"><strong>To:</strong> ${names}</div>`;
+                    }
+                }
+                if (a.target_type === 'batches') {
+                    targetBadge = '<span class="badge" style="background:#10b981; color:white; font-size:0.75rem; margin-left:8px;">Specific Batches</span>';
+                    const ids = typeof a.target_ids === 'string' ? JSON.parse(a.target_ids) : a.target_ids;
+                    if (ids && ids.length) {
+                        const names = ids.join(', ');
+                        targetNames = `<div style="font-size:0.85rem; color:var(--c-text-secondary); margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05);"><strong>To:</strong> ${names}</div>`;
+                    }
+                }
+
+                return `
+                <div class="announcement-card">
+                    <button class="delete-btn" onclick="deleteAnnouncement('${a.id}')" style="z-index:10;"><i class="fas fa-trash"></i></button>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                        <div style="display:flex; flex-direction:column; width:100%;">
+                            <div style="display:flex; align-items:center;">
+                                <h3 style="font-size:1.1rem; font-weight:600; margin-right:8px;">${a.title}</h3>
+                                <span class="badge ann-type-${a.type}">${a.type}</span>
+                                ${targetBadge}
+                            </div>
+                            ${targetNames}
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted); min-width:80px; text-align:right;">
+                            ${new Date(a.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <p style="color:var(--c-text-secondary); line-height:1.6; margin-bottom:16px;">${a.content}</p>
+                </div>
+            `}).join('');
+        }
+
+        async function deleteAnnouncement(id) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#1e293b',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const { error } = await supabaseClient.from('announcements').delete().eq('id', id);
+                    if (error) throw error;
+
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Announcement has been deleted.',
+                        icon: 'success',
+                        background: '#1e293b',
+                        color: '#fff'
+                    });
+                    loadAnnouncements();
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Failed to delete: ' + e.message,
+                        icon: 'error',
+                        background: '#1e293b',
+                        color: '#fff'
+                    });
+                }
+            }
+        }
+
+        // Modified Open to reset state
+        function openCreateModal() {
+            document.getElementById('annTitle').value = '';
+            document.getElementById('annContent').value = '';
+            document.getElementById('annTargetType').value = 'all';
+            document.getElementById('targetSelectionArea').style.display = 'none';
+            selectedTargetIds.clear();
+
+            document.getElementById('createModal').classList.add('open');
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        async function init() {
+            // Check auth
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = '../admin/login.html';
+                return;
+            }
+
+            await initLookups();
+            await loadAnnouncements();
+        }
+
+        init();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+
+# Serve New Landing Page at Root
+/  /landing/index.html  200
+
+# Serve Legacy App at /legacy
+/legacy  /index.html  200
+
+# Fallback for New Landing Page assets
+# Assets are already physically in /landing/assets/... so existing files work.
+# If GKK-HIRE-MAIN does SPA routing beyond root:
+/landing/*  /landing/index.html  200
+
+# Community Chat SPA
+/community-chat/*  /community-chat/index.html  200

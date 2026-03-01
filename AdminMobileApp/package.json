@@ -1,0 +1,14 @@
+{
+    "name": "admin-mobile-app-scripts",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Release & config sync scripts for GKK Admin Mobile App",
+    "scripts": {
+        "release": "node release_github.js",
+        "sync": "node sync_config.js"
+    },
+    "dependencies": {
+        "@octokit/rest": "^20.0.0",
+        "firebase-admin": "^12.0.0"
+    }
+}

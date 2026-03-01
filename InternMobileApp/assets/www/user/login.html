@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | GKK INTERN Portal</title>
+    <meta name="description"
+        content="Sign in to your GKK INTERN dashboard. Access your projects, team, and internship progress.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Professional Design System -->
+    <link rel="stylesheet" href="../css/professional-design.css">
+    <link rel="stylesheet" href="../css/page-transitions.css">
+    <link rel="stylesheet" href="../css/visual-transitions.css">
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-minimal/minimal.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .auth-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            max-width: 1000px;
+            background: linear-gradient(145deg, var(--bg-card) 0%, #0f172a 100%);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Left Side - Clean Form */
+        .auth-form-panel {
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Right Side - Branding Block */
+        .auth-branding {
+            background-color: var(--bg-subtle);
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-feature {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .brand-feature i {
+            color: var(--primary);
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+            }
+
+            .auth-branding {
+                display: none;
+            }
+
+            .auth-form-panel {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Home Button -->
+    <a href="../index.html"
+        style="position: fixed; top: 1.5rem; left: 1.5rem; color: var(--text-body); font-size: 1.25rem;">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="auth-wrapper">
+        <!-- Main Form -->
+        <div class="auth-form-panel">
+            <h1 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--text-main);">Welcome back</h1>
+            <p style="color: var(--text-body); margin-bottom: 2rem;">Please enter your details to sign in.</p>
+
+            <form id="loginForm" novalidate>
+                <div class="pro-form-group">
+                    <label class="pro-form-label" for="email">Email</label>
+                    <input type="email" id="email" class="pro-form-input" placeholder="Enter your email" required
+                        autocomplete="email">
+                </div>
+
+                <div class="pro-form-group">
+                    <label class="pro-form-label" for="password">Password</label>
+                    <div style="position: relative;">
+                        <input type="password" id="password" class="pro-form-input" placeholder="••••••••" required
+                            autocomplete="current-password">
+                        <button type="button" id="togglePassword"
+                            style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted);">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="rememberMe" style="accent-color: var(--primary);">
+                        <label for="rememberMe" style="font-size: 0.85rem; color: var(--text-body);">Remember me</label>
+                    </div>
+                    <a href="#" id="forgotPasswordBtn"
+                        style="font-size: 0.85rem; color: var(--primary); font-weight: 500;">Forgot password?</a>
+                </div>
+
+                <button type="submit" id="submitBtn" class="pro-btn pro-btn-primary pro-btn-full magnetic-btn"
+                    style="width: 100%;">
+                    Sign in
+                </button>
+            </form>
+
+            <div style="margin-top: 2rem; font-size: 0.9rem; text-align: center; color: var(--text-body);">
+                Don't have an account? <a href="signup.html" style="color: var(--text-main); font-weight: 600;">Sign
+                    up</a>
+            </div>
+        </div>
+
+        <!-- Branding / Info Side -->
+        <div class="auth-branding">
+            <div class="brand-logo">
+                <img src="/assets/gkk-intern-logo.png" alt="GKK INTERN" style="height: 100px; width: auto;">
+            </div>
+
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Internship Portal</h2>
+            <p style="color: var(--text-body); margin-bottom: 2rem;">Manage your projects, track your progress, and
+                collaborate with your team.</p>
+
+            <div class="brand-feature">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-main);">Real-world Experience</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Work on live production projects</div>
+                </div>
+            </div>
+
+            <div class="brand-feature">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-main);">Verified Certificates</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Earn credentials for your career</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="../js/page-transitions.js"></script>
+
+    <!-- 3D Interactions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="../js/interactive-3d.js"></script>
+
+    <script src="../js/gkk-assistant.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Check Session on Load
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                // Check expiry
+                const expiresAt = localStorage.getItem('gkk_session_expiry');
+                if (expiresAt && Date.now() > parseInt(expiresAt)) {
+                    await supabaseClient.auth.signOut();
+                    localStorage.removeItem('gkk_session_expiry');
+                    return;
+                }
+
+                // Check profile status
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('status, role')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                if (profile && profile.status !== 'suspended') {
+                    if (profile.role === 'admin') {
+                        window.location.replace('../admin/index.html');
+                    } else {
+                        window.location.replace('index.html');
+                    }
+                }
+            }
+        }
+        checkSession();
+
+        // Initialize Remember Me
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedEmail = localStorage.getItem('gkk_remember_email');
+            if (savedEmail) {
+                emailInput.value = savedEmail;
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        // New User Detection - Show account creation prompt
+        const NEW_USER_KEY = 'gkk_returning_user';
+        let hasShownNewUserPrompt = false;
+
+        function showNewUserPrompt() {
+            // Only show once per session and only for new users
+            if (hasShownNewUserPrompt || localStorage.getItem(NEW_USER_KEY)) {
+                return;
+            }
+            hasShownNewUserPrompt = true;
+
+            Swal.fire({
+                title: '👋 New here?',
+                html: `
+                    <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 0.5rem;">
+                        Have you created an account yet?
+                    </p>
+                    <p style="color: #94a3b8; font-size: 0.85rem;">
+                        You need to sign up first before you can log in.
+                    </p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, I have an account',
+                cancelButtonText: 'Create Account',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6366f1',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mark as returning user
+                    localStorage.setItem(NEW_USER_KEY, 'true');
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Redirect to signup
+                    window.location.href = 'signup.html';
+                }
+            });
+        }
+
+        // Attach to input focus events
+        emailInput.addEventListener('focus', showNewUserPrompt);
+        passwordInput.addEventListener('focus', showNewUserPrompt);
+
+        // Toggle Password Visibility
+        togglePasswordBtn.addEventListener('click', () => {
+            const icon = togglePasswordBtn.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        });
+
+        // Forgot Password Logic
+        forgotPasswordBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Reset Password',
+                text: 'Enter your email to receive instructions',
+                input: 'email',
+                inputValue: emailInput.value,
+                confirmButtonColor: '#10b981',
+                showCancelButton: true,
+                confirmButtonText: 'Send Reset Link',
+                showLoaderOnConfirm: true,
+                preConfirm: async (email) => {
+                    try {
+                        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                            redirectTo: `${window.location.origin}/user/update-password.html`,
+                        });
+                        if (error) throw error;
+                        return true;
+                    } catch (error) {
+                        Swal.showValidationMessage(`Request failed: ${error.message}`);
+                    }
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('Success', 'Check your email for the reset link', 'success');
+                }
+            });
+        });
+
+        // Login Logic
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            if (!email || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Details',
+                    text: 'Please enter both email and password',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+
+            // Handle Remember Me
+            if (rememberMe) {
+                localStorage.setItem('gkk_remember_email', email);
+                // Set expiry to 30 days
+                localStorage.setItem('gkk_session_expiry', Date.now() + (30 * 24 * 60 * 60 * 1000));
+            } else {
+                localStorage.removeItem('gkk_remember_email');
+                // Set expiry to 24 hours
+                localStorage.setItem('gkk_session_expiry', Date.now() + (24 * 60 * 60 * 1000));
+            }
+
+            // UI Loading State
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+            submitBtn.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) {
+                    // Friendly error messages
+                    if (error.message === 'Invalid login credentials') {
+                        throw new Error("Incorrect email or password.");
+                    }
+                    throw error;
+                }
+
+                // Check Profile Status (Optional but good for security)
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('role, status')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profile) {
+                    if (profile.status === 'suspended') {
+                        throw new Error("Your account has been suspended. Please contact support.");
+                    }
+
+                    // Valid logic restored
+                    if (profile.role === 'admin') {
+                        await window.PageTransition.show('../admin/index.html', () => {
+                            window.location.href = '../admin/index.html';
+                        });
+
+                    } else {
+                        // Normal User -> Dashboard
+                        await window.PageTransition.show('index.html', () => {
+                            window.location.href = 'index.html';
+                        });
+                    }
+                } else {
+                    // Normal User -> Dashboard
+                    await window.PageTransition.show('index.html', () => {
+                        window.location.href = 'index.html';
+                    });
+                }
+
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+@theme {
+  /* Midnight Developer Dark Theme - Matching Dashboard */
+  --color-primary: #10b981;
+  /* Emerald green accent */
+  --color-primary-hover: #059669;
+  /* Darker emerald */
+  --color-accent: #10b981;
+  /* Emerald accent */
+  --color-accent-hover: #059669;
+
+  --color-background-light: #0f172a;
+  /* Deep slate body */
+  --color-background-card: #1e293b;
+  /* Card background */
+
+  --color-text-primary: #f8fafc;
+  /* Almost white */
+  --color-text-secondary: #94a3b8;
+  /* Muted blue-gray */
+  --color-text-muted: #64748b;
+  /* Darker muted */
+
+  --color-border: #334155;
+  /* Dark slate border */
+
+  --font-display: "Inter", sans-serif;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.glass-hub {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bento-card {
+  transition: all 0.3s ease-out;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+}
+
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  border-color: #475569;
+}
+
+.glass-effect {
+  backdrop-filter: blur(12px);
+  background-color: rgba(30, 41, 59, 0.9);
+}
+
+.mascot-container {
+  perspective: 1000px;
+}
+
+.mascot-tile {
+  min-height: 240px;
+}
+
+/* Form inputs styling */
+/* Form inputs styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="url"],
+textarea,
+select {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #334155;
+  background-color: #1e293b;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  color: #f8fafc;
+  caret-color: #10b981;
+  /* Custom Caret */
+}
+
+/* Specific heights */
+input,
+select {
+  height: 3.5rem;
+}
+
+textarea {
+  min-height: 3.5rem;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  /* Subtle Pulse */
+  transform: translateY(-1px);
+  /* Micro-interaction */
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+}
+
+/* Radio button styling */
+input[type="radio"] {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progress {
+  animation: progress 5s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.5s ease-out;
+}
+
+@keyframes fly {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+.animate-fly {
+  animation: fly 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeInFast {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes flyRight {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(100px) translateY(-50px) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+.animate-flyRight {
+  animation: flyRight 1.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  50% {
+    transform: translateX(4px);
+  }
+
+  75% {
+    transform: translateX(-4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes flyRight {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(100px) translateY(-50px) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+.animate-flyRight {
+  animation: flyRight 1.5s ease-in-out infinite;
+}

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Interns | GKK-Hire</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Active Interns</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Active Interns Table -->
+                <div class="card-premium">
+                    <div class="card-header" style="flex-direction:column; align-items:flex-start; gap:12px;">
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <h3 class="card-title">Active Interns Directory</h3>
+                                <span id="studentCount"
+                                    style="font-size:0.8rem; color:var(--c-text-muted); background:var(--c-bg-secondary); padding:4px 10px; border-radius:6px; border:1px solid var(--c-border);">0
+                                    active</span>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="openExportModal()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div style="display:flex; gap:12px; width:100%; margin-top:16px; flex-wrap:wrap;">
+                            <!-- Date Range -->
+                            <div
+                                style="display:flex; align-items:center; gap:8px; background:var(--c-bg-card); padding:4px 12px; border-radius:8px; border:1px solid var(--c-border);">
+                                <select id="dbFilterMode" class="form-select"
+                                    style="border:none; background:transparent; font-size:0.85rem; padding:4px; font-weight:600; color:var(--c-text-primary); cursor:pointer;">
+                                    <option value="created_at">📅 Joined</option>
+                                    <option value="interview_date">🎥 Interview</option>
+                                </select>
+
+                                <div style="width:1px; height:20px; background:var(--c-border); margin:0 4px;"></div>
+
+                                <input type="date" id="dbStartDate" class="form-input"
+                                    style="border:none; padding:4px; height:auto; width:130px; font-size:0.85rem; background:transparent;"
+                                    placeholder="Start Date">
+                                <span style="color:var(--c-text-muted);">-</span>
+                                <input type="date" id="dbEndDate" class="form-input"
+                                    style="border:none; padding:4px; height:auto; width:130px; font-size:0.85rem; background:transparent;"
+                                    placeholder="End Date">
+                            </div>
+                            <input type="text" id="searchInput" class="form-input"
+                                placeholder="Search by name or email..." style="flex:1; min-width:200px;">
+                        </div>
+                    </div>
+                    <div class="table-container" style="border:none; box-shadow:none;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Candidate</th>
+                                    <th>Status</th>
+                                    <th>Joined On</th>
+                                    <th>Payment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <tr>
+                                    <td colspan="6"
+                                        style="text-align: center; padding: 2rem; color: var(--c-text-muted);">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading Active Interns...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div
+                        style="padding: 16px; border-top: 1px solid var(--c-border); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: var(--c-text-muted);" id="pageInfo">Loading...</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn btn-secondary btn-sm" id="prevPageBtn" onclick="changePage(-1)"
+                                disabled>Prev</button>
+                            <span id="pageNumbers" style="font-size: 0.85rem; color: var(--c-text-secondary);"></span>
+                            <button class="btn btn-secondary btn-sm" id="nextPageBtn" onclick="changePage(1)"
+                                disabled>Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) overlay.style.display = 'block';
+            else overlay.style.display = 'none';
+        }
+        document.getElementById('sidebarOverlay').addEventListener('click', () => toggleSidebar());
+
+        // Global Data
+        let allStudents = [];
+        let currentFilteredStudents = [];
+        const PAGE_SIZE = 10;
+        let currentPage = 1;
+
+        // Init Logic
+        async function init() {
+            const session = getAdminSession();
+            if (!session) return window.location.href = 'login.html';
+
+            await loadStudentDatabase();
+
+            // Event Listeners
+            document.getElementById('searchInput').addEventListener('input', onFilterChange);
+            document.getElementById('dbStartDate').addEventListener('change', onFilterChange);
+            document.getElementById('dbEndDate').addEventListener('change', onFilterChange);
+            document.getElementById('dbFilterMode').addEventListener('change', onFilterChange);
+        }
+
+        async function loadStudentDatabase() {
+            try {
+                // 1. Fetch Applications (Base)
+                const { data: apps, error: appError } = await supabaseClient
+                    .from('applications')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (appError) throw appError;
+
+                // 2. Fetch Profiles (Account Status)
+                const { data: profiles, error: profError } = await supabaseClient.rpc('get_all_profile_emails');
+                if (profError) console.error('Error fetching profiles:', profError);
+
+                // 3. Fetch Payments (Payment Status)
+                const { data: payments, error: payError } = await supabaseClient
+                    .from('payments')
+                    .select('id, amount, status, user_id, customer_email')
+                    .in('status', ['completed', 'captured']);
+
+                if (payError) console.error("Error fetching payments:", payError);
+
+                // Merge Data & Strictly Filter
+                const merged = apps.map(app => {
+                    const profile = profiles?.find(p => p.email.toLowerCase() === app.email.toLowerCase());
+                    let payment = null;
+                    if (profile) {
+                        payment = payments?.find(pay => pay.user_id === profile.id);
+                    }
+                    if (!payment) {
+                        payment = payments?.find(pay => pay.customer_email && pay.customer_email.toLowerCase() === app.email.toLowerCase());
+                    }
+
+                    return {
+                        ...app,
+                        hasAccount: !!profile,
+                        isPaid: !!payment,
+                        paymentAmount: payment ? payment.amount : 0,
+                        joined_at: profile ? profile.created_at : app.created_at
+                    };
+                });
+
+                // STRICT FILTER: Approved + Has Account + Paid
+                allStudents = merged.filter(s =>
+                    s.status === 'approved' &&
+                    s.hasAccount === true &&
+                    s.isPaid === true
+                );
+
+                renderStudents(allStudents);
+
+            } catch (err) {
+                console.error('Database Error:', err);
+                document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:2rem;">Error loading data: ${err.message}</td></tr>`;
+            }
+        }
+
+        // Helper function for formatTime12h
+        function parseTime(timeString) {
+            if (!timeString) return null;
+            const parts = timeString.split(':');
+            if (parts.length !== 2) return null;
+            const hours = parseInt(parts[0], 10);
+            const minutes = parseInt(parts[1], 10);
+            if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+                return null;
+            }
+            return hours * 60 + minutes;
+        }
+
+        function formatTime12h(t) {
+            if (!t) return '';
+            const mins = parseTime(t);
+            if (mins === null) return t;
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        function renderStudents(list) {
+            currentFilteredStudents = list;
+            const tbody = document.getElementById('studentTableBody');
+            const mode = document.getElementById('dbFilterMode').value;
+
+            const totalFiltered = list.length;
+            const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIdx = (currentPage - 1) * PAGE_SIZE;
+            const endIdx = Math.min(startIdx + PAGE_SIZE, totalFiltered);
+            const pageItems = list.slice(startIdx, endIdx);
+
+            // Update Header logic
+            const dateHeader = document.querySelector('thead tr th:nth-child(4)');
+            if (dateHeader) dateHeader.textContent = mode === 'interview_date' ? 'Interview' : 'Joined On';
+
+
+            // Count & Paging
+            const countEl = document.getElementById('studentCount');
+            const pageInfo = document.getElementById('pageInfo');
+            if (countEl) countEl.textContent = `${totalFiltered} active`;
+            if (pageInfo) {
+                if (totalFiltered > 0) {
+                    pageInfo.textContent = `Showing ${startIdx + 1}–${endIdx} of ${totalFiltered} entries${totalFiltered !== allStudents.length ? ` (${allStudents.length} total)` : ''}`;
+                } else {
+                    pageInfo.textContent = 'No active interns found';
+                }
+            }
+
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+            document.getElementById('pageNumbers').textContent = `Page ${currentPage} of ${totalPages}`;
+
+            if (totalFiltered === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--c-text-muted);">No active interns found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pageItems.map((s, index) => {
+                const globalIndex = startIdx + index;
+                let dateDisplay = new Date(s.joined_at).toLocaleDateString();
+                let timeDisplay = '';
+
+                if (mode === 'interview_date') {
+                    if (s.interview_date) {
+                        dateDisplay = new Date(s.interview_date).toLocaleDateString();
+                        if (s.interview_time) {
+                            timeDisplay = `<div style="font-size:0.75rem; color:var(--c-text-muted); margin-top:2px;">${formatTime12h(s.interview_time)}</div>`;
+                        }
+                    } else {
+                        dateDisplay = '-';
+                    }
+                }
+
+                return `
+                <tr style="border-bottom: 1px solid var(--c-border); transition: background 0.2s;">
+                    <td style="padding: 1rem; text-align:center; font-weight:600; color:var(--c-text-muted); font-size:0.85rem;">${globalIndex + 1}</td>
+                    <td style="padding: 1rem;">
+                        <div style="font-weight: 600; color:var(--c-text-primary); margin-bottom:2px;">${s.full_name}</div>
+                        <div style="font-size: 0.8rem; color: var(--c-text-muted);">${s.email}</div>
+                    </td>
+                    <td style="padding: 1rem;">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <span class="badge badge-success"><i class="fas fa-check-circle"></i> Approved</span>
+                            <span class="badge" style="background:rgba(59,130,246,0.1); color:#60a5fa; border:1px solid rgba(59,130,246,0.2);"><i class="fas fa-user-shield"></i> Account</span>
+                        </div>
+                    </td>
+                    <td style="padding: 1rem; font-size:0.85rem;">
+                         <div style="font-weight:500;">${dateDisplay}</div>
+                         ${timeDisplay}
+                    </td>
+                    <td style="padding: 1rem;">
+                        <span style="color:#10b981; font-weight:600; font-family:'JetBrains Mono', monospace; display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.05); padding:4px 8px; border-radius:4px;"><i class="fas fa-check"></i> ₹${s.paymentAmount}</span>
+                    </td>
+                    <td style="padding: 1rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='applications.html?search=${encodeURIComponent(s.email)}'" title="View Details" style="background:var(--c-bg-card); border:1px solid var(--c-border);">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            filterStudents();
+        }
+
+        function filterStudents() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const startDate = document.getElementById('dbStartDate').value;
+            const endDate = document.getElementById('dbEndDate').value;
+            const mode = document.getElementById('dbFilterMode').value;
+
+            const filtered = allStudents.filter(s => {
+                const matchesTerm = s.full_name.toLowerCase().includes(term) || s.email.toLowerCase().includes(term);
+
+                let matchesDate = true;
+                if (startDate) {
+                    const start = new Date(startDate);
+                    start.setHours(0, 0, 0, 0);
+                    const targetDate = mode === 'interview_date' ? s.interview_date : (s.joined_at || s.created_at);
+                    if (!targetDate || new Date(targetDate) < start) matchesDate = false;
+                }
+                if (endDate && matchesDate) {
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    const targetDate = mode === 'interview_date' ? s.interview_date : (s.joined_at || s.created_at);
+                    if (!targetDate || new Date(targetDate) > end) matchesDate = false;
+                }
+
+                return matchesTerm && matchesDate;
+            });
+
+            renderStudents(filtered);
+        }
+
+        function onFilterChange() {
+            currentPage = 1;
+            filterStudents();
+        }
+
+        function openExportModal() {
+            const count = currentFilteredStudents.length;
+            document.getElementById('exportCount').textContent = count;
+            const list = document.getElementById('exportFiltersList');
+            list.innerHTML = '';
+
+            const term = document.getElementById('searchInput').value;
+            const startDate = document.getElementById('dbStartDate').value;
+            const endDate = document.getElementById('dbEndDate').value;
+
+            if (term) list.innerHTML += `<li style="margin-bottom: 4px;"><i class="fas fa-check" style="color: var(--c-primary); margin-right: 8px; font-size: 0.8rem;"></i> <strong>Search:</strong> "${term}"</li>`;
+
+            if (startDate || endDate) {
+                const start = startDate ? new Date(startDate).toLocaleDateString() : 'Start';
+                const end = endDate ? new Date(endDate).toLocaleDateString() : 'Now';
+                list.innerHTML += `<li style="margin-bottom: 4px;"><i class="fas fa-check" style="color: var(--c-primary); margin-right: 8px; font-size: 0.8rem;"></i> <strong>Date:</strong> ${start} - ${end}</li>`;
+            }
+
+            if (list.innerHTML === '') {
+                list.innerHTML = '<li style="color:var(--c-text-muted); font-style:italic;">No active filters (Exporting all active interns)</li>';
+            }
+
+            const modal = document.getElementById('exportModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('open'), 10);
+        }
+
+        function closeExportModal() {
+            const modal = document.getElementById('exportModal');
+            modal.classList.remove('open');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function confirmExport() {
+            if (!currentFilteredStudents || currentFilteredStudents.length === 0) {
+                alert('No data to export.');
+                return;
+            }
+
+            const headers = ['Full Name', 'Email', 'Status', 'Account Created', 'Paid', 'Amount', 'Joined Date', 'Interview Date'];
+            const csvRows = [headers.join(',')];
+
+            currentFilteredStudents.forEach(e => {
+                const row = [
+                    `"${(e.full_name || '').replace(/"/g, '""')}"`,
+                    `"${(e.email || '').replace(/"/g, '""')}"`,
+                    'Active (Approved)',
+                    'Yes',
+                    'Yes',
+                    e.paymentAmount || 0,
+                    e.joined_at ? new Date(e.joined_at).toISOString().split('T')[0] : '',
+                    e.preferred_interview_date || ''
+                ];
+                csvRows.push(row.join(','));
+            });
+
+            const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `active_interns_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            closeExportModal();
+        }
+
+        init();
+    </script>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal" style="display:none;">
+        <div class="modal-container" style="max-width: 500px; width: 100%;">
+            <div class="modal-header">
+                <h3 class="modal-title">Export Active Interns</h3>
+                <button class="modal-close" onclick="closeExportModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px; color: var(--c-text-secondary);">
+                    Exporting strictly active interns (Approved, Account Created, Paid).
+                </p>
+                <div
+                    style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid var(--c-border);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--c-text-muted);">Total Active Records:</span>
+                        <strong style="color: var(--c-text-primary);" id="exportCount">0</strong>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <span
+                            style="display: block; color: var(--c-text-muted); font-size: 0.85rem; margin-bottom: 6px;">Active
+                            Filters:</span>
+                        <ul id="exportFiltersList"
+                            style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: var(--c-text-secondary);">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmExport()">
+                    <i class="fas fa-download"></i> Download CSV
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
+</body>
+
+</html>

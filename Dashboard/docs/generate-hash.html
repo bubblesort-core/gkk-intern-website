@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Bcrypt Hash | GKK Interns - Code. Build. Deploy.</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .hash-output {
+            background: #1e293b;
+            color: #10b981;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        .copy-btn {
+            background: #059669;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #047857;
+        }
+
+        .instructions {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔒 Bcrypt Password Hash Generator</h1>
+        <p class="subtitle">For GKK Interns Admin Credentials</p>
+
+        <label for="password">Enter Password:</label>
+        <input type="text" id="password" value="GKK@Admin2026" placeholder="Enter your password">
+
+        <label for="rounds">Bcrypt Rounds (10 recommended):</label>
+        <input type="number" id="rounds" value="10" min="4" max="12">
+
+        <button onclick="generateHash()">Generate Hash</button>
+
+        <div class="result" id="result">
+            <strong>✅ Hash Generated Successfully!</strong>
+            <div class="hash-output" id="hashOutput"></div>
+            <button class="copy-btn" onclick="copyHash()">📋 Copy Hash to Clipboard</button>
+        </div>
+
+        <div class="instructions">
+            <strong>📝 Next Steps:</strong><br>
+            1. Click "Generate Hash" button above<br>
+            2. Copy the generated hash<br>
+            3. Open Supabase SQL Editor<br>
+            4. Run the schema SQL, replacing <code>$2a$10$YourGeneratedHashHere</code> with your copied hash
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <script>
+        let generatedHash = '';
+
+        function generateHash() {
+            const password = document.getElementById('password').value;
+            const rounds = parseInt(document.getElementById('rounds').value);
+
+            if (!password) {
+                alert('Please enter a password!');
+                return;
+            }
+
+            // Generate hash
+            generatedHash = bcrypt.hashSync(password, rounds);
+
+            // Show result
+            document.getElementById('hashOutput').textContent = generatedHash;
+            document.getElementById('result').classList.add('show');
+        }
+
+        function copyHash() {
+            navigator.clipboard.writeText(generatedHash).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Auto-generate on load
+        window.onload = () => {
+            generateHash();
+        };
+    </script>
+</body>
+
+</html>

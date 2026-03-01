@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rewards | GKK-Hire Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        /* Page Specific Styles */
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .reward-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: var(--shadow-card);
+        }
+
+        .reward-card:hover {
+            border-color: var(--c-primary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .reward-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--c-text-muted);
+            font-size: 3rem;
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        .reward-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .reward-body {
+            padding: 24px;
+        }
+
+        .reward-code {
+            background: linear-gradient(135deg, var(--c-primary) 0%, #8b5cf6 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1rem;
+            display: inline-block;
+            margin-bottom: 16px;
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .reward-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            margin-bottom: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .reward-desc {
+            font-size: 0.9rem;
+            color: var(--c-text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .reward-expiry {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .reward-expiry i {
+            color: #f59e0b;
+        }
+
+        .reward-stats {
+            display: flex;
+            gap: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--c-border);
+            font-size: 0.85rem;
+        }
+
+        .reward-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--c-text-muted);
+        }
+
+        .reward-stat i {
+            color: var(--c-secondary);
+        }
+
+        .reward-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        /* Stats Grid Override */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        /* Assignment Modal Styles */
+        .assign-type-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .assign-type-tab {
+            flex: 1;
+            padding: 16px;
+            border: 1px solid var(--c-border);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .assign-type-tab:hover {
+            border-color: var(--c-primary);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .assign-type-tab.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--c-primary);
+            color: var(--c-primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .assign-type-tab i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .recipient-list {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .recipient-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--c-border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .recipient-item:last-child {
+            border-bottom: none;
+        }
+
+        .recipient-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .recipient-item.selected {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .recipient-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .recipient-info {
+            flex: 1;
+        }
+
+        .recipient-name {
+            font-weight: 500;
+            color: var(--c-text-primary);
+        }
+
+        .recipient-email {
+            font-size: 0.8rem;
+            color: var(--c-text-muted);
+        }
+
+        .recipient-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--c-border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .recipient-item.selected .recipient-check {
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+            color: white;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Assigned Rewards Table */
+        .assigned-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--c-success);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+            border: 1px solid var(--c-border);
+        }
+    </style>
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"
+            style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Rewards</h1>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadRewards()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i> Create Reward
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Stats -->
+                <div class="stats-grid" style="margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Rewards</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-trend"><i class="fas fa-gift"></i> Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active Rewards</div>
+                        <div class="stat-value" id="statActive">0</div>
+                        <div class="stat-trend" style="color: var(--c-success);"><i class="fas fa-check-circle"></i>
+                            Available</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Assigned</div>
+                        <div class="stat-value" id="statAssigned">0</div>
+                        <div class="stat-trend" style="color: var(--c-primary);"><i class="fas fa-user-check"></i> To
+                            Interns</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Redeemed</div>
+                        <div class="stat-value" id="statRedeemed">0</div>
+                        <div class="stat-trend" style="color: var(--c-accent-blue);"><i class="fas fa-check-double"></i>
+                            Used</div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="filter-tabs" style="margin-bottom: 24px;">
+                    <button class="filter-tab active" onclick="switchTab('rewards', this)">
+                        <i class="fas fa-gift"></i> All Rewards
+                    </button>
+                    <button class="filter-tab" onclick="switchTab('assigned', this)">
+                        <i class="fas fa-user-check"></i> Assigned Rewards
+                    </button>
+                </div>
+
+                <!-- Rewards Grid -->
+                <div id="rewardsGrid" class="rewards-grid">
+                    <!-- Skeleton injected via JS -->
+                </div>
+
+                <!-- Assigned Rewards Table -->
+                <div id="assignedTable" class="card" style="display: none;">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Reward</th>
+                                    <th>Coupon Code</th>
+                                    <th>Assigned To</th>
+                                    <th>Assigned On</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignedTableBody">
+                                <!-- Skeleton injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Reward Modal -->
+    <div class="modal-overlay" id="rewardModal">
+        <div class="modal-container" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Create Reward</h3>
+                <button class="modal-close" onclick="closeModal('rewardModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="rewardForm">
+                    <input type="hidden" id="rewardId">
+
+                    <div class="form-group">
+                        <label class="form-label">Reward Title *</label>
+                        <input type="text" id="rewardTitle" class="form-input" placeholder="e.g., Amazon Gift Card"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Coupon Code *</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="couponCode" class="form-input" placeholder="e.g., GKKREWARD2026"
+                                required style="flex: 1; font-family: monospace; text-transform: uppercase;">
+                            <button type="button" class="btn btn-secondary" onclick="generateCouponCode()">
+                                <i class="fas fa-random"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="rewardDesc" class="form-textarea" rows="3"
+                            placeholder="Describe what this reward includes..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Expiry Date (Text)</label>
+                        <input type="text" id="expiryDate" class="form-input"
+                            placeholder="e.g., Valid until March 31, 2026">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Image URL</label>
+                        <input type="text" id="imageUrl" class="form-input" placeholder="https://example.com/image.jpg"
+                            oninput="previewImage(this.value)">
+                        <img id="imagePreview" class="image-preview" src="" alt="Preview">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Value/Worth (Optional)</label>
+                        <input type="text" id="rewardValue" class="form-input" placeholder="e.g., ₹500 or $10">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('rewardModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveReward()">
+                    <i class="fas fa-save"></i> <span id="saveBtnText">Create Reward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Reward Modal -->
+    <div class="modal-overlay" id="assignModal">
+        <div class="modal-container" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Assign Reward</h3>
+                <button class="modal-close" onclick="closeModal('assignModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assignRewardId">
+
+                <!-- Selected Reward Preview -->
+                <div id="selectedRewardPreview"
+                    style="background: var(--c-bg-app); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="reward-code" id="previewCode" style="margin: 0;">CODE</div>
+                        <div>
+                            <div style="font-weight: 600;" id="previewTitle">Reward Title</div>
+                            <div style="font-size: 0.85rem; color: var(--c-text-muted);" id="previewExpiry">Expiry</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assign Type Tabs -->
+                <div class="assign-type-tabs">
+                    <div class="assign-type-tab active" onclick="switchAssignType('intern', this)">
+                        <i class="fas fa-user"></i>
+                        Individual Intern
+                    </div>
+                    <div class="assign-type-tab" onclick="switchAssignType('team', this)">
+                        <i class="fas fa-users"></i>
+                        Entire Team
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="form-group">
+                    <input type="text" id="recipientSearch" class="form-input" placeholder="Search by name or email..."
+                        oninput="filterRecipients()">
+                </div>
+
+                <!-- Recipients List -->
+                <div class="recipient-list" id="recipientList">
+                    <div style="padding: 24px; text-align: center; color: var(--c-text-muted);">
+                        Loading...
+                    </div>
+                </div>
+
+                <!-- Custom Message -->
+                <div class="form-group" style="margin-top: 16px;">
+                    <label class="form-label">Personal Message (Optional)</label>
+                    <textarea id="assignMessage" class="form-textarea" rows="2"
+                        placeholder="Add a personal congratulations message..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('assignModal')">Cancel</button>
+                <button class="btn btn-success" onclick="confirmAssign()">
+                    <i class="fas fa-gift"></i> Assign Reward
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+    <script>
+        let allRewards = [];
+        let allInterns = [];
+        let allTeams = [];
+        let assignedRewards = [];
+        let selectedRecipients = [];
+        let currentAssignType = 'intern';
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+
+        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+
+        // --- Initialization ---
+        async function init() {
+            const session = getAdminSession();
+            if (!session) return window.location.href = 'login.html';
+
+            // Initial Skeletons
+            const grid = document.getElementById('rewardsGrid');
+            const tbody = document.getElementById('assignedTableBody');
+
+            if (typeof SkeletonUI !== 'undefined') {
+                if (grid) grid.innerHTML = SkeletonUI.generateCards(3);
+                if (tbody) tbody.innerHTML = SkeletonUI.generateTableRows(5, 6);
+            }
+
+            await Promise.all([
+                loadRewards(),
+                loadInterns(),
+                loadTeams(),
+                loadAssignedRewards()
+            ]);
+        }
+
+        // --- Data Loading ---
+        async function loadRewards() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('rewards')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                allRewards = data || [];
+                renderRewards();
+                updateStats();
+            } catch (e) {
+                console.error('Error loading rewards:', e);
+                // If table doesn't exist, show empty state
+                allRewards = [];
+                renderRewards();
+            }
+        }
+
+        async function loadInterns() {
+            try {
+                const { data, error } = await supabaseClient.rpc('get_all_profile_emails');
+
+                if (error) throw error;
+                allInterns = data || [];
+            } catch (e) {
+                console.error('Error loading interns:', e);
+                allInterns = [];
+            }
+        }
+
+        async function loadTeams() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('teams')
+                    .select('id, name')
+                    .order('name');
+
+                if (error) throw error;
+                allTeams = data || [];
+            } catch (e) {
+                console.error('Error loading teams:', e);
+                allTeams = [];
+            }
+        }
+
+        async function loadAssignedRewards() {
+            try {
+                // 1. Fetch Assignments (Raw, join on rewards is likely fine, profiles might fail)
+                const { data: assignments, error } = await supabaseClient
+                    .from('reward_assignments')
+                    .select('*, rewards(title, coupon_code)') // removed profiles join
+                    .order('assigned_at', { ascending: false });
+
+                if (error) throw error;
+
+                // 2. Fetch Profiles Securely via RPC (if not already loaded)
+                if (!allInterns.length) await loadInterns(); // Ensure we have profiles
+
+                // 3. Merge Profiles
+                assignedRewards = (assignments || []).map(a => {
+                    const prof = allInterns.find(p => p.id === a.user_id);
+                    return { ...a, profiles: prof };
+                });
+                renderAssignedTable();
+                updateStats();
+            } catch (e) {
+                console.error('Error loading assigned rewards:', e);
+                assignedRewards = [];
+            }
+        }
+
+        // --- Rendering ---
+        function renderRewards() {
+            const grid = document.getElementById('rewardsGrid');
+
+            if (allRewards.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 80px; background: var(--c-bg-card); border-radius: 16px; border: 2px dashed var(--c-border);">
+                        <div style="width: 64px; height: 64px; background: rgba(245, 158, 11, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                            <i class="fas fa-gift" style="font-size: 1.8rem; color: #f59e0b;"></i>
+                        </div>
+                        <h3 style="margin-bottom: 8px; color: var(--c-text-primary); font-size: 1.25rem; font-weight: 600;">No Rewards Yet</h3>
+                        <p style="color: var(--c-text-secondary); margin-bottom: 32px; max-width: 400px; margin-left: auto; margin-right: auto;">Create rewards to motivate your interns with coupon codes, gift cards, and more!</p>
+                        <button class="btn btn-primary" onclick="openCreateModal()"><i class="fas fa-plus"></i> Create First Reward</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = allRewards.map(r => {
+                const assignCount = assignedRewards.filter(a => a.reward_id === r.id).length;
+                const redeemedCount = assignedRewards.filter(a => a.reward_id === r.id && a.redeemed).length;
+
+                return `
+                    <div class="reward-card">
+                        <div class="reward-image">
+                            ${r.image_url
+                        ? `<img src="${r.image_url}" alt="${r.title}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-gift\\'></i>'">`
+                        : '<i class="fas fa-gift"></i>'}
+                        </div>
+                        <div class="reward-body">
+                            <div class="reward-code">${r.coupon_code}</div>
+                            <h3 class="reward-title">${r.title}</h3>
+                            <p class="reward-desc">${r.description || 'No description provided.'}</p>
+                            
+                            ${r.expiry_text ? `
+                                <div class="reward-expiry">
+                                    <i class="fas fa-clock"></i>
+                                    ${r.expiry_text}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="reward-stats">
+                                <div class="reward-stat">
+                                    <i class="fas fa-user-check"></i>
+                                    ${assignCount} assigned
+                                </div>
+                                <div class="reward-stat">
+                                    <i class="fas fa-check-double"></i>
+                                    ${redeemedCount} redeemed
+                                </div>
+                                ${r.value ? `<div class="reward-stat"><i class="fas fa-tag"></i> ${r.value}</div>` : ''}
+                            </div>
+                            
+                            <div class="reward-actions">
+                                <button class="btn btn-success btn-sm" onclick="openAssignModal('${r.id}')" style="flex: 1;">
+                                    <i class="fas fa-gift"></i> Assign
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="openEditModal('${r.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="deleteReward('${r.id}')" style="color: var(--c-error);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAssignedTable() {
+            const tbody = document.getElementById('assignedTableBody');
+
+            if (assignedRewards.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--c-text-muted);">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                            No rewards have been assigned yet.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = assignedRewards.map(a => `
+                <tr>
+                    <td style="font-weight: 500;">${a.rewards?.title || 'Unknown'}</td>
+                    <td>
+                        <span style="font-family: monospace; background: var(--c-bg-app); padding: 4px 8px; border-radius: 4px;">
+                            ${a.rewards?.coupon_code || '-'}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">${a.profiles?.full_name || 'Unknown'}</div>
+                        <div style="font-size: 0.8rem; color: var(--c-text-muted);">${a.profiles?.email || ''}</div>
+                    </td>
+                    <td style="font-size: 0.9rem; color: var(--c-text-secondary);">
+                        ${new Date(a.assigned_at).toLocaleDateString()}
+                    </td>
+                    <td>
+                        ${a.redeemed
+                    ? '<span class="badge badge-success">Redeemed</span>'
+                    : '<span class="badge badge-warning">Pending</span>'}
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="revokeAssignment('${a.id}')" title="Revoke">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = allRewards.length;
+            document.getElementById('statActive').textContent = allRewards.filter(r => r.is_active !== false).length;
+            document.getElementById('statAssigned').textContent = assignedRewards.length;
+            document.getElementById('statRedeemed').textContent = assignedRewards.filter(a => a.redeemed).length;
+        }
+
+        // --- Tab Switching ---
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (tab === 'rewards') {
+                document.getElementById('rewardsGrid').style.display = 'grid';
+                document.getElementById('assignedTable').style.display = 'none';
+            } else {
+                document.getElementById('rewardsGrid').style.display = 'none';
+                document.getElementById('assignedTable').style.display = 'block';
+            }
+        }
+
+        // --- Modal Functions ---
+        function openCreateModal() {
+            document.getElementById('rewardForm').reset();
+            document.getElementById('rewardId').value = '';
+            document.getElementById('modalTitle').textContent = 'Create Reward';
+            document.getElementById('saveBtnText').textContent = 'Create Reward';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('rewardModal').classList.add('open');
+        }
+
+        function openEditModal(id) {
+            const reward = allRewards.find(r => r.id === id);
+            if (!reward) return;
+
+            document.getElementById('rewardId').value = reward.id;
+            document.getElementById('rewardTitle').value = reward.title;
+            document.getElementById('couponCode').value = reward.coupon_code;
+            document.getElementById('rewardDesc').value = reward.description || '';
+            document.getElementById('expiryDate').value = reward.expiry_text || '';
+            document.getElementById('imageUrl').value = reward.image_url || '';
+            document.getElementById('rewardValue').value = reward.value || '';
+
+            if (reward.image_url) {
+                previewImage(reward.image_url);
+            }
+
+            document.getElementById('modalTitle').textContent = 'Edit Reward';
+            document.getElementById('saveBtnText').textContent = 'Save Changes';
+            document.getElementById('rewardModal').classList.add('open');
+        }
+
+        function openAssignModal(id) {
+            const reward = allRewards.find(r => r.id === id);
+            if (!reward) return;
+
+            document.getElementById('assignRewardId').value = id;
+            document.getElementById('previewCode').textContent = reward.coupon_code;
+            document.getElementById('previewTitle').textContent = reward.title;
+            document.getElementById('previewExpiry').textContent = reward.expiry_text || 'No expiry set';
+
+            selectedRecipients = [];
+            currentAssignType = 'intern';
+            document.querySelectorAll('.assign-type-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === 0);
+            });
+
+            renderRecipientList();
+            document.getElementById('assignModal').classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        // --- Recipient List ---
+        function switchAssignType(type, btn) {
+            currentAssignType = type;
+            selectedRecipients = [];
+            document.querySelectorAll('.assign-type-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            renderRecipientList();
+        }
+
+        function renderRecipientList() {
+            const list = document.getElementById('recipientList');
+            const searchTerm = document.getElementById('recipientSearch')?.value?.toLowerCase() || '';
+
+            if (currentAssignType === 'intern') {
+                const filtered = allInterns.filter(i =>
+                    i.full_name?.toLowerCase().includes(searchTerm) ||
+                    i.email?.toLowerCase().includes(searchTerm)
+                );
+
+                if (filtered.length === 0) {
+                    list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--c-text-muted);">No interns found.</div>';
+                    return;
+                }
+
+                list.innerHTML = filtered.map(intern => `
+                    <div class="recipient-item ${selectedRecipients.includes(intern.id) ? 'selected' : ''}" 
+                         onclick="toggleRecipient('${intern.id}')">
+                        <div class="recipient-avatar">${(intern.full_name || 'U')[0].toUpperCase()}</div>
+                        <div class="recipient-info">
+                            <div class="recipient-name">${intern.full_name || 'Unknown'}</div>
+                            <div class="recipient-email">${intern.email}</div>
+                        </div>
+                        <div class="recipient-check">
+                            ${selectedRecipients.includes(intern.id) ? '<i class="fas fa-check"></i>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                const filtered = allTeams.filter(t =>
+                    t.name?.toLowerCase().includes(searchTerm)
+                );
+
+                if (filtered.length === 0) {
+                    list.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--c-text-muted);">No teams found.</div>';
+                    return;
+                }
+
+                list.innerHTML = filtered.map(team => `
+                    <div class="recipient-item ${selectedRecipients.includes(team.id) ? 'selected' : ''}" 
+                         onclick="toggleRecipient('${team.id}')">
+                        <div class="recipient-avatar" style="background: rgba(99, 102, 241, 0.2); color: #818cf8;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="recipient-info">
+                            <div class="recipient-name">${team.name}</div>
+                            <div class="recipient-email">Team</div>
+                        </div>
+                        <div class="recipient-check">
+                            ${selectedRecipients.includes(team.id) ? '<i class="fas fa-check"></i>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function toggleRecipient(id) {
+            const index = selectedRecipients.indexOf(id);
+            if (index > -1) {
+                selectedRecipients.splice(index, 1);
+            } else {
+                selectedRecipients.push(id);
+            }
+            renderRecipientList();
+        }
+
+        function filterRecipients() {
+            renderRecipientList();
+        }
+
+        // --- Save/Delete/Assign ---
+        async function saveReward() {
+            const id = document.getElementById('rewardId').value;
+            const title = document.getElementById('rewardTitle').value.trim();
+            const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
+            const description = document.getElementById('rewardDesc').value.trim();
+            const expiryText = document.getElementById('expiryDate').value.trim();
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            const value = document.getElementById('rewardValue').value.trim();
+
+            if (!title || !couponCode) {
+                Swal.fire('Error', 'Please fill in the required fields.', 'error');
+                return;
+            }
+
+            const saveBtn = document.querySelector('#rewardModal .btn-primary');
+            const originalBtnText = document.getElementById('saveBtnText').textContent;
+
+            const rewardData = {
+                title,
+                coupon_code: couponCode,
+                description,
+                expiry_text: expiryText,
+                image_url: imageUrl,
+                value,
+                is_active: true
+            };
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                if (id) {
+                    // Update
+                    const { error } = await supabaseClient
+                        .from('rewards')
+                        .update(rewardData)
+                        .eq('id', id);
+                    if (error) throw error;
+                    Swal.fire('Success', 'Reward updated!', 'success');
+                } else {
+                    // Create
+                    const { error } = await supabaseClient
+                        .from('rewards')
+                        .insert([rewardData]);
+                    if (error) throw error;
+                    Swal.fire('Success', 'Reward created!', 'success');
+                }
+
+                closeModal('rewardModal');
+                loadRewards();
+            } catch (e) {
+                console.error('Error saving reward:', e);
+                Swal.fire('Error', e.message || 'Failed to save reward.', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<i class="fas fa-save"></i> <span id="saveBtnText">${originalBtnText}</span>`;
+            }
+        }
+
+        async function deleteReward(id) {
+            const result = await Swal.fire({
+                title: 'Delete Reward?',
+                text: 'This will also remove all assignments.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, delete it'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // Delete assignments first
+                await supabaseClient.from('reward_assignments').delete().eq('reward_id', id);
+
+                // Delete reward
+                const { error } = await supabaseClient.from('rewards').delete().eq('id', id);
+                if (error) throw error;
+
+                Swal.fire('Deleted!', 'Reward has been deleted.', 'success');
+                loadRewards();
+                loadAssignedRewards();
+            } catch (e) {
+                console.error('Error deleting reward:', e);
+                Swal.fire('Error', 'Failed to delete reward.', 'error');
+            }
+        }
+
+        async function confirmAssign() {
+            const rewardId = document.getElementById('assignRewardId').value;
+            const message = document.getElementById('assignMessage').value.trim();
+
+            if (selectedRecipients.length === 0) {
+                Swal.fire('Error', 'Please select at least one recipient.', 'error');
+                return;
+            }
+
+            const saveBtn = document.querySelector('#assignModal .btn-success');
+            const originalBtnText = saveBtn.innerHTML;
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+
+                if (currentAssignType === 'intern') {
+                    // Assign to individual interns
+                    const assignments = selectedRecipients.map(userId => ({
+                        reward_id: rewardId,
+                        user_id: userId,
+                        message: message,
+                        assigned_at: new Date().toISOString(),
+                        redeemed: false
+                    }));
+
+                    const { error } = await supabaseClient
+                        .from('reward_assignments')
+                        .insert(assignments);
+                    if (error) throw error;
+                } else {
+                    // Assign to team members
+                    // First get all team members
+                    const { data: teamMembers, error: teamError } = await supabaseClient
+                        .from('team_members')
+                        .select('user_id')
+                        .in('team_id', selectedRecipients);
+
+                    if (teamError) throw teamError;
+
+                    if (!teamMembers || teamMembers.length === 0) {
+                        Swal.fire('Warning', 'Selected teams have no members.', 'warning');
+                        return;
+                    }
+
+                    const userIds = [...new Set(teamMembers.map(tm => tm.user_id))];
+                    const assignments = userIds.map(userId => ({
+                        reward_id: rewardId,
+                        user_id: userId,
+                        message: message,
+                        assigned_at: new Date().toISOString(),
+                        redeemed: false
+                    }));
+
+                    const { error } = await supabaseClient
+                        .from('reward_assignments')
+                        .insert(assignments);
+                    if (error) throw error;
+                }
+
+                Swal.fire('Success', `Reward assigned to ${selectedRecipients.length} ${currentAssignType === 'intern' ? 'intern(s)' : 'team(s)'}!`, 'success');
+                closeModal('assignModal');
+                loadAssignedRewards();
+            } catch (e) {
+                console.error('Error assigning reward:', e);
+                Swal.fire('Error', e.message || 'Failed to assign reward.', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        async function revokeAssignment(id) {
+            const result = await Swal.fire({
+                title: 'Revoke Assignment?',
+                text: 'This will remove the reward from the user.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, revoke it'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('reward_assignments')
+                    .delete()
+                    .eq('id', id);
+                if (error) throw error;
+
+                Swal.fire('Revoked!', 'Assignment has been removed.', 'success');
+                loadAssignedRewards();
+            } catch (e) {
+                console.error('Error revoking assignment:', e);
+                Swal.fire('Error', 'Failed to revoke assignment.', 'error');
+            }
+        }
+
+        // --- Utilities ---
+        function generateCouponCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = 'GKK';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('couponCode').value = code;
+        }
+
+        function previewImage(url) {
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+                preview.onerror = () => { preview.style.display = 'none'; };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

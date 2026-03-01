@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS form_settings 
+ADD COLUMN IF NOT EXISTS available_dates TEXT[] DEFAULT ARRAY[]::TEXT[];

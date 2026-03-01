@@ -1,0 +1,485 @@
+/* ============================================
+   PAYMENT PAGE - PREMIUM GLASSMORPHISM THEME
+   Integrated with Global Theme System
+   ============================================ */
+
+/* --- Base Layout & Background --- */
+.payment-layout-body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow-x: hidden;
+
+    /* Dynamic Gradient Background */
+    background: linear-gradient(-45deg, #10b981, #0ea5e9, #6366f1, #8b5cf6);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: var(--text-main);
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Dark Mode Background Override */
+.payment-layout-body {
+    background: linear-gradient(-45deg, #020617, #0f172a, #1e293b, #0f172a);
+    background-size: 400% 400%;
+}
+
+/* --- Glassmorphism Container --- */
+.checkout-container {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 650px;
+
+    /* Dark Glass Effect - Default */
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* --- Left Column: Order Summary --- */
+.order-summary {
+    background: rgba(2, 6, 23, 0.4);
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Brand */
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 4rem;
+}
+
+.brand-logo {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.brand-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+/* Plan Card (Floating Style) */
+.plan-card {
+    background: rgba(30, 41, 59, 0.6);
+    /* Slate 800 */
+    padding: 2rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--border);
+}
+
+.plan-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 1.1rem;
+}
+
+.plan-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--brand-primary);
+    font-size: 1.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-body);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+.feature-item i {
+    color: #10b981;
+    /* Emerald 500 */
+}
+
+/* Total Row */
+.total-row {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.total-label {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.total-amount {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -1px;
+}
+
+/* --- Right Column: Payment Details --- */
+.payment-details {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+}
+
+.section-desc {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin-bottom: 2.5rem;
+}
+
+/* User Identity Card */
+.user-details {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: rgba(30, 41, 59, 0.4);
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+
+.user-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #e0e7ff;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.user-info h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    margin-bottom: 0px;
+}
+
+.user-info p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Home Button */
+.home-btn {
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    width: 48px;
+    height: 48px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    text-decoration: none;
+}
+
+/* Badges */
+.secure-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    margin-bottom: 2rem;
+    align-self: flex-start;
+}
+
+.trust-badges {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.trust-badges:hover {
+    opacity: 1;
+}
+
+.trust-icon {
+    font-size: 1.75rem;
+    color: var(--text-muted);
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.75rem;
+}
+
+.form-input {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-main) !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+.form-input:focus {
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Payment Button */
+#payBtn {
+    width: 100%;
+    padding: 1.25rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border: none;
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+#payBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 35px -5px rgba(79, 70, 229, 0.5);
+    background: linear-gradient(135deg, #4338ca, #4f46e5);
+}
+
+#payBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px -5px rgba(79, 70, 229, 0.4);
+}
+
+/* Success View */
+#success-view h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--text-main);
+    font-size: 2rem;
+}
+
+/* Loading Spinner */
+.fa-circle-notch {
+    color: var(--brand-primary);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .checkout-container {
+        grid-template-columns: 1fr;
+        max-width: 600px;
+        min-height: auto;
+    }
+
+    .order-summary {
+        padding: 3rem;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .payment-details {
+        padding: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-layout-body {
+        padding: 1rem;
+    }
+
+    .order-summary,
+    .payment-details {
+        padding: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .checkout-container {
+        border-radius: 20px;
+    }
+
+    .brand-header {
+        margin-bottom: 2rem;
+    }
+
+    .brand-logo {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .brand-name {
+        font-size: 1.25rem;
+    }
+
+    .home-btn {
+        top: 1rem;
+        left: 1rem;
+        width: 40px;
+        height: 40px;
+    }
+
+    .user-details {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .trust-badges {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 375px) {
+    .payment-layout-body {
+        padding: 0.5rem;
+    }
+
+    .order-summary,
+    .payment-details {
+        padding: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .plan-card {
+        padding: 1.25rem;
+    }
+
+    .total-amount {
+        font-size: 1.25rem;
+    }
+
+    .checkout-container {
+        border-radius: 16px;
+    }
+}
+
+/* ============================================
+   GLOBAL OVERRIDES (Rectangle Buttons)
+   ============================================ */
+button,
+.btn,
+#payBtn,
+.home-btn,
+.btn-primary,
+.btn-secondary,
+.btn-sm,
+.btn-lg,
+.pro-btn,
+.pro-btn-primary,
+.pro-btn-secondary,
+.pro-btn-ghost,
+.auth-btn,
+a.btn {
+    border-radius: 0 !important;
+}
+
+button:hover,
+.btn:hover,
+#payBtn:hover,
+.home-btn:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.pro-btn:hover,
+.auth-btn:hover,
+a.btn:hover {
+    border-radius: 0 !important;
+}

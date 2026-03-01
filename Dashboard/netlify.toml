@@ -1,0 +1,30 @@
+[build]
+  publish = "."
+
+# Don't redirect asset files
+[[redirects]]
+  from = "/apply/assets/*"
+  to = "/apply/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/js/*"
+  to = "/js/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/css/*"
+  to = "/css/:splat"
+  status = 200
+
+# SPA fallback for other routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false

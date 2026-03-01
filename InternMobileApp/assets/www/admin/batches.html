@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batches Management | GKK-Hire Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        /* Page Specific Styles */
+        .batch-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-card);
+        }
+
+        .batch-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--c-primary);
+        }
+
+        /* Gradient top border for batch cards */
+        .batch-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--c-primary), var(--c-accent-blue));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .batch-card:hover::before {
+            opacity: 1;
+        }
+
+        .batch-status {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            backdrop-filter: blur(4px);
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+        }
+
+        .status-archived {
+            background: rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .batch-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            margin-bottom: 8px;
+            margin-top: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .batch-dates {
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .batch-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-top: 16px;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: var(--c-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .add-batch-card {
+            border: 2px dashed var(--c-border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 240px;
+            cursor: pointer;
+            color: var(--c-text-muted);
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .add-batch-card:hover {
+            border-color: var(--c-primary);
+            color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.05);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .add-batch-card:hover .icon-circle {
+            border-color: var(--c-primary);
+            background: var(--c-primary);
+            color: white;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Batches Management</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="loadBatches()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i> New Batch
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Batches Grid -->
+                <div id="batchesGrid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+                    <!-- Content will be loaded here -->
+                    <div class="add-batch-card" onclick="openCreateModal()">
+                        <div class="icon-circle"><i class="fas fa-plus"></i></div>
+                        <div style="font-weight: 600;">Create New Batch</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Batch Modal -->
+    <div class="modal-overlay" id="batchModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Create New Batch</h3>
+                <button class="modal-close" onclick="closeModal('batchModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="batchId">
+                <div class="form-group">
+                    <label class="form-label">Batch Name</label>
+                    <input type="text" id="batchName" class="form-input" placeholder="e.g. Summer 2026 Cohort 1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="batchDescription" class="form-input" placeholder="Optional description..."
+                        style="min-height:80px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Teams</label>
+                    <div id="teamSelectionList"
+                        style="max-height:200px; overflow-y:auto; border:1px solid var(--c-border); border-radius:6px; background:var(--c-bg-app);">
+                        <!-- Teams Loaded via JS -->
+                        <div style="padding:10px; text-align:center; color:var(--c-text-muted);">Loading teams...</div>
+                    </div>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-top: 8px;">
+                    <label class="switch">
+                        <input type="checkbox" id="batchActive" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <span style="font-size: 0.9rem; color: var(--c-text-primary);">Active Status</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('batchModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBatch()">Save Batch</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+
+    <script>
+        // Use global supabaseClient from supabase-client.js
+
+        // Init
+        async function init() {
+            const session = getAdminSession();
+            if (!session) return window.location.href = 'login.html';
+
+            await loadBatches();
+        }
+
+        async function loadBatches() {
+            const grid = document.getElementById('batchesGrid');
+            // Keep the 'add-card' but show loading for rest? 
+            // Simplified: just clear and rebuild or show skeleton
+
+            try {
+                const { data: batches, error } = await supabaseClient
+                    .from('batches')
+                    .select('*, teams(count)')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderBatches(batches || []);
+
+            } catch (err) {
+                console.error('Error loading batches:', err);
+                Swal.fire('Error', 'Failed to load batches', 'error');
+            }
+        }
+
+        function renderBatches(batches) {
+            const grid = document.getElementById('batchesGrid');
+            const addCardHTML = `
+                <div class="add-batch-card" onclick="openCreateModal()">
+                    <div class="icon-circle"><i class="fas fa-plus"></i></div>
+                    <div style="font-weight: 600;">Create New Batch</div>
+                </div>
+            `;
+
+            const batchCards = batches.map(b => {
+                const teamCount = b.teams ? b.teams[0].count : 0;
+                const statusClass = b.is_active ? 'status-active' : 'status-archived';
+                const statusText = b.is_active ? 'Active' : 'Archived';
+                const description = b.description || 'No description provided';
+
+                return `
+                    <div class="batch-card">
+                        <div class="batch-status ${statusClass}">${statusText}</div>
+                        <div class="batch-title">${b.name}</div>
+                        <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:16px; height:40px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                            ${description}
+                        </div>
+                        
+                        <div class="batch-stats">
+                            <div class="stat-item">
+                                <div class="stat-val">${teamCount}</div>
+                                <div class="stat-lbl">Teams</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 16px; display: flex; gap: 8px;">
+                             <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="editBatch('${b.id}')"><i class="fas fa-edit"></i> Edit</button>
+                             <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="goToTeams('${b.id}')"><i class="fas fa-users"></i> Teams</button>
+                             <button class="btn btn-secondary btn-sm" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="deleteBatch('${b.id}')" title="Delete Batch"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            grid.innerHTML = addCardHTML + batchCards;
+        }
+
+        async function deleteBatch(id) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this! Linked teams will be unassigned.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    // Start deletion
+                    // 1. Unassign teams (optional if cascade, but explicit is safe)
+                    await supabaseClient.from('teams').update({ batch_id: null }).eq('batch_id', id);
+
+                    // 2. Delete batch
+                    const { error } = await supabaseClient.from('batches').delete().eq('id', id);
+
+                    if (error) throw error;
+
+                    Swal.fire('Deleted!', 'Batch has been deleted.', 'success');
+                    loadBatches();
+                } catch (error) {
+                    console.error('Error deleting batch:', error);
+                    Swal.fire('Error!', 'Failed to delete batch.', 'error');
+                }
+            }
+        }
+
+        // Modal Logic
+        let availableTeams = [];
+        let selectedTeamsForBatch = new Set();
+
+        async function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Create New Batch';
+            document.getElementById('batchId').value = '';
+            document.getElementById('batchName').value = '';
+            document.getElementById('batchDescription').value = '';
+            document.getElementById('batchActive').checked = true;
+
+            selectedTeamsForBatch.clear();
+            await loadAvailableTeams();
+            document.getElementById('batchModal').classList.add('open');
+        }
+
+        async function loadAvailableTeams(currentBatchId = null) {
+            // Fetch teams that are either not in any batch OR are in THIS batch
+            // Simplifying for now: Fetch ALL teams and mark those in valid batches
+
+            const { data: teams, error } = await supabaseClient
+                .from('teams')
+                .select('id, name, batch_id')
+                .order('name');
+
+            if (teams) {
+                availableTeams = teams;
+                renderTeamSelection(currentBatchId);
+            }
+        }
+
+        function renderTeamSelection(currentBatchId) {
+            const container = document.getElementById('teamSelectionList');
+            if (availableTeams.length === 0) {
+                container.innerHTML = '<div style="padding:10px; color:var(--c-text-muted); text-align:center;">No teams available.</div>';
+                return;
+            }
+
+            container.innerHTML = availableTeams.map(t => {
+                // If team has a batch, and it's not THIS batch, show as assigned elsewhere (maybe disable?)
+                // For simplicity, let's allow "stealing" teams or just show them.
+                const isAssigned = t.batch_id && t.batch_id !== currentBatchId;
+                const isSelected = selectedTeamsForBatch.has(t.id) || (t.batch_id === currentBatchId && currentBatchId !== null);
+
+                // If checking the box, we add to set.
+                if (isSelected) selectedTeamsForBatch.add(t.id);
+
+                return `
+                <div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid var(--c-border);">
+                    <input type="checkbox" id="team_${t.id}" ${isSelected ? 'checked' : ''} onchange="toggleTeamSelection('${t.id}')">
+                    <label for="team_${t.id}" style="margin-left:8px; flex:1; cursor:pointer;">
+                        <span style="font-weight:500;">${t.name}</span>
+                        ${isAssigned ? `<span style="font-size:0.75rem; color:var(--c-text-muted); margin-left:8px;">(Currently in another batch)</span>` : ''}
+                    </label>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleTeamSelection(teamId) {
+            if (selectedTeamsForBatch.has(teamId)) selectedTeamsForBatch.delete(teamId);
+            else selectedTeamsForBatch.add(teamId);
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        async function saveBatch() {
+            const id = document.getElementById('batchId').value;
+            const name = document.getElementById('batchName').value;
+            const description = document.getElementById('batchDescription').value;
+            const active = document.getElementById('batchActive').checked;
+
+            if (!name) return Swal.fire('Error', 'Batch Name is required', 'warning');
+
+            const btn = document.querySelector('#batchModal .btn-primary');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            const payload = {
+                name,
+                description,
+                is_active: active
+            };
+
+            try {
+                let batchId = id;
+                let error;
+
+                if (id) {
+                    // Update Batch
+                    const { error: err } = await supabaseClient.from('batches').update(payload).eq('id', id);
+                    error = err;
+                } else {
+                    // Create Batch
+                    const { data, error: err } = await supabaseClient.from('batches').insert([payload]).select().single();
+                    error = err;
+                    if (data) batchId = data.id;
+                }
+
+                if (error) throw error;
+
+                // Handle Team Updates - Logic remains same
+                // 1. Remove from batch those not selected
+                if (id) {
+                    await supabaseClient.from('teams').update({ batch_id: null }).eq('batch_id', batchId);
+                }
+
+                // 2. Add selected to batch
+                const selectedIds = Array.from(selectedTeamsForBatch);
+                if (selectedIds.length > 0) {
+                    const { error: teamErr } = await supabaseClient.from('teams').update({ batch_id: batchId }).in('id', selectedIds);
+                    if (teamErr) console.warn('Error updating teams:', teamErr);
+                }
+
+                closeModal('batchModal');
+                Swal.fire('Success', `Batch ${id ? 'updated' : 'created'} successfully`, 'success');
+                loadBatches();
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function editBatch(id) {
+            try {
+                const { data, error } = await supabaseClient.from('batches').select('*').eq('id', id).single();
+                if (error) throw error;
+
+                document.getElementById('modalTitle').textContent = 'Edit Batch';
+                document.getElementById('batchId').value = data.id;
+                document.getElementById('batchName').value = data.name;
+                document.getElementById('batchDescription').value = data.description || '';
+                document.getElementById('batchActive').checked = data.is_active;
+
+                selectedTeamsForBatch.clear();
+                await loadAvailableTeams(data.id);
+
+                document.getElementById('batchModal').classList.add('open');
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Could not load batch details', 'error');
+            }
+        }
+
+        function goToTeams(batchId) {
+            window.location.href = `teams.html?batch=${batchId}`;
+        }
+
+        // Helper for Sidebar Toggle (Copy from others)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) overlay.style.display = 'block';
+            else overlay.style.display = 'none';
+        }
+        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+
+        init();
+    </script>
+    <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
+</body>
+
+</html>

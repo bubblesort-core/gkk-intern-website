@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GKK-Hire - Join India's Leading Internship Platform</title>
+    <meta name="description"
+        content="Launch your career with GKK-Hire. Apply for internships, work on real projects, and get certified. Join thousands of successful interns.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Professional Design System -->
+    <link rel="stylesheet" href="css/professional-design.css?v=4">
+    <link rel="stylesheet" href="css/page-transitions.css">
+
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+
+    <!-- Material Symbols for Chatbot -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <style>
+        /* Minimalist overrides for Hero Visual */
+        .hero-visual-wrapper {
+            position: relative;
+            padding: 2rem;
+        }
+
+        /* Subtle geometric accent */
+        .hero-visual-accent {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+            opacity: 0.5;
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        /* --- Lazy Load Animations --- */
+        .lazy-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            will-change: opacity, transform;
+        }
+
+        .lazy-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Optional: Staggered children for grids */
+        .lazy-section.visible .feature-card,
+        .lazy-section.visible .grid>div {
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---- Navbar Action Buttons ---- */
+        .nav-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            border-radius: 6px;
+            text-decoration: none;
+            line-height: 1;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Home — subtle, outlined */
+        .nav-btn-home {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+
+        .nav-btn-home:hover {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-color: #475569;
+        }
+
+        .nav-btn-home i {
+            font-size: 0.7rem;
+        }
+
+        /* Sign In — ghost text */
+        .nav-btn-signin {
+            background: transparent;
+            color: #cbd5e1;
+            border: 1px solid transparent;
+        }
+
+        .nav-btn-signin:hover {
+            background: rgba(148, 163, 184, 0.1);
+            color: #f1f5f9;
+        }
+
+        /* Sign Up — secondary CTA, solid blue */
+        .nav-btn-signup {
+            background: #3b82f6;
+            color: #fff;
+            border: 1px solid #3b82f6;
+        }
+
+        .nav-btn-signup:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        /* Apply Now — primary CTA, solid emerald */
+        .nav-btn-apply {
+            background: #10b981;
+            color: #fff;
+            border: 1px solid #10b981;
+        }
+
+        /* ... */
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="pro-navbar">
+        <div class="pro-navbar-inner">
+            <a href="index.html" class="pro-navbar-brand">
+                <img src="assets/gkk-intern-logo.png" alt="GKK-Hire" style="height: 80px; width: auto;">
+            </a>
+
+            <div class="pro-navbar-links">
+                <a href="#features" class="pro-navbar-link">Benefits</a>
+                <a href="#leaderboard" class="pro-navbar-link">Leaderboard</a>
+                <a href="#fees" class="pro-navbar-link">Fees</a>
+                <a href="#about" class="pro-navbar-link">About</a>
+                <a href="apply/" class="pro-navbar-link">Apply</a>
+            </div>
+
+            <div class="pro-navbar-actions" style="display: flex; align-items: center; gap: 0.5rem;">
+                <a href="/" class="nav-action-btn nav-btn-home" title="Back to Home">
+                    <i class="fas fa-arrow-left"></i>
+                    Home
+                </a>
+                <a href="user/login.html" class="nav-action-btn nav-btn-signin">Sign In</a>
+                <a href="user/signup.html" class="nav-action-btn nav-btn-signup">Sign Up</a>
+                <a href="apply/" class="nav-action-btn nav-btn-apply">
+                    Apply Now
+                </a>
+                <a href="/community-chat/" class="nav-action-btn nav-btn-community">
+                    <i class="fas fa-comments"></i>
+                    Community
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-visual-shape" style="top: -100px; right: -100px;"></div>
+        <div class="container">
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+                <div class="hero-content">
+                    <div
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; background: var(--bg-subtle); border-radius: 99px; font-size: 0.85rem; color: var(--primary); font-weight: 500; margin-bottom: 1.5rem;">
+                        <i class="fas fa-star" style="font-size: 0.75rem;"></i>
+                        India's Leading Internship Platform
+                    </div>
+
+                    <h1 style="margin-bottom: 1.5rem;">
+                        Build Your Career with <br><span class="text-primary">Real Experience</span>
+                    </h1>
+
+                    <p style="font-size: 1.1rem; color: var(--text-body); max-width: 500px; margin-bottom: 2.5rem;">
+                        Join GKK-Hire and work on industry-level projects, collaborate with dynamic teams,
+                        and earn verified certificates.
+                    </p>
+
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="apply/" class="pro-btn pro-btn-primary pro-btn-lg magnetic-btn">
+                            Start Application
+                        </a>
+                        <a href="#features" class="pro-btn pro-btn-secondary pro-btn-lg">
+                            Learn More
+                        </a>
+                    </div>
+
+                    <div
+                        style="margin-top: 4rem; display: flex; gap: 3rem; border-top: 1px solid var(--border); padding-top: 2rem;">
+                        <div>
+                            <div style="font-size: 1.75rem; font-weight: bold; color: var(--text-main);">50+</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Projects Shipped</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.75rem; font-weight: bold; color: var(--text-main);">30+</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Interns Trained</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.75rem; font-weight: bold; color: var(--text-main);">10+</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Tech Stacks</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.75rem; font-weight: bold; color: var(--text-main);">92%</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Satisfaction Rate</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="hero-visual-wrapper" style="position: relative;">
+                    <!-- SMART FIX: Expanded container to allow 3D object to float outside the card area without clipping -->
+                    <div id="hero-3d-container"
+                        style="position: absolute; top: -25%; left: -25%; width: 150%; height: 150%; z-index: -1; pointer-events: none;">
+                    </div>
+                    <!-- Fallback accent if JS fails or loads slow -->
+                    <div class="hero-visual-accent" style="opacity: 0.2;"></div>
+                    <div class="grid gap-4">
+                        <!-- Apply Card -->
+                        <a href="apply/" class="hero-card">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="card-icon" style="background: #ecfdf5; color: #10b981;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-main);">Apply for Internship</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted);">Start your journey</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-body);">
+                                Submit your application and join our team. Work on real-world projects.
+                            </div>
+                        </a>
+
+                        <!-- Intern Portal Card -->
+                        <a href="user/login.html" class="hero-card">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="card-icon" style="background: #eff6ff; color: #3b82f6;">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-main);">Intern Portal</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted);">Track progress</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-body);">
+                                Access your dashboard, view assignments, and connect with mentors.
+                            </div>
+                        </a>
+
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="trust-strip trust-strip-wide">
+                <div class="trust-strip-title">🏆 Trust & Compliance</div>
+                <ul class="trust-rail">
+                    <li class="trust-item trust-accent-msme">
+                        <i class="fas fa-building"></i>
+                        <div class="trust-text">
+                            <span class="trust-label">Registered MSME</span>
+                            <span class="trust-sub">Govt. Verified</span>
+                        </div>
+                    </li>
+                    <li class="trust-item trust-accent-ssl">
+                        <i class="fas fa-lock"></i>
+                        <div class="trust-text">
+                            <span class="trust-label">SSL Secured</span>
+                            <span class="trust-sub">256-bit Encryption</span>
+                        </div>
+                    </li>
+                    <li class="trust-item trust-accent-dmca">
+                        <i class="fas fa-shield-halved"></i>
+                        <div class="trust-text">
+                            <span class="trust-label">DMCA Protected</span>
+                            <span class="trust-sub">Secured Content</span>
+                        </div>
+                    </li>
+                    <li class="trust-item trust-accent-india">
+                        <i class="fas fa-flag"></i>
+                        <div class="trust-text">
+                            <span class="trust-label">Built in India</span>
+                            <span class="trust-sub">Made in WB</span>
+                        </div>
+                    </li>
+                    <li class="trust-item trust-accent-venture">
+                        <i class="fas fa-briefcase"></i>
+                        <div class="trust-text">
+                            <span class="trust-label">A Venture by</span>
+                            <span class="trust-sub">Bubblesort Group</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section lazy-section" id="features" style="background-color: var(--bg-subtle);">
+        <div class="container">
+            <div class="text-center" style="max-width: 600px; margin: 0 auto 4rem;">
+                <div
+                    style="display: inline-block; padding: 0.25rem 0.75rem; background: white; border: 1px solid var(--border); border-radius: 99px; font-size: 0.85rem; color: var(--text-body); margin-bottom: 1rem;">
+                    Why Choose Us
+                </div>
+                <h2>Everything You Need</h2>
+                <p style="color: var(--text-body);">
+                    We provide all the tools, guidance, and support you need to launch your career in tech.
+                </p>
+            </div>
+
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Real Projects</h3>
+                        <p style="font-size: 0.9rem; margin: 0;">Work on industry-level projects with modern
+                            technologies.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Collaboration</h3>
+                        <p style="font-size: 0.9rem; margin: 0;">Join dynamic teams and build professional networks.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Certification</h3>
+                        <p style="font-size: 0.9rem; margin: 0;">Earn verified certificates upon successful completion.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Career Growth</h3>
+                        <p style="font-size: 0.9rem; margin: 0;">Get mentorship and guidance to kickstart your career.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Public Leaderboard Section -->
+    <section class="section lazy-section" id="leaderboard" style="background-color: var(--bg-body);">
+        <div class="container">
+            <div class="text-center" style="max-width: 600px; margin: 0 auto 3rem;">
+                <div
+                    style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 99px; font-size: 0.85rem; color: var(--text-body); margin-bottom: 1rem;">
+                    🏆 Hall of Fame
+                </div>
+                <h2>Top Performing Interns</h2>
+                <p style="color: var(--text-body);">
+                    See who's leading the pack with the most XP and longest streaks.
+                </p>
+            </div>
+
+            <div id="publicLeaderboardContainer" style="max-width: 700px; margin: 0 auto;">
+                <div class="leaderboard-loading" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                    <p>Loading leaderboard...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section lazy-section" id="fees" style="background-color: var(--bg-body);">
+        <div class="container text-center">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">Ready to Start?</h2>
+            <p
+                style="font-size: 1.1rem; color: var(--text-body); margin-bottom: 1.5rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+                Join hundreds of other interns building their future with GKK-Hire.
+            </p>
+
+
+
+
+            <div>
+                <a href="apply/" class="pro-btn pro-btn-primary pro-btn-lg">
+                    Apply Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="grid"
+                style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 3rem; margin-bottom: 3rem;">
+                <div>
+                    <div
+                        style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem;">
+                        <div style="width: 24px; height: 24px; background: var(--primary); border-radius: 4px;"></div>
+                        GKK-Hire
+                    </div>
+                    <p style="font-size: 0.9rem; max-width: 250px;">
+                        Empowering the next generation of tech talent through real-world experience.
+                    </p>
+                </div>
+
+                <div>
+                    <div class="footer-title">Platform</div>
+                    <a href="#features" class="footer-link" style="font-size: 0.9rem;">Features</a>
+                    <a href="apply/" class="footer-link" style="font-size: 0.9rem;">Apply</a>
+                    <a href="user/login.html" class="footer-link" style="font-size: 0.9rem;">Login</a>
+                </div>
+
+                <div>
+                    <div class="footer-title">Connect</div>
+                    <a href="#" class="footer-link" style="font-size: 0.9rem;">LinkedIn</a>
+                    <a href="#" class="footer-link" style="font-size: 0.9rem;">Twitter</a>
+                    <a href="#" class="footer-link" style="font-size: 0.9rem;">Instagram</a>
+                </div>
+
+                <div>
+                    <div class="footer-title">Contact</div>
+                    <a href="mailto:noreplay.gkk26@gmail.com" class="footer-link" style="font-size: 0.9rem;">
+                        <i class="fas fa-envelope" style="margin-right: 0.5rem;"></i>noreplay.gkk26@gmail.com
+                    </a>
+                    <a href="tel:+919477564633" class="footer-link" style="font-size: 0.9rem;">
+                        <i class="fas fa-phone" style="margin-right: 0.5rem;"></i>+91 9477564633
+                    </a>
+                </div>
+            </div>
+
+            <div
+                style="border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    &copy; 2026 GKK-Hire. All rights reserved.
+                    <br>
+                    <span style="font-size: 0.75rem; opacity: 0.7;">Part of <a href="https://bubblesort.in"
+                            target="_blank" style="color: inherit; text-decoration: underline;">Bubblesort
+                            Group</a></span>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="/privacy.html" class="footer-link"
+                        style="font-size: 0.75rem; color: var(--text-muted);">Privacy</a>
+                    <a href="/terms.html" class="footer-link"
+                        style="font-size: 0.75rem; color: var(--text-muted);">Terms</a>
+                    <!-- Admin link hidden/subtle -->
+                    <a href="admin/login.html" class="footer-link"
+                        style="font-size: 0.75rem; color: var(--text-muted);">Admin</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- App State & Interaction Handler (Generic names) -->
+    <script src="js/state-manager.js"></script>
+    <script src="js/interaction-handler.js?v=3"></script>
+
+    <script src="js/page-transitions.js"></script>
+
+    <!-- Media Queries for Responsiveness -->
+    <style>
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .hero-section {
+                text-align: center;
+            }
+
+            .hero-content {
+                margin-bottom: 3rem;
+            }
+
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-content div[style*="flex"] {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .pro-navbar-links {
+                display: none;
+            }
+        }
+    </style>
+    <!-- Scripts -->
+
+    <script src="js/lazy-load.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+
+    <!-- 3D Interactions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="js/interactive-3d.js"></script>
+
+    <!-- Chatbot -->
+    <script src="js/gkk-assistant.js"></script>
+
+    <!-- Engagement Features for Public Leaderboard -->
+    <script src="js/engagement.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.loadPublicLeaderboard) {
+                window.loadPublicLeaderboard();
+            }
+            if (window.loadStreakAlert) {
+                // Small delay for effect
+                setTimeout(window.loadStreakAlert, 1500);
+            }
+        });
+    </script>
+
+    <!-- Streak Alert Container -->
+    <div id="streak-toast-container"></div>
+
+</body>
+
+</html>

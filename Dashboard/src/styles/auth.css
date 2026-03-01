@@ -1,0 +1,330 @@
+/* ============================================
+   AUTH PAGES — Login & Signup Styles
+   ============================================ */
+
+.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: var(--bg-body);
+}
+
+.auth-back-btn {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    color: var(--text-body);
+    font-size: 1.25rem;
+    text-decoration: none;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.auth-back-btn:hover {
+    color: var(--text-main);
+}
+
+.auth-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    max-width: 1000px;
+    background: linear-gradient(145deg, var(--bg-card) 0%, #0f172a 100%);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.auth-wrapper.signup {
+    max-width: 1100px;
+}
+
+/* Left Side - Form */
+.auth-form-panel {
+    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-wrapper.signup .auth-form-panel {
+    padding: 3rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Right Side - Branding */
+.auth-branding {
+    background-color: var(--bg-subtle);
+    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px solid var(--border);
+}
+
+.brand-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.brand-feature {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.brand-feature .brand-feature-icon {
+    color: var(--primary);
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+/* Form Grid (Signup) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Notice Box (Signup) */
+.notice-box {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.notice-box .notice-icon {
+    color: #fbbf24;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.notice-box strong {
+    display: block;
+    color: #fbbf24;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.notice-box p {
+    color: #d4a837;
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Password Strength */
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-bar-container {
+    height: 4px;
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+.strength-bar {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    width: 0;
+}
+
+.strength-bar.weak {
+    width: 33%;
+    background: #ef4444;
+}
+
+.strength-bar.medium {
+    width: 66%;
+    background: #f59e0b;
+}
+
+.strength-bar.strong {
+    width: 100%;
+    background: #10b981;
+}
+
+/* Validation Message */
+.validation-msg {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.validation-msg.show {
+    opacity: 1;
+}
+
+.validation-msg.error {
+    color: #ef4444;
+}
+
+.validation-msg.success {
+    color: #10b981;
+}
+
+/* Password Toggle Button */
+.password-toggle-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.password-toggle-btn:hover {
+    color: var(--text-body);
+}
+
+/* OTP Modal */
+.otp-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.otp-modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.otp-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 440px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.otp-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+}
+
+.otp-input {
+    width: 48px;
+    height: 56px;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-subtle);
+    color: var(--text-main);
+    transition: border-color 0.2s;
+}
+
+.otp-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    background: var(--bg-card);
+}
+
+/* Step indicator (Signup branding) */
+.signup-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.signup-step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.signup-step-number.done {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.signup-step-number.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* Auth page animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .auth-wrapper,
+    .auth-wrapper.signup {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+    }
+
+    .auth-branding {
+        display: none;
+    }
+
+    .auth-form-panel {
+        padding: 2rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}

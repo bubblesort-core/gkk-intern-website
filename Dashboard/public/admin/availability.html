@@ -1,0 +1,853 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Availability Settings | GKK Interns - Code. Build. Deploy.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <style>
+        /* Page Specific Styles */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .setting-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.2s;
+        }
+
+        .setting-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .setting-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--c-text-primary);
+        }
+
+        .setting-card h3 i {
+            color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .setting-card p {
+            color: var(--c-text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .day-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .day-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .day-checkbox:hover {
+            border-color: var(--c-primary);
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .day-checkbox.selected {
+            border-color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .day-checkbox input {
+            display: none;
+        }
+
+        .day-checkbox span {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 8px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 4px;
+            margin-bottom: 16px;
+        }
+
+        /* Custom Scrollbar */
+        .time-slots-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .time-slots-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .time-slots-grid::-webkit-scrollbar-thumb {
+            background: var(--c-border);
+            border-radius: 4px;
+        }
+
+        .time-slots-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--c-text-muted);
+        }
+
+        .time-slot {
+            padding: 10px 4px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .time-slot:hover {
+            border-color: var(--c-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .time-slot.selected {
+            border-color: var(--c-primary);
+            background: var(--c-primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            font-weight: 600;
+        }
+
+        .lock-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--c-border);
+            transition: 0.3s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background-color: #ef4444;
+        }
+
+        .toggle-switch input:checked+.toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .lock-message-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--c-text-primary);
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .lock-message-input:focus {
+            outline: none;
+            border-color: var(--c-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .save-section {
+            margin-top: 32px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .save-section .status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--c-text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--c-border);
+            color: var(--c-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--c-primary);
+            color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* Calendar Styles override/enhancement */
+        .calendar-container {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--c-border);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Availability Settings</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="loadSettings()" title="Reload Settings">
+                        <i class="fas fa-sync-alt"></i> Reload
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="settings-grid">
+                    <!-- Available Days Card -->
+                    <div class="setting-card">
+                        <h3><i class="fas fa-calendar-day"></i> Available Days</h3>
+                        <p>Select which days of the week are available for interviews</p>
+
+                        <div class="day-selector" id="daySelector">
+                            <label class="day-checkbox" data-day="0">
+                                <input type="checkbox" value="0">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Sunday</span>
+                            </label>
+                            <label class="day-checkbox" data-day="1">
+                                <input type="checkbox" value="1">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Monday</span>
+                            </label>
+                            <label class="day-checkbox" data-day="2">
+                                <input type="checkbox" value="2">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Tuesday</span>
+                            </label>
+                            <label class="day-checkbox" data-day="3">
+                                <input type="checkbox" value="3">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Wednesday</span>
+                            </label>
+                            <label class="day-checkbox" data-day="4">
+                                <input type="checkbox" value="4">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Thursday</span>
+                            </label>
+                            <label class="day-checkbox" data-day="5">
+                                <input type="checkbox" value="5">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Friday</span>
+                            </label>
+                            <label class="day-checkbox" data-day="6">
+                                <input type="checkbox" value="6">
+                                <i class="fas fa-check" style="display:none;"></i>
+                                <span>Saturday</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Specific Dates Calendar Card -->
+                    <div class="setting-card" style="grid-column: 1 / -1;">
+                        <h3><i class="fas fa-calendar-alt"></i> Specific Dates</h3>
+                        <p>Select specific dates when interviews are available (in addition to recurring days)</p>
+
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                            <!-- Calendar -->
+                            <div class="calendar-container" style="flex: 1; min-width: 280px;">
+                                <div class="calendar-header"
+                                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                    <button class="quick-action-btn" onclick="prevCalendarMonth()"><i
+                                            class="fas fa-chevron-left"></i></button>
+                                    <strong id="calendarMonthYear" style="font-size: 1rem;"></strong>
+                                    <button class="quick-action-btn" onclick="nextCalendarMonth()"><i
+                                            class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="calendar-weekdays"
+                                    style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px;">
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Sun</div>
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Mon</div>
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Tue</div>
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Wed</div>
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Thu</div>
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Fri</div>
+                                    <div
+                                        style="text-align: center; font-size: 0.75rem; color: var(--c-text-muted); font-weight: 600;">
+                                        Sat</div>
+                                </div>
+                                <div id="calendarGrid" class="calendar-grid"
+                                    style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">
+                                    <!-- Generated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- Selected Dates List -->
+                            <div style="flex: 1; min-width: 200px;">
+                                <div
+                                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                    <strong>Selected Dates (<span id="selectedDatesCount">0</span>)</strong>
+                                    <button class="quick-action-btn" onclick="clearAllDates()">Clear All</button>
+                                </div>
+                                <div id="selectedDatesList"
+                                    style="max-height: 250px; overflow-y: auto; background: var(--c-bg); border-radius: 8px; padding: 12px;">
+                                    <p style="color: var(--c-text-muted); font-size: 0.85rem;">No dates selected</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Slots Card -->
+                    <div class="setting-card" style="grid-column: 1 / -1;">
+                        <h3><i class="fas fa-clock"></i> Time Slots</h3>
+                        <p>Select available 15-minute interview time slots</p>
+
+                        <div class="time-slots-grid" id="timeSlotsGrid">
+                            <!-- Generated by JS -->
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="selectEveningSlots()">Evening (6-9 PM)</button>
+                            <button class="quick-action-btn" onclick="selectAllSlots()">Select All</button>
+                            <button class="quick-action-btn" onclick="clearAllSlots()">Clear All</button>
+                        </div>
+                    </div>
+
+                    <!-- Slot Capacity Card -->
+                    <div class="setting-card" style="grid-column: 1 / -1;">
+                        <h3><i class="fas fa-users"></i> Slot Capacity</h3>
+                        <p>Set how many applicants can book the same time slot</p>
+
+                        <div
+                            style="display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: var(--radius-md);">
+                            <div style="flex: 1;">
+                                <strong style="font-size: 0.95rem;">Max applicants per slot</strong>
+                                <div style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 4px;">
+                                    When this limit is reached, the slot shows as "Full"
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button class="quick-action-btn" onclick="adjustCapacity(-1)"
+                                    style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700;">&minus;</button>
+                                <input type="number" id="maxPerSlot" value="1" min="1" max="50"
+                                    style="width: 60px; text-align: center; padding: 8px; border: 1px solid var(--c-border); border-radius: 8px; background: rgba(0,0,0,0.2); color: var(--c-text-primary); font-size: 1.1rem; font-weight: 700; appearance: textfield; -moz-appearance: textfield;"
+                                    onchange="markUnsaved()">
+                                <button class="quick-action-btn" onclick="adjustCapacity(1)"
+                                    style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700;">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Lock Card -->
+                    <div class="setting-card" style="grid-column: 1 / -1;">
+                        <h3><i class="fas fa-lock"></i> Form Lock</h3>
+                        <p>Lock the application form to prevent new submissions</p>
+
+                        <div class="lock-toggle-container">
+                            <div>
+                                <strong id="lockStatusText">Form is Open</strong>
+                                <div style="font-size: 0.8rem; color: var(--c-text-muted);">
+                                    Toggle to close/open the application form
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="formLockToggle" onchange="updateLockStatus()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px;">Custom Lock Message</label>
+                        <textarea class="lock-message-input" id="lockMessage"
+                            placeholder="Enter the message to display when the form is locked..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Save Section -->
+                <div class="save-section">
+                    <div class="status" id="saveStatus">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Settings loaded from database</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSettings()" id="saveBtn">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+
+        // State
+        let selectedDays = [0, 1, 6]; // Default: Sun, Mon, Sat
+        let selectedTimeSlots = [];
+        let selectedDates = []; // Specific dates in YYYY-MM-DD format
+        let calendarCurrentDate = new Date();
+        let isFormLocked = false;
+        let maxPerSlot = 1;
+
+        // Generate time slots (15-min intervals from 9 AM to 10 PM)
+        function generateTimeSlots() {
+            const grid = document.getElementById('timeSlotsGrid');
+            grid.innerHTML = '';
+
+            for (let hour = 9; hour <= 21; hour++) {
+                for (let min = 0; min < 60; min += 15) {
+                    const time24 = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+                    const time12 = formatTime12(hour, min);
+
+                    const slot = document.createElement('div');
+                    slot.className = 'time-slot';
+                    slot.dataset.time = time24;
+                    slot.textContent = time12;
+                    slot.onclick = () => toggleTimeSlot(slot, time24);
+                    grid.appendChild(slot);
+                }
+            }
+        }
+
+        function formatTime12(hour, min) {
+            const suffix = hour >= 12 ? 'PM' : 'AM';
+            const h = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            return `${h}:${min.toString().padStart(2, '0')} ${suffix}`;
+        }
+
+        function toggleTimeSlot(el, time) {
+            el.classList.toggle('selected');
+            if (el.classList.contains('selected')) {
+                if (!selectedTimeSlots.includes(time)) selectedTimeSlots.push(time);
+            } else {
+                selectedTimeSlots = selectedTimeSlots.filter(t => t !== time);
+            }
+            markUnsaved();
+        }
+
+        function selectEveningSlots() {
+            clearAllSlots();
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                const hour = parseInt(slot.dataset.time.split(':')[0]);
+                if (hour >= 18 && hour < 21) {
+                    slot.classList.add('selected');
+                    if (!selectedTimeSlots.includes(slot.dataset.time)) {
+                        selectedTimeSlots.push(slot.dataset.time);
+                    }
+                }
+            });
+            markUnsaved();
+        }
+
+        function adjustCapacity(delta) {
+            const input = document.getElementById('maxPerSlot');
+            let val = parseInt(input.value) || 1;
+            val = Math.max(1, Math.min(50, val + delta));
+            input.value = val;
+            maxPerSlot = val;
+            markUnsaved();
+        }
+
+        function selectAllSlots() {
+            selectedTimeSlots = [];
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.add('selected');
+                selectedTimeSlots.push(slot.dataset.time);
+            });
+            markUnsaved();
+        }
+
+        function clearAllSlots() {
+            selectedTimeSlots = [];
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            markUnsaved();
+        }
+
+        // Day selection
+        document.querySelectorAll('.day-checkbox').forEach(label => {
+            label.addEventListener('click', function (e) {
+                e.preventDefault();
+                const day = parseInt(this.dataset.day);
+                const isSelected = this.classList.toggle('selected');
+                this.querySelector('i').style.display = isSelected ? 'inline' : 'none';
+
+                if (isSelected) {
+                    if (!selectedDays.includes(day)) selectedDays.push(day);
+                } else {
+                    selectedDays = selectedDays.filter(d => d !== day);
+                }
+                markUnsaved();
+            });
+        });
+
+        // ===== Specific Dates Calendar =====
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const year = calendarCurrentDate.getFullYear();
+            const month = calendarCurrentDate.getMonth();
+
+            // Update header
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
+
+            // Get first day and days in month
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.style.cssText = 'aspect-ratio: 1; border-radius: 8px;';
+                grid.appendChild(emptyCell);
+            }
+
+            // Date cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cellDate = new Date(year, month, day);
+                const isPast = cellDate < today;
+                const isSelected = selectedDates.includes(dateStr);
+
+                const cell = document.createElement('div');
+                cell.dataset.date = dateStr;
+                cell.textContent = day;
+                cell.style.cssText = `
+                    aspect-ratio: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 8px;
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                    cursor: ${isPast ? 'not-allowed' : 'pointer'};
+                    opacity: ${isPast ? '0.4' : '1'};
+                    background: ${isSelected ? 'rgba(16, 185, 129, 0.2)' : 'var(--c-bg)'};
+                    border: 2px solid ${isSelected ? 'var(--c-primary)' : 'var(--c-border)'};
+                    color: ${isSelected ? 'var(--c-primary)' : 'inherit'};
+                    transition: all 0.2s;
+                `;
+
+                if (!isPast) {
+                    cell.onmouseenter = () => { if (!isSelected) cell.style.borderColor = 'var(--c-primary)'; };
+                    cell.onmouseleave = () => { if (!isSelected) cell.style.borderColor = 'var(--c-border)'; };
+                    cell.onclick = () => toggleDate(dateStr);
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function toggleDate(dateStr) {
+            const idx = selectedDates.indexOf(dateStr);
+            if (idx === -1) {
+                selectedDates.push(dateStr);
+            } else {
+                selectedDates.splice(idx, 1);
+            }
+            selectedDates.sort();
+            renderCalendar();
+            renderSelectedDatesList();
+            markUnsaved();
+        }
+
+        function prevCalendarMonth() {
+            calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextCalendarMonth() {
+            calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function clearAllDates() {
+            selectedDates = [];
+            renderCalendar();
+            renderSelectedDatesList();
+            markUnsaved();
+        }
+
+        function renderSelectedDatesList() {
+            const list = document.getElementById('selectedDatesList');
+            document.getElementById('selectedDatesCount').textContent = selectedDates.length;
+
+            if (selectedDates.length === 0) {
+                list.innerHTML = '<p style="color: var(--c-text-muted); font-size: 0.85rem;">No dates selected</p>';
+                return;
+            }
+
+            list.innerHTML = selectedDates.map(dateStr => {
+                const date = new Date(dateStr + 'T00:00:00');
+                const formatted = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: var(--c-bg-card); border-radius: 6px; margin-bottom: 6px;">
+                        <span style="font-size: 0.85rem;">${formatted}</span>
+                        <button onclick="removeDate('${dateStr}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function removeDate(dateStr) {
+            selectedDates = selectedDates.filter(d => d !== dateStr);
+            renderCalendar();
+            renderSelectedDatesList();
+            markUnsaved();
+        }
+
+        // Lock status
+        function updateLockStatus() {
+            isFormLocked = document.getElementById('formLockToggle').checked;
+            document.getElementById('lockStatusText').textContent = isFormLocked ? 'Form is LOCKED' : 'Form is Open';
+            document.getElementById('lockStatusText').style.color = isFormLocked ? '#ef4444' : 'inherit';
+            markUnsaved();
+        }
+
+        function markUnsaved() {
+            document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> <span style="color:#f59e0b;">Unsaved changes</span>';
+        }
+
+        // Load settings from Supabase
+        async function loadSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('form_settings')
+                    .select('*')
+                    .eq('id', '00000000-0000-0000-0000-000000000001')
+                    .single();
+
+                if (error) throw error;
+
+                if (data) {
+                    // Days
+                    selectedDays = data.available_days || [0, 1, 6];
+                    document.querySelectorAll('.day-checkbox').forEach(label => {
+                        const day = parseInt(label.dataset.day);
+                        const isSelected = selectedDays.includes(day);
+                        label.classList.toggle('selected', isSelected);
+                        label.querySelector('i').style.display = isSelected ? 'inline' : 'none';
+                    });
+
+                    // Time slots
+                    selectedTimeSlots = data.time_slots || [];
+                    document.querySelectorAll('.time-slot').forEach(slot => {
+                        slot.classList.toggle('selected', selectedTimeSlots.includes(slot.dataset.time));
+                    });
+
+                    // Lock
+                    isFormLocked = data.is_form_locked || false;
+                    document.getElementById('formLockToggle').checked = isFormLocked;
+                    updateLockStatus();
+
+                    // Message
+                    document.getElementById('lockMessage').value = data.lock_message || '';
+
+                    // Specific Dates
+                    selectedDates = data.available_dates || [];
+
+                    // Slot capacity
+                    maxPerSlot = data.max_per_slot || 1;
+                    document.getElementById('maxPerSlot').value = maxPerSlot;
+                    renderCalendar();
+                    renderSelectedDatesList();
+
+                    document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> <span>Settings loaded</span>';
+                }
+            } catch (err) {
+                console.error('Error loading settings:', err);
+                document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> <span style="color:#ef4444;">Error loading settings</span>';
+            }
+        }
+
+        // Save settings to Supabase
+        async function saveSettings() {
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                maxPerSlot = parseInt(document.getElementById('maxPerSlot').value) || 1;
+
+                const { error } = await supabaseClient
+                    .from('form_settings')
+                    .update({
+                        available_days: selectedDays.sort((a, b) => a - b),
+                        available_dates: selectedDates.sort(),
+                        time_slots: selectedTimeSlots.sort(),
+                        max_per_slot: maxPerSlot,
+                        is_form_locked: isFormLocked,
+                        lock_message: document.getElementById('lockMessage').value
+                    })
+                    .eq('id', '00000000-0000-0000-0000-000000000001');
+
+                if (error) throw error;
+
+                document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> <span style="color:#10b981;">Settings saved successfully!</span>';
+            } catch (err) {
+                console.error('Error saving settings:', err);
+                document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> <span style="color:#ef4444;">Error: ' + err.message + '</span>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Settings';
+            }
+        }
+
+        // Init
+        async function init() {
+            const session = getAdminSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            // Remove legacy userName update - handled by sidebar.js now
+
+            generateTimeSlots();
+            renderCalendar();
+            renderSelectedDatesList();
+            await loadSettings();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

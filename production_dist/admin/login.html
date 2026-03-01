@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | GKK Interns - Code. Build. Deploy.</title>
+    <meta name="description" content="GKK Interns Admin Portal. Sign in to manage interns, teams, and projects.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Professional Design System -->
+    <link rel="stylesheet" href="../css/professional-design.css">
+    <link rel="stylesheet" href="../css/visual-transitions.css">
+
+    <style>
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            display: none;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fcd34d;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            color: var(--text-main);
+        }
+
+        .input-group {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">G</div>
+            <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Admin Portal</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Sign in to manage the platform</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <form id="loginForm">
+            <div class="pro-form-group">
+                <label class="pro-form-label" for="username">Username</label>
+                <input type="text" id="username" class="pro-form-input" placeholder="Enter username" required
+                    autocomplete="username">
+            </div>
+
+            <div class="pro-form-group">
+                <label class="pro-form-label" for="password">Password</label>
+                <div class="input-group">
+                    <input type="password" id="password" class="pro-form-input" placeholder="Enter password" required
+                        autocomplete="current-password" style="padding-right: 2.5rem;">
+                    <button type="button" class="password-toggle" id="togglePassword">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <input type="checkbox" id="rememberMe" style="accent-color: var(--primary);">
+                <label for="rememberMe"
+                    style="font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">Remember
+                    me</label>
+            </div>
+
+            <button type="submit" id="loginBtn" class="pro-btn pro-btn-primary" style="width: 100%;">
+                Sign In
+            </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+            <a href="../index.html"
+                style="font-size: 0.9rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="../js/page-transitions.js"></script>
+
+    <script>
+        const bcrypt = window.dcodeIO ? window.dcodeIO.bcrypt : window.bcrypt;
+
+        // Use Proxy URL to bypass ISP blocks
+        const SUPABASE_URL = window.location.origin + '/supabase-main';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqcHN5eHFha3pyaHZ6ZWdlaHRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NTI5NjMsImV4cCI6MjA4NDMyODk2M30.nfBtyd_doPQBkBfzHYtQ2q0yl1vf5y0QZPRrkHCOwAU';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                storageKey: 'gkk-admin-auth'
+            },
+            global: {
+                fetch: async (url, options) => {
+                    const response = await fetch(url, options);
+                    if (response.status === 429) {
+                        console.error('⚠️ SUPABASE RATE LIMIT EXCEEDED (429):', url);
+                    }
+                    return response;
+                }
+            }
+        });
+
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const alertBox = document.getElementById('alertBox');
+
+        function showAlert(message, type = 'error') {
+            let icon = 'exclamation-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+
+            alertBox.innerHTML = `<i class="fas fa-${icon}" style="margin-top: 3px;"></i> <span>${message}</span>`;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'flex';
+        }
+
+        function hideAlert() {
+            alertBox.style.display = 'none';
+        }
+
+        function setLoading(loading) {
+            if (loading) {
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+                loginBtn.disabled = true;
+                loginBtn.style.opacity = '0.7';
+            } else {
+                loginBtn.innerHTML = 'Sign In';
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = '1';
+            }
+        }
+
+        // Check if already logged in
+        function checkAuth() {
+            const adminSession = localStorage.getItem('admin_session');
+            if (adminSession) {
+                try {
+                    const session = JSON.parse(adminSession);
+                    if (session.expires > Date.now()) {
+                        window.location.href = 'index.html';
+                    } else {
+                        localStorage.removeItem('admin_session');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('admin_session');
+                }
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlert();
+            setLoading(true);
+
+            try {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+
+                // 1. Verify against admin_credentials (DB)
+                const { data: admin, error } = await supabaseClient
+                    .from('admin_credentials')
+                    // ADDED auth_email to selection
+                    .select('id, username, password_hash, display_name, is_active, auth_email')
+                    .or(`username.eq."${username}",auth_email.eq."${username}"`)
+                    .eq('is_active', true)
+                    .maybeSingle();
+
+                if (error) throw new Error('Database connection failed. Please try again.');
+                if (!admin) throw new Error('Invalid username or password.');
+
+                // 2. [DEPRECATED] Verify Password using bcrypt
+                // We now rely solely on Supabase Auth for security. 
+                // This avoids mismatch issues between DB hash and Auth password.
+                /* 
+                let passwordMatch = false;
+                try {
+                    passwordMatch = bcrypt.compareSync(password, admin.password_hash);
+                } catch (e) {
+                    console.error("Bcrypt verification error:", e);
+                }
+                if (!passwordMatch) {
+                    // Fallback: If local hash fails, we still try Supabase Auth below.
+                    // If Auth succeeds, we consider it valid.
+                    console.warn("Local hash mismatch - attempting Auth check...");
+                }
+                */
+
+                // 3. Mandatory: Sign in to Supabase Auth for RLS
+                // We use the linked auth_email for Supabase Auth, while user logs in with 'username'
+                const authEmail = admin.auth_email || admin.username;
+
+                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+                    email: authEmail,
+                    password: password
+                });
+
+                if (authError) {
+                    console.error("Supabase Auth failed:", authError);
+                    // Critical: If auth fails, RLS will block everything. We must stop here.
+                    throw new Error(`Database Connection Failed: ${authError.message}. Please check if your user exists in Supabase Auth.`);
+                }
+
+                // 4. Update stats & Session (& Self-Heal Password)
+                try {
+                    // Update last_login AND sync the password hash to match Auth
+                    const newHash = bcrypt.hashSync(password, 10);
+                    await supabaseClient.from('admin_credentials').update({
+                        last_login: new Date().toISOString(),
+                        password_hash: newHash
+                    }).eq('id', admin.id);
+                } catch (err) { console.error("Failed to update admin stats", err); }
+
+                const rememberMe = document.getElementById('rememberMe').checked;
+                // Infinite session request: Set to 100 years if remember me, else 24h
+                const duration = rememberMe ? (100 * 365 * 24 * 60 * 60 * 1000) : (24 * 60 * 60 * 1000);
+
+                const session = {
+                    id: admin.id,
+                    username: admin.username,
+                    displayName: admin.display_name,
+                    expires: Date.now() + duration
+                };
+                localStorage.setItem('admin_session', JSON.stringify(session));
+
+                showAlert('Login successful! Redirecting...', 'success');
+                await window.PageTransition.show('login', () => {
+                    window.location.href = 'index.html';
+                });
+
+            } catch (error) {
+                console.error(error);
+                showAlert(error.message);
+                setLoading(false);
+            }
+        });
+
+        document.getElementById('togglePassword').addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            document.getElementById('eyeIcon').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        });
+
+        checkAuth();
+    </script>
+    <script src="../js/main-page-btn.js"></script>
+</body>
+
+</html>

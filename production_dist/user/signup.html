@@ -1,0 +1,1270 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | GKK Interns - Code. Build. Deploy.</title>
+    <meta name="description" content="Create your GKK INTERN account. Join our platform and start your career journey.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- Professional Design System -->
+    <link rel="stylesheet" href="../css/professional-design.css">
+    <link rel="stylesheet" href="../css/page-transitions.css">
+    <link rel="stylesheet" href="../css/visual-transitions.css">
+    <script src="../js/console-cleanup.js"></script>
+    <script src="../js/visual-transitions.js"></script>
+
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-minimal/minimal.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .auth-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            max-width: 1100px;
+            background: linear-gradient(145deg, var(--bg-card) 0%, #0f172a 100%);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Left Side - Clean Form */
+        .auth-form-panel {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Right Side - Branding */
+        .auth-branding {
+            background-color: var(--bg-subtle);
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid var(--border);
+        }
+
+        /* Utility helper for form grid */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Notice Box */
+        .notice-box {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .notice-box i {
+            color: #d97706;
+            margin-top: 2px;
+        }
+
+        .notice-box strong {
+            display: block;
+            color: #92400e;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .notice-box p {
+            color: #b45309;
+            font-size: 0.85rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* Password Strength */
+        .password-strength {
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .strength-bar-container {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .strength-bar {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            width: 0;
+        }
+
+        .strength-bar.weak {
+            width: 33%;
+            background: #ef4444;
+        }
+
+        .strength-bar.medium {
+            width: 66%;
+            background: #f59e0b;
+        }
+
+        .strength-bar.strong {
+            width: 100%;
+            background: #10b981;
+        }
+
+        .validation-msg {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .validation-msg.show {
+            opacity: 1;
+        }
+
+        .validation-msg.error {
+            color: var(--c-error);
+        }
+
+        .validation-msg.success {
+            color: var(--c-success);
+        }
+
+        /* OTP Modal Overlay */
+        .otp-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .otp-modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .otp-modal {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 440px;
+            text-align: center;
+            box-shadow: var(--shadow-hover);
+        }
+
+        .otp-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .otp-input {
+            width: 48px;
+            height: 56px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: #f3f4f6;
+            /* Explicit light gray */
+            color: #111827;
+            /* Explicit dark text */
+        }
+
+        .otp-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            background: white;
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+            .auth-branding {
+                display: none;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-form-panel {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Home Button -->
+    <a href="../index.html" class="home-btn"
+        style="position: fixed; top: 1.5rem; left: 1.5rem; font-size: 1.25rem; color: var(--text-body);">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="auth-wrapper">
+        <!-- Form Panel -->
+        <div class="auth-form-panel">
+            <h1 style="font-size: 1.75rem; color: var(--text-main); margin-bottom: 0.5rem;">Create Account</h1>
+            <p style="color: var(--text-body); margin-bottom: 2rem;">Join GKK INTERN to start your internship.</p>
+
+            <!-- Important Notice -->
+            <div class="notice-box">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Approved Interns Only</strong>
+                    <p>You must have an approved application to register. Use the email you applied with.</p>
+                </div>
+            </div>
+
+            <form id="signupForm" novalidate>
+                <div class="form-row">
+                    <div class="pro-form-group">
+                        <label class="pro-form-label" for="firstName">First Name</label>
+                        <input type="text" id="firstName" class="pro-form-input" placeholder="John" required>
+                    </div>
+                    <div class="pro-form-group">
+                        <label class="pro-form-label" for="lastName">Last Name</label>
+                        <input type="text" id="lastName" class="pro-form-input" placeholder="Doe" required>
+                    </div>
+                </div>
+
+                <div class="pro-form-group">
+                    <label class="pro-form-label" for="email">Email</label>
+                    <input type="email" id="email" class="pro-form-input" placeholder="john@example.com" required
+                        autocomplete="email">
+                    <div class="validation-msg" id="emailValidation">
+                        <i class="fas fa-circle"></i> <span></span>
+                    </div>
+                </div>
+
+                <div class="pro-form-group">
+                    <label class="pro-form-label" for="referralCode">Referral Code (Optional)</label>
+                    <input type="text" id="referralCode" class="pro-form-input" placeholder="e.g. GKKJohn12345">
+                    <div class="validation-msg" id="referralValidation">
+                        <i class="fas fa-circle"></i> <span></span>
+                    </div>
+                </div>
+
+                <div id="secureFields" style="display: none; animation: fadeIn 0.5s ease;">
+                    <div class="pro-form-group">
+                        <label class="pro-form-label" for="password">Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="password" class="pro-form-input" placeholder="••••••••" required>
+                            <button type="button" id="togglePassword"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted);">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                                <span>Strength</span>
+                                <span id="strengthText">Weak</span>
+                            </div>
+                            <div class="strength-bar-container">
+                                <div class="strength-bar" id="strengthBar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pro-form-group">
+                        <label class="pro-form-label" for="confirmPassword">Confirm Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="confirmPassword" class="pro-form-input" placeholder="••••••••"
+                                required>
+                            <button type="button" id="toggleConfirmPassword"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted);">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="validation-msg" id="confirmValidation">
+                            <i class="fas fa-circle"></i> <span></span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 2rem;">
+                        <input type="checkbox" id="terms" style="margin-top: 0.25rem; accent-color: var(--primary);">
+                        <label for="terms" style="font-size: 0.85rem; color: var(--text-body); line-height: 1.4;">
+                            I agree to the <a href="#" style="color: var(--primary); font-weight: 500;">Terms of
+                                Service</a>
+                            and <a href="#" style="color: var(--primary); font-weight: 500;">Privacy Policy</a>.
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="pro-btn pro-btn-primary magnetic-btn"
+                        style="width: 100%;">
+                        <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i> Send Verification Code
+                    </button>
+                </div>
+            </form>
+
+            <div style="margin-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-body);">
+                Already have an account? <a href="login.html" style="color: var(--text-main); font-weight: 600;">Sign
+                    in</a>
+            </div>
+        </div>
+
+        <!-- Branding Panel -->
+        <div class="auth-branding">
+            <div class="brand-logo">
+                <img src="/assets/gkk-intern-logo.png" alt="GKK INTERN" style="height: 100px; width: auto;">
+            </div>
+            <h2 style="font-size: 1.75rem; margin-bottom: 1rem;">Start Your Journey</h2>
+            <p style="color: var(--text-body); margin-bottom: 2rem;">
+                Follow these simple steps to get started with your professional internship program.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; gap: 1rem;">
+                    <div
+                        style="width: 28px; height: 28px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">
+                        ✓</div>
+                    <div>
+                        <h4 style="font-size: 1rem; margin-bottom: 0.25rem;">Apply</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Submit application</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div
+                        style="width: 28px; height: 28px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">
+                        ✓</div>
+                    <div>
+                        <h4 style="font-size: 1rem; margin-bottom: 0.25rem;">Approval</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Wait for review</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div
+                        style="width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem;">
+                        3</div>
+                    <div>
+                        <h4 style="font-size: 1rem; margin-bottom: 0.25rem;">Register</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Create your account</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Modal -->
+    <div class="otp-modal-overlay" id="otpModal" aria-hidden="true">
+        <div class="otp-modal">
+            <div
+                style="width: 60px; height: 60px; background: #ecfdf5; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1.5rem;">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; color: #111827;">Verify Email</h3>
+            <p style="color: #4b5563; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Enter the code sent to <strong id="otpEmailDisplay" style="color: #111827;"></strong>
+            </p>
+
+            <div class="otp-inputs" id="otpInputs">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+                <input type="text" maxlength="1" class="otp-input" inputmode="numeric">
+            </div>
+
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                Resend in <span id="timer" style="color: var(--primary); font-weight: 600;">01:59</span>
+            </div>
+
+            <button type="button" id="verifyBtn" class="pro-btn pro-btn-primary" style="width: 100%;">
+                Verify & Create
+            </button>
+            <a href="#" id="resendLink"
+                style="display: block; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">Resend Code</a>
+            <button class="close-modal"
+                style="margin-top: 1rem; background: none; border: none; font-size: 0.8rem; text-decoration: underline; cursor: pointer;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="../js/page-transitions.js"></script>
+
+    <!-- 3D Interactions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="../js/interactive-3d.js"></script>
+
+    <script src="../js/gkk-assistant.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // DOM Elements
+        const form = document.getElementById('signupForm');
+
+        // FORCE LOGOUT ON LOAD
+        // This prevents "auto-login" with an old account when trying to create a new one.
+        (async function forceLogout() {
+            try {
+                // Check if we have a session first to avoid unnecessary calls if already out
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    console.log("Clearing stale session...");
+                    await supabaseClient.auth.signOut();
+                    localStorage.clear(); // Aggressive clear to be safe
+                }
+            } catch (e) {
+                console.warn("Session clear warning:", e);
+            }
+        })();
+
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const termsCheckbox = document.getElementById('terms');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const emailValidation = document.getElementById('emailValidation');
+        const confirmValidation = document.getElementById('confirmValidation');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // Toggle visibility
+        function setupToggle(btnId, inputId) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                const input = document.getElementById(inputId);
+                const icon = this.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
+            });
+        }
+
+        setupToggle('togglePassword', 'password');
+        setupToggle('toggleConfirmPassword', 'confirmPassword');
+
+        // Email Check
+        let emailCheckTimeout;
+        emailInput.addEventListener('input', () => {
+            const value = emailInput.value.trim();
+            if (value.length === 0) {
+                emailValidation.classList.remove('show', 'error', 'success');
+                return;
+            }
+
+            if (!emailRegex.test(value)) {
+                emailValidation.classList.add('show', 'error');
+                emailValidation.querySelector('span').textContent = 'Invalid email format';
+                return;
+            }
+
+            clearTimeout(emailCheckTimeout);
+            emailCheckTimeout = setTimeout(async () => {
+                try {
+                    // Check whitelist
+                    const { data: approvedApps, error: approvedError } = await supabaseClient
+                        .from('applications')
+                        .select('status, full_name')
+                        .ilike('email', value)
+                        .ilike('status', 'approved')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (approvedError) throw approvedError;
+
+                    const approved = approvedApps && approvedApps.length > 0 ? approvedApps[0] : null;
+
+                    if (approved) {
+                        emailValidation.classList.remove('error');
+                        emailValidation.classList.add('show', 'success');
+                        emailValidation.querySelector('span').textContent = `Approved! Welcome, ${approved.full_name.split(' ')[0]}`;
+
+                        // SHOW SECURE FIELDS
+                        document.getElementById('secureFields').style.display = 'block';
+
+                        // Auto-fill
+                        if (!firstNameInput.value && !lastNameInput.value) {
+                            const parts = approved.full_name.split(' ');
+                            firstNameInput.value = parts[0] || '';
+                            lastNameInput.value = parts.slice(1).join(' ') || '';
+                        }
+                    } else {
+                        // HIDE SECURE FIELDS
+                        document.getElementById('secureFields').style.display = 'none';
+                        emailValidation.classList.add('show', 'error');
+
+                        const { data, error } = await supabaseClient
+                            .from('applications')
+                            .select('status')
+                            .ilike('email', value)
+                            .order('created_at', { ascending: false })
+                            .limit(1);
+
+                        if (error) throw error;
+
+                        const latest = data && data.length > 0 ? data[0] : null;
+
+                        if (latest) {
+                            emailValidation.querySelector('span').textContent = `Status: ${latest.status} (Not Approved)`;
+
+                            // Show Alert for specific statuses immediately
+                            if (latest.status === 'shortlisted') {
+                                Swal.fire('Application Shortlisted', 'Great news! You are shortlisted. However, you need to be fully "Approved" to create an account.', 'info');
+                            } else if (latest.status === 'ready_interview') {
+                                Swal.fire('Ready for Interview', 'You are selected for an interview! Please check your email for the schedule.', 'info');
+                            } else if (latest.status === 'rejected') {
+                                Swal.fire('Application Status', 'Unfortunately, your application was not selected.', 'error');
+                            } else {
+                                Swal.fire('Pending Approval', `Your application status is currently: <strong>${latest.status}</strong>. Please wait for approval.`, 'warning');
+                            }
+                        } else {
+                            emailValidation.querySelector('span').textContent = 'No application found';
+
+                            Swal.fire({
+                                title: 'Application Not Found',
+                                text: 'We could not find an application with this email. Please apply first.',
+                                icon: 'warning',
+                                confirmButtonText: 'Go to Apply',
+                                showCancelButton: true,
+                                cancelButtonText: 'Close'
+                            }).then((result) => {
+                                if (result.isConfirmed) window.location.href = '/dashboard/apply/';
+                            });
+                        }
+                    }
+                } catch (e) { /* console.error(e); */ }
+            }, 500);
+        });
+
+        // Referral Code Check
+        const referralInput = document.getElementById('referralCode');
+        const referralValidation = document.getElementById('referralValidation');
+        let validReferralCode = null;
+        let validReferralId = null;
+        let referralCheckTimeout;
+
+        referralInput.addEventListener('input', () => {
+            const value = referralInput.value.trim();
+            if (value.length === 0) {
+                referralValidation.classList.remove('show', 'error', 'success');
+                referralValidation.classList.remove('show', 'error', 'success');
+                validReferralCode = null;
+                validReferralId = null;
+                return;
+            }
+
+            clearTimeout(referralCheckTimeout);
+            referralCheckTimeout = setTimeout(async () => {
+                try {
+                    const { data, error } = await supabaseClient.rpc('validate_referral_code', { code_input: value });
+
+                    if (error) throw error;
+
+                    // RPC returns a table/list, check first item
+                    const result = data && data.length > 0 ? data[0] : null;
+
+                    if (result && result.valid) {
+                        referralValidation.classList.remove('error');
+                        referralValidation.classList.add('show', 'success');
+                        // Specific message requested by user
+                        referralValidation.innerHTML = `<i class="fas fa-check-circle"></i> <span>Valid! You will get 50XP after completing the registration</span>`;
+                        validReferralCode = value;
+                        validReferralId = result.referrer_id;
+                    } else {
+                        referralValidation.classList.remove('success');
+                        referralValidation.classList.add('show', 'error');
+                        referralValidation.querySelector('span').textContent = 'Invalid code';
+                        validReferralCode = null;
+                        validReferralId = null;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    referralValidation.classList.add('show', 'error');
+                    referralValidation.querySelector('span').textContent = 'Error verifying code';
+                }
+            }, 500);
+        });
+
+        // --- Helper Functions ---
+
+        function updatePasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength += 25;
+            if (password.match(/[A-Z]/)) strength += 25;
+            if (password.match(/[0-9]/)) strength += 25;
+            if (password.match(/[^A-Za-z0-9]/)) strength += 25;
+
+            strengthBar.style.width = strength + '%';
+
+            if (strength <= 25) {
+                strengthBar.style.backgroundColor = '#ef4444';
+                strengthText.textContent = 'Weak';
+                strengthText.style.color = '#ef4444';
+                strengthBar.className = 'strength-bar weak';
+            } else if (strength <= 50) {
+                strengthBar.style.backgroundColor = '#f59e0b';
+                strengthText.textContent = 'Fair';
+                strengthText.style.color = '#f59e0b';
+                strengthBar.className = 'strength-bar medium';
+            } else if (strength <= 75) {
+                strengthBar.style.backgroundColor = '#3b82f6';
+                strengthText.textContent = 'Good';
+                strengthText.style.color = '#3b82f6';
+                strengthBar.className = 'strength-bar'; // default blue-ish
+            } else {
+                strengthBar.style.backgroundColor = '#10b981';
+                strengthText.textContent = 'Strong';
+                strengthText.style.color = '#10b981';
+                strengthBar.className = 'strength-bar strong';
+            }
+        }
+
+        function checkConfirm() {
+            const pwd = passwordInput.value;
+            const confirm = confirmPasswordInput.value;
+
+            if (confirm && pwd !== confirm) {
+                confirmValidation.classList.add('show', 'error');
+                confirmValidation.querySelector('span').textContent = "Passwords don't match";
+                confirmPasswordInput.setCustomValidity("Passwords Don't Match");
+            } else if (confirm) {
+                confirmValidation.classList.remove('error');
+                confirmValidation.classList.add('show', 'success');
+                confirmValidation.querySelector('span').textContent = "Passwords match";
+                confirmPasswordInput.setCustomValidity('');
+            } else {
+                confirmValidation.classList.remove('show');
+            }
+        }
+
+        let timerInterval;
+        function startTimer() {
+            let timeLeft = 600; // 10 minutes
+            const timerSpan = document.getElementById('timer');
+            if (!timerSpan) return;
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                timerSpan.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(timerInterval);
+                    timerSpan.textContent = "Expired";
+                }
+            }, 1000);
+        }
+
+        // --- Event Listeners ---
+
+        passwordInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (val.length === 0) {
+                passwordStrength.style.display = 'none';
+            } else {
+                passwordStrength.style.display = 'block';
+                updatePasswordStrength(val);
+            }
+            checkConfirm();
+        });
+
+        confirmPasswordInput.addEventListener('input', checkConfirm);
+
+        // --- Store form data temporarily for OTP verification ---
+        let pendingSignupData = null;
+
+        // --- Handle Signup ---
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const firstName = firstNameInput.value.trim();
+            const lastName = lastNameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            // Basic Validation
+            if (!firstName || !lastName || !email || !password || !confirmPassword) {
+                Swal.fire('Error', 'Please fill in all fields', 'warning');
+                return;
+            }
+
+            if (!termsCheckbox.checked) {
+                Swal.fire('Error', 'Please accept the Terms of Service', 'warning');
+                return;
+            }
+
+            if (!emailRegex.test(email)) {
+                Swal.fire('Error', 'Please enter a valid email address', 'warning');
+                return;
+            }
+
+            if (password.length < 6) {
+                Swal.fire('Error', 'Password must be at least 6 characters', 'warning');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                Swal.fire('Error', 'Passwords do not match', 'error');
+                return;
+            }
+
+            // Force Referral Validation if entered but not validated
+            const referralValue = document.getElementById('referralCode').value.trim();
+            if (referralValue && !validReferralId) {
+                // Show checking state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Referral...';
+                submitBtn.disabled = true;
+
+                try {
+                    const { data, error } = await supabaseClient.rpc('validate_referral_code', { code_input: referralValue });
+                    const result = data && data.length > 0 ? data[0] : null;
+
+                    if (result && result.valid) {
+                        validReferralCode = referralValue;
+                        validReferralId = result.referrer_id;
+                    } else {
+                        // Optional: Fail submission or just warn? 
+                        // Better to warn and ask to proceed or fix.
+                        // For now, let's just proceed without referral to avoid blocking signup, but notify user?
+                        // Or better: Stop and tell them code is invalid.
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        Swal.fire('Invalid Referral Code', 'The referral code you entered is invalid. Please check it or leave it empty.', 'warning');
+                        return;
+                    }
+                } catch (err) {
+                    // console.error("Referral check failed", err);
+                    // Proceed without referral
+                }
+            }
+
+            // ----------------------------------------------------------------      
+            // PRE-FLIGHT CHECK: Verify Status *Before* Touching Auth API
+            // ----------------------------------------------------------------
+            // This prevents Rate Limit hits for unapproved users and ensures 
+            // immediate feedback without relying on the Hook's error response.
+
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Status...';
+            submitBtn.disabled = true;
+
+            try {
+                const { data: approvedApps, error: approvedError } = await supabaseClient
+                    .from('applications')
+                    .select('status')
+                    .ilike('email', email)
+                    .ilike('status', 'approved')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (approvedError) throw approvedError;
+
+                const approved = approvedApps && approvedApps.length > 0 ? approvedApps[0] : null;
+
+                if (!approved) {
+                    const { data: statusRows, error: statusError } = await supabaseClient
+                        .from('applications')
+                        .select('status')
+                        .ilike('email', email)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (statusError) throw statusError;
+
+                    const status = statusRows && statusRows.length > 0 ? statusRows[0].status : null;
+
+                    // Re-use logic for specific error messages
+                    if (!status) {
+                        Swal.fire({
+                            title: 'Application Not Found',
+                            text: 'We could not find an application with this email. Please apply first.',
+                            icon: 'warning',
+                            confirmButtonText: 'Go to Apply',
+                            showCancelButton: true,
+                            cancelButtonText: 'Close'
+                        }).then((result) => {
+                            if (result.isConfirmed) window.location.href = '/dashboard/apply/';
+                        });
+                    } else if (status === 'shortlisted') {
+                        Swal.fire('Application Shortlisted', 'Great news! You are shortlisted. However, you need to be fully "Approved" to create an account.', 'info');
+                    } else if (status === 'ready_interview') {
+                        Swal.fire('Ready for Interview', 'You are selected for an interview! Please check your email for the schedule.', 'info');
+                    } else if (status === 'rejected') {
+                        Swal.fire('Application Status', 'Unfortunately, your application was not selected.', 'error');
+                    } else {
+                        Swal.fire('Pending Approval', `Your application status is currently: <strong>${status}</strong>. Please wait for approval.`, 'warning');
+                    }
+
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    return; // STOP HERE
+                }
+            } catch (checkErr) {
+                console.error("Pre-check failed", checkErr);
+                // If pre-check fails (e.g. network), we could either block or try to proceed.
+                // Let's proceed and let the backend handle it as a fallback.
+            }
+
+            // Show Loading State for OTP
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending OTP...';
+
+            try {
+                // Store signup data temporarily (will be used after OTP verification)
+                pendingSignupData = {
+                    email: email,
+                    password: password,
+                    firstName: firstName,
+                    lastName: lastName,
+                    fullName: `${firstName} ${lastName}`.trim()
+                };
+
+                // Send OTP via Supabase using signInWithOtp
+                // This sends a magic link/OTP to the email for verification
+                const { data, error } = await supabaseClient.auth.signInWithOtp({
+                    email: email,
+                    options: {
+                        // Allow new users to be created with OTP verification
+                        shouldCreateUser: true,
+                        data: {
+                            full_name: pendingSignupData.fullName,
+                            first_name: firstName,
+                            last_name: lastName,
+                            referrer_id: validReferralId, // Send referrer ID to be saved in profile
+                            signup_pending: true // Flag to indicate this is a new signup
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                // Show OTP Modal
+                Swal.fire({
+                    title: 'Verification Code Sent!',
+                    text: `Please check your email ${email} for the OTP code`,
+                    icon: 'success',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+
+                const otpEmailDisplay = document.getElementById('otpEmailDisplay');
+                const otpModal = document.getElementById('otpModal');
+
+                if (otpEmailDisplay) otpEmailDisplay.textContent = email;
+                if (otpModal) {
+                    otpModal.classList.add('show');
+                    otpModal.setAttribute('aria-hidden', 'false');
+                }
+
+                // Clear any previous OTP inputs
+                otpInputs.forEach(input => input.value = '');
+
+                // Focus first input
+                setTimeout(() => {
+                    const firstInput = document.querySelector('.otp-input');
+                    if (firstInput) firstInput.focus();
+                }, 500);
+
+                startTimer();
+
+            } catch (error) {
+                // console.error('OTP Send Error:', error);
+
+                let msg = error.message;
+
+                // Handle 422 (Rate Limit / Unprocessable Entity) BEFORE generic hooks
+                if ((error.status === 422) || msg.includes('422') || msg.includes('security purposes')) {
+                    Swal.fire({
+                        title: 'Please Wait',
+                        text: 'You have requested too many OTPs recently. Please wait a few minutes before trying again.',
+                        icon: 'warning'
+                    });
+                    return;
+                }
+
+                // Handle 403 "Unexpected status code returned from hook"
+                // This is the error Supabase throws when our Edge Function returns 403
+                if (msg.includes('403') || msg.includes('hook')) {
+                    Swal.fire({
+                        title: 'Access Restricted',
+                        html: 'Your application status does not allow signup at this time.<br>Only <b>Approved</b> candidates can create an account.<br><br>If you are Shortlisted or Ready for Interview, please wait for further instructions via email.',
+                        icon: 'warning'
+                    });
+                    return;
+                }
+
+                if (msg.includes('Access Denied')) {
+                    // Extract the specific message if possible, or fallback
+                    if (msg.includes('No application found')) {
+                        Swal.fire({
+                            title: 'Application Not Found',
+                            text: 'We could not find an application with this email. Please apply first to join the program.',
+                            icon: 'warning',
+                            confirmButtonText: 'Go to Apply',
+                            showCancelButton: true,
+                            cancelButtonText: 'Close'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/dashboard/apply/';
+                            }
+                        });
+                        return; // Stop execution here
+                    }
+                    else if (msg.includes('Shortlisted')) {
+                        Swal.fire('Application Shortlisted', 'Great news! You are shortlisted. However, you need to be fully "Approved" to create an account. Please wait for the final confirmation.', 'info');
+                        return;
+                    }
+                    else if (msg.includes('Ready for Interview')) {
+                        Swal.fire('Ready for Interview', 'You are selected for an interview! Please check your email for the scheduling link. You can create an account after the interview process.', 'info');
+                        return;
+                    }
+                    else if (msg.includes('rejected')) {
+                        Swal.fire('Application Status', 'Unfortunately, your application was not selected. We wish you the best in your future endeavors.', 'error');
+                        return;
+                    }
+                    else {
+                        // Generic Access Denied (Pending/Reviewing)
+                        const statusMatch = msg.match(/status is (.*?)\./);
+                        const status = statusMatch ? statusMatch[1] : 'Pending';
+                        Swal.fire('Pending Approval', `Your application status is currently: <strong>${status}</strong>. Please wait for the approval email before signing up.`, 'warning');
+                        return;
+                    }
+                } else if (msg.includes('rate limit')) {
+                    msg = 'Too many attempts. Please wait a few minutes before trying again.';
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed to Send OTP',
+                    text: msg,
+                    confirmButtonColor: '#ef4444'
+                });
+
+                pendingSignupData = null;
+            } finally {
+                if (typeof originalBtnText !== 'undefined') {
+                    submitBtn.innerHTML = originalBtnText;
+                } else {
+                    submitBtn.innerHTML = 'Sign Up';
+                }
+                submitBtn.disabled = false;
+            }
+        });
+
+        // --- OTP Logic ---
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const verifyOtpBtn = document.getElementById('verifyBtn');
+        const closeModalTrigger = document.querySelector('.close-modal');
+        const resendLink = document.getElementById('resendLink');
+
+        if (verifyOtpBtn) {
+            verifyOtpBtn.addEventListener('click', async () => {
+                const entered = Array.from(otpInputs).map(i => i.value).join('');
+                if (entered.length !== 6) {
+                    Swal.fire('Error', 'Please enter the complete 6-digit code', 'warning');
+                    return;
+                }
+
+                if (!pendingSignupData) {
+                    Swal.fire('Error', 'Session expired. Please try signing up again.', 'error');
+                    document.getElementById('otpModal').classList.remove('show');
+                    return;
+                }
+
+                verifyOtpBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+                verifyOtpBtn.disabled = true;
+
+                try {
+                    const email = pendingSignupData.email;
+
+                    // Step 1: Verify OTP with Supabase
+                    const { data: verifyData, error: verifyError } = await supabaseClient.auth.verifyOtp({
+                        email: email,
+                        token: entered,
+                        type: 'email' // Use 'email' type for signInWithOtp
+                    });
+
+                    if (verifyError) throw verifyError;
+
+                    // OTP is valid! User is now logged in via magic link session
+                    Swal.fire({
+                        title: 'OTP Verified!',
+                        text: 'Setting up your account...',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
+                    });
+
+                    // Step 2: Update the user's password (since signInWithOtp doesn't set password)
+                    const { data: updateData, error: updateError } = await supabaseClient.auth.updateUser({
+                        password: pendingSignupData.password,
+                        data: {
+                            full_name: pendingSignupData.fullName,
+                            first_name: pendingSignupData.firstName,
+                            last_name: pendingSignupData.lastName,
+                            signup_pending: false // Clear the pending flag
+                        }
+                    });
+
+                    if (updateError) {
+                        // console.error('Error setting password:', updateError);
+                        // Continue anyway - user can reset password later if needed
+                    }
+
+                    // Step 3: Create profile server-side (approved users only)
+                    const userId = verifyData?.user?.id || verifyData?.session?.user?.id;
+                    if (userId) {
+                        const { data: profileResp, error: profileError } = await supabaseClient.functions.invoke('create-profile', {
+                            body: {
+                                user_id: userId,
+                                email: pendingSignupData.email,
+                                full_name: pendingSignupData.fullName,
+                                referrer_id: validReferralId || null
+                            }
+                        });
+
+                        if (profileError || profileResp?.error) {
+                            throw profileError || new Error(profileResp?.error || 'Profile creation failed');
+                        }
+                    } else {
+                        throw new Error('Failed to resolve user after OTP verification');
+                    }
+
+                    // Step 4: Claim referral reward if valid code was used
+                    if (validReferralCode) {
+                        try {
+                            await supabaseClient.rpc('claim_referral', { code_used: validReferralCode });
+                            // console.log('Referral reward claimed successfully');
+                        } catch (e) {
+                            // console.error('Failed to claim referral reward:', e);
+                        }
+                    }
+
+                    // Clear pending data
+                    pendingSignupData = null;
+
+                    // Success message and redirect
+                    await Swal.fire({
+                        title: 'Account Created!',
+                        text: 'Welcome to GKK INTERN! Redirecting to login...',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Enhanced Transition
+                    await window.PageTransition.show('login', () => {
+                        window.location.href = 'login.html';
+                    });
+
+                } catch (err) {
+                    // console.error('Verification Error:', err);
+
+                    let errorMessage = err.message || 'Invalid OTP. Please try again.';
+                    if (errorMessage.includes('expired')) {
+                        errorMessage = 'OTP has expired. Please request a new one.';
+                    } else if (errorMessage.includes('invalid')) {
+                        errorMessage = 'Invalid OTP code. Please check and try again.';
+                    }
+
+                    Swal.fire('Verification Failed', errorMessage, 'error');
+                    verifyOtpBtn.innerHTML = 'Verify & Create';
+                    verifyOtpBtn.disabled = false;
+                }
+            });
+        }
+
+        // Resend OTP functionality
+        if (resendLink) {
+            resendLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                if (!pendingSignupData) {
+                    Swal.fire('Error', 'Session expired. Please fill out the form again.', 'error');
+                    document.getElementById('otpModal').classList.remove('show');
+                    return;
+                }
+
+                const timerSpan = document.getElementById('timer');
+                if (timerSpan && timerSpan.textContent !== 'Expired' && !timerSpan.textContent.includes('0:')) {
+                    Swal.fire('Please Wait', 'You can resend the code once the timer expires.', 'info');
+                    return;
+                }
+
+                resendLink.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+                try {
+                    const { error } = await supabaseClient.auth.signInWithOtp({
+                        email: pendingSignupData.email,
+                        options: {
+                            shouldCreateUser: true,
+                            data: {
+                                full_name: pendingSignupData.fullName,
+                                first_name: pendingSignupData.firstName,
+                                last_name: pendingSignupData.lastName,
+                                signup_pending: true
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    Swal.fire({
+                        title: 'Code Resent!',
+                        text: 'Check your email for the new OTP.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Clear OTP inputs
+                    otpInputs.forEach(input => input.value = '');
+                    document.querySelector('.otp-input').focus();
+
+                    // Restart timer
+                    startTimer();
+
+                } catch (err) {
+                    // console.error('Resend Error:', err);
+                    Swal.fire('Error', err.message || 'Failed to resend code', 'error');
+                } finally {
+                    resendLink.innerHTML = 'Resend Code';
+                }
+            });
+        }
+
+        if (closeModalTrigger) {
+            closeModalTrigger.addEventListener('click', () => {
+                const otpModal = document.getElementById('otpModal');
+                if (otpModal) {
+                    otpModal.classList.remove('show');
+                    otpModal.setAttribute('aria-hidden', 'true');
+                }
+                // Clear pending signup data when modal is closed
+                pendingSignupData = null;
+                // Clear timer
+                clearInterval(timerInterval);
+            });
+        }
+
+        // OTP Input Navigation - Auto-focus next input and handle paste
+        otpInputs.forEach((input, index) => {
+            // Handle typing
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+                // Auto-verify when all 6 digits entered
+                const allFilled = Array.from(otpInputs).every(inp => inp.value.length === 1);
+                if (allFilled && verifyOtpBtn) {
+                    verifyOtpBtn.click();
+                }
+            });
+
+            // Handle backspace
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+
+            // Handle paste - distribute digits across inputs
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
+                const digits = pastedData.replace(/\D/g, '').split('').slice(0, 6);
+
+                digits.forEach((digit, i) => {
+                    if (otpInputs[i]) {
+                        otpInputs[i].value = digit;
+                    }
+                });
+
+                // Focus last filled input or first empty
+                const lastIndex = Math.min(digits.length, otpInputs.length) - 1;
+                if (lastIndex >= 0) {
+                    otpInputs[Math.min(lastIndex + 1, otpInputs.length - 1)].focus();
+                }
+
+                // Auto-verify if all 6 digits pasted
+                if (digits.length === 6 && verifyOtpBtn) {
+                    setTimeout(() => verifyOtpBtn.click(), 100);
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

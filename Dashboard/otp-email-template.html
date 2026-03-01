@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Verification Code | GKK Interns - Code. Build. Deploy.</title>
+    <style>
+        /* Reset and Base */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .logo-text {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .title {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            margin-top: 0;
+        }
+
+        .text {
+            color: #64748b;
+            font-size: 16px;
+            line-height: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* OTP Box */
+        .otp-container {
+            background-color: #f1f5f9;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 32px 0;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .otp-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: #4f46e5;
+            letter-spacing: 8px;
+            margin: 0;
+            display: block;
+        }
+
+        .otp-label {
+            color: #94a3b8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #f1f5f9;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-text {
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 18px;
+            margin: 0;
+        }
+
+        .social-link {
+            color: #64748b;
+            text-decoration: none;
+            margin: 0 8px;
+            font-weight: 600;
+        }
+
+        /* Utility */
+        .highlight {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <table role="presentation">
+        <tr>
+            <td align="center">
+                <div class="container">
+                    <!-- Header -->
+                    <div class="header">
+                        <h1 class="logo-text">GKK INTERNS</h1>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="content">
+                        <h2 class="title">Verify Your Email</h2>
+                        <p class="text">
+                            Welcome to the team! Use the verification code below to confirm your email address and
+                            complete your account setup.
+                        </p>
+
+                        <!-- OTP Section -->
+                        <div class="otp-container">
+                            <span class="otp-label">Verification Code</span>
+                            <span class="otp-code">{{ .Token }}</span>
+                        </div>
+
+                        <p class="text">
+                            This code will expire in <span class="highlight">10 minutes</span>.<br>
+                            If you didn't request this code, please ignore this email.
+                        </p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="footer">
+                        <p class="footer-text">
+                            &copy; 2026 GKK Interns. All rights reserved.<br>
+                            Made with <span style="color: #ef4444;">&hearts;</span> for interns.
+                        </p>
+                        <div style="margin-top: 12px;">
+                            <a href="#" class="social-link">Website</a> &bull;
+                            <a href="#" class="social-link">Support</a>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

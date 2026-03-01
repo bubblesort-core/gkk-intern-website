@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Intern Profile | GKK Interns - Code. Build. Deploy.</title>
+
+    <!-- ANTI-CRAWL: Prevent search engines from indexing this page -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <!-- Profile Styles -->
+    <link rel="stylesheet" href="../css/intern-profile.css">
+</head>
+
+<body>
+    <!-- LOADING STATE -->
+    <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Verifying access...</p>
+    </div>
+
+    <!-- ACCESS DENIED STATE -->
+    <div id="deniedState" class="access-denied" style="display:none;">
+        <div class="denied-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h1>Access Restricted</h1>
+        <p>This profile can only be accessed through a valid QR code issued by the administrator. Please scan your
+            assigned QR code.</p>
+    </div>
+
+    <!-- PROFILE CONTENT (hidden until validated) -->
+    <div id="profileContent" class="profile-wrapper" style="display:none;">
+
+        <!-- Brand Header -->
+        <div class="brand-header">
+            <img src="../assets/gkk-intern-logo.png" alt="GKK Interns" class="brand-logo">
+            <img src="../assets/bubblesort-logo.png" alt="BubbleSort" class="brand-logo">
+        </div>
+
+        <!-- Header Card -->
+        <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">?</div>
+            <div class="profile-name" id="profileName">-</div>
+            <div class="profile-role">
+                <i class="fas fa-check-circle"></i> Verified Intern
+            </div>
+        </div>
+
+        <!-- ID Card Button (if available) -->
+        <button class="id-card-btn" id="idCardBtn" style="display:none;" onclick="openIdCardModal()">
+            <i class="fas fa-id-card"></i>
+            <span>View ID Card</span>
+        </button>
+
+        <!-- Contact Info -->
+        <div class="profile-section">
+            <div class="section-title">
+                <i class="fas fa-address-card"></i> Contact Information
+            </div>
+            <div class="data-row">
+                <div class="data-icon blue"><i class="fas fa-envelope"></i></div>
+                <div class="data-content">
+                    <div class="data-label">Email</div>
+                    <div class="data-value" id="profileEmail">-</div>
+                </div>
+            </div>
+            <div class="data-row">
+                <div class="data-icon green"><i class="fas fa-phone"></i></div>
+                <div class="data-content">
+                    <div class="data-label">Phone</div>
+                    <div class="data-value" id="profilePhone">-</div>
+                </div>
+            </div>
+            <div class="data-row" id="whatsappRow" style="display:none;">
+                <div class="data-icon green"><i class="fab fa-whatsapp"></i></div>
+                <div class="data-content">
+                    <div class="data-label">WhatsApp</div>
+                    <div class="data-value" id="profileWhatsapp">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Details -->
+        <div class="profile-section">
+            <div class="section-title">
+                <i class="fas fa-user"></i> Personal Details
+            </div>
+            <div class="data-row" id="ageRow" style="display:none;">
+                <div class="data-icon purple"><i class="fas fa-birthday-cake"></i></div>
+                <div class="data-content">
+                    <div class="data-label">Age</div>
+                    <div class="data-value" id="profileAge">-</div>
+                </div>
+            </div>
+            <div class="data-row" id="sexRow" style="display:none;">
+                <div class="data-icon pink"><i class="fas fa-venus-mars"></i></div>
+                <div class="data-content">
+                    <div class="data-label">Gender</div>
+                    <div class="data-value" id="profileSex">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Education -->
+        <div class="profile-section">
+            <div class="section-title">
+                <i class="fas fa-graduation-cap"></i> Education & Experience
+            </div>
+            <div class="data-row" id="collegeRow" style="display:none;">
+                <div class="data-icon blue"><i class="fas fa-university"></i></div>
+                <div class="data-content">
+                    <div class="data-label">College / University</div>
+                    <div class="data-value" id="profileCollege">-</div>
+                </div>
+            </div>
+            <div class="data-row" id="experienceRow" style="display:none;">
+                <div class="data-icon orange"><i class="fas fa-briefcase"></i></div>
+                <div class="data-content">
+                    <div class="data-label">Experience</div>
+                    <div class="data-value" id="profileExperience">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="profile-section" id="skillsSection" style="display:none;">
+            <div class="section-title">
+                <i class="fas fa-tags"></i> Skills & Interests
+            </div>
+            <div class="skills-cloud" id="skillsCloud"></div>
+        </div>
+
+        <!-- Project Description -->
+        <div class="profile-section" id="projectSection" style="display:none;">
+            <div class="section-title">
+                <i class="fas fa-align-left"></i> Project Description
+            </div>
+            <div class="project-text" id="profileProject"></div>
+        </div>
+
+        <!-- Digital Footprint / Links -->
+        <div class="profile-section" id="linksSection">
+            <div class="section-title">
+                <i class="fas fa-globe"></i> Digital Footprint
+            </div>
+            <div class="link-grid" id="linksGrid"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="profile-footer">
+            <div class="footer-branding">
+                <img src="../assets/gkk-intern-logo.png" alt="GKK Interns" class="footer-logo">
+                <div>GKK Interns Internship Program</div>
+                <div style="font-size: 0.7rem; opacity: 0.7;">Verified Intern Profile</div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="trust-badges-container">
+                <!-- Govt. Reg -->
+                <div class="trust-badge" title="Government Registered MSME">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
+                    </svg>
+                    <span>Registered MSME</span>
+                </div>
+
+                <!-- Security -->
+                <div class="trust-badge" title="SSL Secured">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                    </svg>
+                    <span>SSL Secured</span>
+                </div>
+
+                <!-- Copyright -->
+                <div class="trust-badge" title="DMCA Protected">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" opacity=".3" />
+                        <path d="M12 11.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+                    </svg>
+                    <span>DMCA Protected</span>
+                </div>
+
+                <!-- Origin -->
+                <div class="trust-badge" title="Made in India">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z" />
+                    </svg>
+                    <span>Built in India</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ID Card Modal -->
+    <div class="id-modal-overlay" id="idCardModal">
+        <div class="id-modal-content">
+            <img id="idCardImage" src="" alt="Intern ID Card">
+            <button class="id-modal-close" onclick="closeIdCardModal()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // ============================================
+        // SUPABASE INIT (standalone — no auth needed)
+        // ============================================
+        // Helper to proxy storage URLs
+        const getProxiedUrl = (url) => {
+            if (!url) return url;
+            // Handle main project storage
+            if (url.includes('hjpsyxqakzrhvzegehtm.supabase.co/storage/v1/object/public/')) {
+                return url.replace('https://hjpsyxqakzrhvzegehtm.supabase.co/storage/v1/object/public/', window.location.origin + '/storage-main/');
+            }
+            // Handle chat project storage
+            if (url.includes('mwnpwuxrbaousgwgoyco.supabase.co/storage/v1/object/public/')) {
+                return url.replace('https://mwnpwuxrbaousgwgoyco.supabase.co/storage/v1/object/public/', window.location.origin + '/storage-chat/');
+            }
+            return url;
+        };
+
+        const SUPABASE_URL = window.location.origin + '/supabase-main';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqcHN5eHFha3pyaHZ6ZWdlaHRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NTI5NjMsImV4cCI6MjA4NDMyODk2M30.nfBtyd_doPQBkBfzHYtQ2q0yl1vf5y0QZPRrkHCOwAU';
+
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: false }
+        });
+
+        let currentIdCardUrl = null;
+
+        // ============================================
+        // MAIN LOGIC
+        // ============================================
+        async function loadProfile() {
+            // 1. Extract token from URL
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            if (!token || token.length < 32) {
+                showDenied();
+                return;
+            }
+
+            try {
+                // 2. Lookup token in DB
+                const { data: tokenRow, error: tokenError } = await sb
+                    .from('intern_qr_tokens')
+                    .select('*')
+                    .eq('token', token)
+                    .eq('is_active', true)
+                    .maybeSingle();
+
+                if (tokenError || !tokenRow) {
+                    showDenied();
+                    return;
+                }
+
+                // 3. Check expiry
+                if (tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()) {
+                    showDenied();
+                    return;
+                }
+
+                // 4. Fetch the application data
+                const { data: app, error: appError } = await sb
+                    .from('applications')
+                    .select('*')
+                    .eq('id', tokenRow.application_id)
+                    .single();
+
+                if (appError || !app) {
+                    showDenied();
+                    return;
+                }
+
+                // 5. Fetch profile avatar from profiles table
+                let avatarUrl = null;
+                try {
+                    const { data: profile } = await sb
+                        .from('profiles')
+                        .select('avatar_url')
+                        .eq('email', app.email)
+                        .maybeSingle();
+                    if (profile && profile.avatar_url) {
+                        avatarUrl = profile.avatar_url;
+                    }
+                } catch (e) { /* ignore - avatar is optional */ }
+
+                // 6. Render the profile
+                renderProfile(app, tokenRow, avatarUrl);
+
+            } catch (err) {
+                console.error('Profile load error:', err);
+                showDenied();
+            }
+        }
+
+        function showDenied() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('deniedState').style.display = 'flex';
+        }
+
+        function renderProfile(app, tokenRow, avatarUrl) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'block';
+
+            // Header - show avatar image or fallback to initials
+            const initials = (app.full_name || '?').charAt(0).toUpperCase();
+            const avatarEl = document.getElementById('profileAvatar');
+            if (avatarUrl) {
+                avatarEl.innerHTML = `<img src="${getProxiedUrl(avatarUrl)}" alt="${app.full_name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.onerror=null;this.parentElement.textContent='${initials}'">`;
+            } else {
+                avatarEl.textContent = initials;
+            }
+            document.getElementById('profileName').textContent = app.full_name || 'Unknown';
+            document.title = `${app.full_name} | GKK Interns`;
+
+            // ID Card
+            if (tokenRow.id_card_url) {
+                currentIdCardUrl = getProxiedUrl(tokenRow.id_card_url);
+                document.getElementById('idCardBtn').style.display = 'flex';
+                document.getElementById('idCardImage').src = getProxiedUrl(tokenRow.id_card_url);
+            }
+
+            // Contact
+            document.getElementById('profileEmail').textContent = app.email || '-';
+            document.getElementById('profilePhone').textContent = app.phone ? `+91 ${app.phone}` : '-';
+
+            if (app.whatsapp_number && app.whatsapp_number !== app.phone) {
+                document.getElementById('whatsappRow').style.display = 'flex';
+                document.getElementById('profileWhatsapp').textContent = `+91 ${app.whatsapp_number}`;
+            }
+
+            // Personal
+            if (app.age) {
+                document.getElementById('ageRow').style.display = 'flex';
+                document.getElementById('profileAge').textContent = app.age;
+            }
+            if (app.sex) {
+                document.getElementById('sexRow').style.display = 'flex';
+                document.getElementById('profileSex').textContent = app.sex;
+            }
+
+            // Education
+            if (app.college) {
+                document.getElementById('collegeRow').style.display = 'flex';
+                document.getElementById('profileCollege').textContent = app.college;
+            }
+            if (app.experience) {
+                document.getElementById('experienceRow').style.display = 'flex';
+                document.getElementById('profileExperience').textContent = app.experience;
+            }
+
+            // Skills
+            if (app.skills && app.skills.length > 0) {
+                document.getElementById('skillsSection').style.display = 'block';
+                document.getElementById('skillsCloud').innerHTML = app.skills
+                    .map(s => `<span class="skill-chip">${s}</span>`)
+                    .join('');
+            }
+
+            // Project
+            if (app.project_description) {
+                document.getElementById('projectSection').style.display = 'block';
+                document.getElementById('profileProject').textContent = app.project_description;
+            }
+
+            // Links
+            const linksGrid = document.getElementById('linksGrid');
+            let linksHtml = '';
+
+            if (app.linkedin_url) {
+                linksHtml += `<a href="${app.linkedin_url}" target="_blank" rel="noopener noreferrer" class="link-btn linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>`;
+            } else {
+                linksHtml += `<div class="link-btn linkedin disabled"><i class="fab fa-linkedin"></i> No LinkedIn</div>`;
+            }
+
+            if (app.github_url) {
+                linksHtml += `<a href="${app.github_url}" target="_blank" rel="noopener noreferrer" class="link-btn github"><i class="fab fa-github"></i> GitHub</a>`;
+            } else {
+                linksHtml += `<div class="link-btn github disabled"><i class="fab fa-github"></i> No GitHub</div>`;
+            }
+
+            if (app.portfolio_url) {
+                linksHtml += `<a href="${app.portfolio_url}" target="_blank" rel="noopener noreferrer" class="link-btn portfolio full-width"><i class="fas fa-globe"></i> Portfolio</a>`;
+            }
+
+            if (app.resume_url) {
+                linksHtml += `<a href="${getProxiedUrl(app.resume_url)}" target="_blank" rel="noopener noreferrer" class="link-btn resume full-width"><i class="fas fa-file-pdf"></i> View Resume</a>`;
+            }
+
+            if (!linksHtml) {
+                document.getElementById('linksSection').style.display = 'none';
+            } else {
+                linksGrid.innerHTML = linksHtml;
+            }
+        }
+
+        // ============================================
+        // ID CARD MODAL
+        // ============================================
+        function openIdCardModal() {
+            if (!currentIdCardUrl) return;
+            document.getElementById('idCardModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeIdCardModal() {
+            document.getElementById('idCardModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on background click
+        document.getElementById('idCardModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('idCardModal')) {
+                closeIdCardModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeIdCardModal();
+        });
+
+        // ============================================
+        // PREVENT RIGHT-CLICK (extra deterrent)
+        // ============================================
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // ============================================
+        // START
+        // ============================================
+        loadProfile();
+    </script>
+</body>
+
+</html>

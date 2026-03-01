@@ -1,0 +1,399 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project Submission - Professional team project repository">
+    <meta name="theme-color" content="#0f172a">
+    <title>Project Submission | GKK Interns - Code. Build. Deploy.</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+
+<body>
+    <!-- ============================================
+         SCREEN 1: LANDING PAGE
+         ============================================ -->
+    <section id="landingScreen" class="screen landing-screen active">
+        <div class="landing-bg">
+            <div class="bg-gradient"></div>
+            <div class="bg-grid"></div>
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+                <div class="shape shape-4"></div>
+                <div class="shape shape-5"></div>
+            </div>
+        </div>
+        <div class="landing-content">
+            <div class="landing-badge">🚀 Project Submission Portal</div>
+            <h1 class="landing-title">
+                <span class="gradient-text">Team Project</span>
+                <span>Workspace</span>
+            </h1>
+            <p class="landing-subtitle">Collaborate, upload, and manage your team projects seamlessly</p>
+            <button class="btn-enter" id="enterBtn">
+                <span>Enter Project Zone</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div class="landing-features">
+                <div class="feature-item">
+                    <span class="feature-icon">📁</span>
+                    <span>File Repository</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">👥</span>
+                    <span>Team Collaboration</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📊</span>
+                    <span>Activity Tracking</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SCREEN 2: BATCH SELECTION
+         ============================================ -->
+    <section id="batchScreen" class="screen batch-screen">
+        <div class="screen-container">
+            <button class="back-btn" id="backToLanding">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                <span>Back</span>
+            </button>
+            <div class="screen-content">
+                <div class="screen-icon">🎓</div>
+                <h2 class="screen-title">Select Your Batch</h2>
+                <p class="screen-subtitle">Enter your batch number to view all teams</p>
+                <div class="input-group">
+                    <input type="text" id="batchInput" class="text-input" placeholder="e.g., 2024, 2025, 2026"
+                        autocomplete="off">
+                    <span class="input-hint" id="batchHint"></span>
+                </div>
+                <button class="btn-primary" id="batchContinueBtn">
+                    <span>Continue</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </button>
+                <div class="available-batches">
+                    <span class="batches-label">Available Batches:</span>
+                    <div class="batch-tags" id="batchTags">
+                        <!-- Batch tags will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SCREEN 3: TEAM SELECTION
+         ============================================ -->
+    <section id="teamScreen" class="screen team-screen">
+        <div class="screen-container">
+            <button class="back-btn" id="backToBatch">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                <span>Back to Batch</span>
+            </button>
+            <div class="screen-content team-content">
+                <div class="batch-header">
+                    <span class="batch-badge" id="selectedBatchBadge">Batch 2024</span>
+                    <h2 class="screen-title">Select Your Team</h2>
+                    <p class="screen-subtitle">Click on your team to access the workspace</p>
+                </div>
+                <div class="teams-grid" id="teamsGrid">
+                    <!-- Team cards will be injected here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SCREEN 4: PROJECT PAGE (Instagram/GitHub Hybrid)
+         ============================================ -->
+    <section id="projectScreen" class="screen project-screen">
+        <!-- Top Navigation Bar -->
+        <nav class="project-nav">
+            <div class="nav-left">
+                <div class="nav-logo">
+                    <span class="logo-icon">🚀</span>
+                    <span class="logo-text">ProjectHub</span>
+                </div>
+            </div>
+            <div class="nav-center">
+                <div class="nav-team-info">
+                    <span class="nav-team-icon" id="navTeamIcon">💡</span>
+                    <span class="nav-team-name" id="navTeamName">Team Innovators</span>
+                    <span class="nav-batch-badge" id="navBatchBadge">Batch 2026</span>
+                </div>
+            </div>
+            <div class="nav-right">
+                <!-- Current User Indicator -->
+                <div class="current-user-indicator" id="currentUserIndicator">
+                    <div class="current-user-avatar" style="background: #0095f6">AC</div>
+                    <span class="current-user-name">Alex Chen</span>
+                    <span class="current-user-role role-leader">👑 Leader</span>
+                </div>
+                <button class="nav-btn" id="notificationsBtn" title="Notifications">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span class="notification-dot"></span>
+                </button>
+                <button class="nav-btn exit-btn" id="exitBtn" title="Exit">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16,17 21,12 16,7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main 3-Column Layout -->
+        <div class="project-layout">
+            <!-- LEFT COLUMN: Team Details -->
+            <aside class="project-sidebar left-sidebar">
+                <div class="sidebar-card team-profile-card">
+                    <div class="team-avatar" id="teamAvatarLarge">💡</div>
+                    <h3 class="team-name-large" id="teamNameLarge">Team Innovators</h3>
+                    <p class="team-tagline">Building the future, one commit at a time</p>
+                    <div class="team-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="statFiles">0</span>
+                            <span class="stat-label">Files</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statCommits">0</span>
+                            <span class="stat-label">Updates</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statMembers">4</span>
+                            <span class="stat-label">Members</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h4 class="sidebar-title">👥 Team Members</h4>
+                    <div class="team-members-list" id="teamMembersList">
+                        <!-- Members will be injected here -->
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h4 class="sidebar-title">📝 Project Info</h4>
+                    <div class="project-info-item">
+                        <span class="info-label">Team ID</span>
+                        <span class="info-value" id="infoTeamId">T201</span>
+                    </div>
+                    <div class="project-info-item">
+                        <span class="info-label">Batch</span>
+                        <span class="info-value" id="infoBatch">2026</span>
+                    </div>
+                    <div class="project-info-item">
+                        <span class="info-label">Status</span>
+                        <span class="info-value status-active">🟢 Active</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h4 class="sidebar-title">🔗 Live Preview</h4>
+                    <div class="preview-url-box">
+                        <input type="url" class="preview-url-input" id="previewUrlInput"
+                            placeholder="https://your-project.vercel.app">
+                        <button class="preview-url-save" id="savePreviewUrl">Save</button>
+                    </div>
+                    <a href="#" class="preview-link" id="previewLink" target="_blank">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            <polyline points="15,3 21,3 21,9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                        <span>Open Live Site</span>
+                    </a>
+                </div>
+            </aside>
+
+            <!-- CENTER COLUMN: Project Updates Feed -->
+            <main class="project-feed">
+                <div class="feed-container" id="projectFeed">
+                    <!-- Project posts will be rendered here -->
+                    <div class="empty-feed" id="emptyFeed">
+                        <div class="empty-feed-icon">📂</div>
+                        <h3>No uploads yet</h3>
+                        <p>Upload your first file to get started!</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- RIGHT COLUMN: Upload + Comments -->
+            <aside class="project-sidebar right-sidebar">
+                <!-- Upload Section -->
+                <div class="sidebar-card upload-card">
+                    <h4 class="sidebar-title">📤 Upload Files</h4>
+                    <div class="upload-dropzone" id="uploadDropzone">
+                        <div class="dropzone-content">
+                            <div class="dropzone-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17,8 12,3 7,8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                            </div>
+                            <p class="dropzone-text">Drag & drop files here</p>
+                            <span class="dropzone-or">or</span>
+                            <button class="browse-btn" id="browseBtn">Browse Files</button>
+                        </div>
+                        <input type="file" id="fileInput" multiple hidden>
+                    </div>
+                    <div class="upload-options">
+                        <div class="permission-notice" id="permissionNotice">👑 Leader Mode: Full access</div>
+                        <label class="upload-option">
+                            <input type="checkbox" id="createPostCheck" checked>
+                            <span>Create post with upload</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Quick Upload -->
+                <div class="sidebar-card">
+                    <h4 class="sidebar-title">⚡ Quick Actions</h4>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" id="uploadFolderBtn">
+                            <span class="qa-icon">📁</span>
+                            <span>Upload Folder</span>
+                        </button>
+                        <button class="quick-action-btn" id="createReadmeBtn">
+                            <span class="qa-icon">📄</span>
+                            <span>Edit README</span>
+                        </button>
+                        <button class="quick-action-btn" id="viewAllFilesBtn">
+                            <span class="qa-icon">🗂️</span>
+                            <span>All Files</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div class="sidebar-card comments-card">
+                    <h4 class="sidebar-title">💬 Team Chat</h4>
+                    <div class="comments-container" id="commentsContainer">
+                        <!-- Comments will be rendered here -->
+                        <div class="empty-comments" id="emptyComments">
+                            <p>No messages yet</p>
+                        </div>
+                    </div>
+                    <div class="comment-input-box">
+                        <div class="comment-input-wrapper">
+                            <input type="text" class="comment-input" id="commentInput" placeholder="Write a message...">
+                            <button class="comment-send-btn" id="sendCommentBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13" />
+                                    <polygon points="22,2 15,22 11,13 2,9" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ============================================
+         MODALS
+         ============================================ -->
+
+    <!-- Team Password Modal -->
+    <div class="modal-overlay" id="teamPasswordModal">
+        <div class="modal team-modal">
+            <div class="modal-icon">🔐</div>
+            <h3>Team Access</h3>
+            <p class="modal-team-name" id="modalTeamName">Team Alpha</p>
+            <p class="text-muted mb-lg">Enter your team password to continue</p>
+            <div class="input-group">
+                <input type="password" class="text-input" id="teamPasswordInput" placeholder="Enter password">
+                <span class="input-hint error" id="passwordHint"></span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelTeamModal">Cancel</button>
+                <button class="btn btn-primary" id="confirmTeamAccess">Enter Workspace</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Files Modal -->
+    <div class="modal-overlay" id="filesModal">
+        <div class="modal files-modal">
+            <div class="modal-header">
+                <h3>📁 All Files</h3>
+                <button class="modal-close" id="closeFilesModal">×</button>
+            </div>
+            <div class="files-list-container" id="filesListContainer">
+                <!-- Files will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- README Modal -->
+    <div class="modal-overlay" id="readmeModal">
+        <div class="modal readme-modal">
+            <div class="modal-header">
+                <h3>📄 Edit README</h3>
+                <button class="modal-close" id="closeReadmeModal">×</button>
+            </div>
+            <textarea class="readme-textarea" id="readmeTextarea" placeholder="# Project Title
+
+Write your project description here...
+
+## Features
+- Feature 1
+- Feature 2
+
+## Setup
+```
+npm install
+npm start
+```"></textarea>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelReadmeBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveReadmeBtn">Save README</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <h3 class="mb-md">Delete File?</h3>
+            <p class="text-muted mb-lg">Are you sure you want to delete <strong id="deleteFileName"></strong>? This
+                action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+    <script src="../../Dashboard/js/theme-toggle.js"></script>
+</body>
+
+</html>

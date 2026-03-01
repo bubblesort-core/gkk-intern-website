@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams | GKK-Hire Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        /* Team Card Specifics */
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .team-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+        }
+
+        .team-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--c-primary);
+        }
+
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--c-primary), var(--c-accent-blue));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .team-card:hover::before {
+            opacity: 1;
+        }
+
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .team-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            margin-bottom: 4px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .team-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .team-members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .team-member-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .team-member-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--c-border);
+        }
+
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .team-footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--c-border);
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .add-team-card {
+            border: 2px dashed var(--c-border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            min-height: 250px;
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.3s ease;
+        }
+
+        .add-team-card:hover {
+            border-color: var(--c-primary);
+            color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.05);
+            transform: translateY(-4px);
+        }
+
+        .add-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            color: var(--c-text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .add-team-card:hover .add-icon {
+            background: var(--c-primary);
+            color: white;
+            border-color: var(--c-primary);
+        }
+
+        .match-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .match-bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, var(--c-primary), var(--c-accent-blue));
+        }
+
+        .btn-view {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-view:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--c-text-primary);
+        }
+
+        .btn-view.active {
+            background: var(--c-bg-card);
+            color: var(--c-primary);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--c-border);
+        }
+
+        /* ── Role Toggle Pills ── */
+        .role-toggle {
+            display: inline-flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            padding: 3px;
+            border: 1px solid var(--c-border);
+        }
+
+        .role-pill {
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--c-text-muted);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .role-pill:hover {
+            color: var(--c-text-primary);
+        }
+
+        .role-pill.active-member {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        .role-pill.active-leader {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        /* ── Candidate Selector Slide-in Panel ── */
+        .cand-panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cand-panel {
+            position: fixed;
+            top: 0;
+            right: -500px;
+            width: 500px;
+            height: 100%;
+            background: var(--c-bg-card);
+            z-index: 101;
+            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--c-border);
+        }
+
+        .cand-panel.open {
+            right: 0;
+        }
+
+        .cand-panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .cand-panel-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+        }
+
+        .cand-panel-body {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+        }
+
+        .cand-panel-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--c-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .cand-section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--c-text-muted);
+            margin-bottom: 8px;
+            margin-top: 16px;
+        }
+
+        .cand-section-label:first-child {
+            margin-top: 0;
+        }
+
+        .cand-filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .cand-fpill {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--c-border);
+            background: transparent;
+            color: var(--c-text-secondary);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cand-fpill:hover {
+            border-color: var(--c-text-muted);
+            color: var(--c-text-primary);
+        }
+
+        .cand-fpill.active {
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+            color: #fff;
+        }
+
+        .cand-fpill .fp-count {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1px 5px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .cand-fpill:not(.active) .fp-count {
+            background: rgba(148, 163, 184, 0.15);
+        }
+
+        .cand-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--c-border);
+            background: var(--c-bg-card);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 6px;
+        }
+
+        .cand-item:hover {
+            border-color: var(--c-primary);
+            background: rgba(31, 41, 55, 0.8);
+        }
+
+        .cand-item.selected {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--c-primary);
+        }
+
+        .cand-chk {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--c-border);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .cand-item.selected .cand-chk {
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+        }
+
+        .cand-item.selected .cand-chk::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            color: #fff;
+            font-size: 9px;
+        }
+
+        .cand-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .cand-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cand-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--c-text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cand-email {
+            font-size: 0.75rem;
+            color: var(--c-text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cand-badge {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            letter-spacing: 0.02em;
+        }
+
+        .cand-badge-approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .cand-badge-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .cand-badge-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .cand-badge-shortlisted {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+        }
+
+        .cand-badge-interview {
+            background: rgba(249, 115, 22, 0.2);
+            color: #fb923c;
+        }
+
+        .cand-badge-default {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+
+        @media (max-width: 640px) {
+            .cand-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Teams</h1>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+                    <div class="view-toggle"
+                        style="display: flex; background: var(--c-bg-card); border: 1px solid var(--c-border); border-radius: 8px; padding: 4px;">
+                        <button class="btn-view active" onclick="switchView('list')" id="btn-view-list"
+                            title="List View">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="btn-view" onclick="switchView('grid')" id="btn-view-grid" title="Grid View">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadTeams()" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateTeamModal()">
+                        <i class="fas fa-plus"></i> Create Team
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- List View (Default) -->
+                <div id="view-list" class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Team Name</th>
+                                    <th>Batch</th>
+                                    <th>Project</th>
+                                    <th>Members</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamsTableBody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Grid View -->
+                <div id="teamsGrid" class="teams-grid" style="display: none;">
+                    <!-- Loaded dynamically -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--c-text-muted);">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Create Team Modal -->
+    <div class="modal-overlay" id="createTeamModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Team</h3>
+                <button class="modal-close" onclick="closeModal('createTeamModal')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Team Name</label>
+                    <input type="text" id="teamName" class="form-input" placeholder="e.g. Alpha Squad">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assign Batch (Optional)</label>
+                    <select id="teamBatch" class="form-select">
+                        <option value="">-- No Batch --</option>
+                    </select>
+                </div>
+                <!-- Logic for max members simplified to 4 default -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createTeamModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createNewTeam()">Create Team</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Selector Slide-in Panel -->
+    <input type="hidden" id="targetTeamId">
+    <div class="cand-panel-overlay" id="candPanelOverlay" onclick="toggleCandPanel()"></div>
+    <div class="cand-panel" id="candPanel">
+        <div class="cand-panel-header">
+            <h3><i class="fas fa-user-plus" style="margin-right:8px; opacity:0.6;"></i> Add Members</h3>
+            <button onclick="toggleCandPanel()"
+                style="background:none; border:none; cursor:pointer; color:var(--c-text-secondary); padding:4px;">
+                <i class="fas fa-times" style="font-size:1.2rem;"></i>
+            </button>
+        </div>
+        <div class="cand-panel-body">
+            <div class="cand-section-label">Search</div>
+            <div style="position:relative;">
+                <i class="fas fa-search"
+                    style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--c-text-muted);"></i>
+                <input type="text" id="candidateSearch" class="form-input" placeholder="Search by name or email..."
+                    style="padding-left:38px;" oninput="filterCandidates()">
+            </div>
+            <div class="cand-section-label">Filter by Status</div>
+            <div class="cand-filter-pills" id="candFilterPills">
+                <button class="cand-fpill active" data-status="all" onclick="setCandFilter('all',this)">All <span
+                        class="fp-count" id="fc-all">0</span></button>
+                <button class="cand-fpill" data-status="approved" onclick="setCandFilter('approved',this)">Approved
+                    <span class="fp-count" id="fc-approved">0</span></button>
+                <button class="cand-fpill" data-status="shortlisted"
+                    onclick="setCandFilter('shortlisted',this)">Shortlisted <span class="fp-count"
+                        id="fc-shortlisted">0</span></button>
+                <button class="cand-fpill" data-status="INTERVIEW_READY"
+                    onclick="setCandFilter('INTERVIEW_READY',this)">Interview Ready <span class="fp-count"
+                        id="fc-INTERVIEW_READY">0</span></button>
+                <button class="cand-fpill" data-status="pending" onclick="setCandFilter('pending',this)">Pending <span
+                        class="fp-count" id="fc-pending">0</span></button>
+                <button class="cand-fpill" data-status="rejected" onclick="setCandFilter('rejected',this)">Rejected
+                    <span class="fp-count" id="fc-rejected">0</span></button>
+            </div>
+            <div
+                style="display:flex; justify-content:space-between; margin-top:14px; align-items:center; padding-bottom:10px; border-bottom:1px solid var(--c-border);">
+                <label
+                    style="cursor:pointer; display:flex; align-items:center; font-size:0.82rem; font-weight:500; color:var(--c-text-secondary);">
+                    <input type="checkbox" id="candSelectAll" onchange="toggleCandSelectAll()"
+                        style="margin-right:8px;">
+                    Select All <span
+                        style="margin-left:4px; color:var(--c-text-muted); font-weight:400;">(filtered)</span>
+                </label>
+                <span id="candListCount" style="font-size:0.78rem; color:var(--c-text-muted);">Loading...</span>
+            </div>
+            <div id="candidateSelectList" style="margin-top:10px;"></div>
+        </div>
+        <div class="cand-panel-footer">
+            <div style="font-size:0.88rem; color:var(--c-text-secondary);">
+                <span id="candSelectedCount" style="color:#6366f1; font-weight:700;">0</span> selected
+            </div>
+            <button class="btn btn-primary" onclick="confirmAddCandidates()"
+                style="padding:8px 20px; border-radius:8px;">Add Members</button>
+        </div>
+    </div>
+
+    <!-- Assign Project Modal -->
+    <div class="modal-overlay" id="assignProjectModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Assign Project</h3>
+                <button class="modal-close" onclick="closeModal('assignProjectModal')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="assignProjectTeamId">
+                <div class="form-group">
+                    <label class="form-label">Select Project</label>
+                    <select id="projectSelect" class="form-select">
+                        <option value="">-- Loading --</option>
+                    </select>
+                </div>
+
+                <div id="projectDetails"
+                    style="display:none; margin-top:20px; padding:16px; background:var(--c-bg-app); border-radius:8px; border: 1px solid var(--c-border);">
+                    <h4 id="projectTitle" style="font-weight:600; margin-bottom:8px; color: var(--c-text-primary);">
+                    </h4>
+                    <div style="font-size:0.85rem; color:var(--c-text-secondary); margin-bottom:4px;">Skills Match Score
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div class="match-bar-bg" style="flex:1; margin-top:0;">
+                            <div class="match-bar-fill" id="matchScoreBar"></div>
+                        </div>
+                        <div id="matchScoreVal" style="font-weight:700; color:var(--c-success); font-size:0.9rem;">0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('assignProjectModal')">Cancel</button>
+                <button class="btn btn-success" onclick="confirmAssignProject()">Assign Project</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+
+            if (sidebar.classList.contains('open')) {
+                sidebarOverlay.style.display = 'block';
+            } else {
+                sidebarOverlay.style.display = 'none';
+            }
+        }
+
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            toggleSidebar(); // Close it
+        });
+
+        let currentTeams = [];
+        let currentCandidates = [];
+        let allProjects = [];
+        let selectedCandidates = new Set();
+        let currentView = 'list'; // Default to list view
+
+        // --- View Switching ---
+        function switchView(view) {
+            currentView = view;
+
+            // Hide all views
+            document.getElementById('view-list').style.display = 'none';
+            document.getElementById('teamsGrid').style.display = 'none';
+
+            // Remove active class
+            document.querySelectorAll('.btn-view').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected
+            if (view === 'list') {
+                document.getElementById('view-list').style.display = 'block';
+                document.getElementById('btn-view-list').classList.add('active');
+                renderTeamsList();
+            } else if (view === 'grid') {
+                document.getElementById('teamsGrid').style.display = 'grid';
+                document.getElementById('btn-view-grid').classList.add('active');
+                renderTeams();
+            }
+        }
+
+        async function init() {
+            const session = getAdminSession();
+            if (!session) return window.location.href = 'login.html';
+
+            await Promise.all([
+                loadTeams(),
+                loadCandidates(),
+                loadProjects(),
+                loadBatches()
+            ]);
+        }
+
+        async function loadTeams() {
+            // Show Skeleton State immediately based on current view
+            if (currentView === 'list') {
+                const tbody = document.getElementById('teamsTableBody');
+                if (tbody) tbody.innerHTML = SkeletonUI.generateTableRows(5, 5);
+            } else {
+                const grid = document.getElementById('teamsGrid');
+                if (grid) grid.innerHTML = SkeletonUI.generateCards(3);
+            }
+
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const filterBatchId = urlParams.get('batch');
+
+                let query = supabaseClient
+                    .from('teams')
+                    .select(`
+                        id, name, max_members, is_active, batch_id,
+                        batches ( id, name ),
+                        team_members (
+                            id, user_id, role, is_active,
+                            profiles ( id, full_name, email, avatar_url )
+                        ),
+                        projects ( id, title, status, deadline )
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (filterBatchId) {
+                    query = query.eq('batch_id', filterBatchId);
+
+                    // Update Header UI
+                    const hdr = document.querySelector('.page-title');
+                    if (hdr && !hdr.querySelector('.filter-tag')) {
+                        hdr.innerHTML += ` <span class="filter-tag" style="font-size:1rem; color:var(--c-primary); background:rgba(59,130,246,0.1); padding:4px 12px; border-radius:12px; vertical-align:middle;">Filtered <a href="teams.html" title="Clear Filter" style="margin-left:8px; color:inherit; text-decoration:none;"><i class="fas fa-times"></i></a></span>`;
+                    }
+                }
+
+                const { data: teams, error } = await query;
+
+                if (error) throw error;
+
+                // 2. Fetch Profiles Securely via RPC
+                const { data: allProfiles, error: profError } = await supabaseClient.rpc('get_all_profile_emails');
+                if (profError) console.error("RPC Error:", profError);
+
+                // 3. Fix Missing Profiles in Team Members
+                currentTeams = (teams || []).map(team => {
+                    const fixedMembers = (team.team_members || []).map(m => {
+                        // If profiles is null (blocked by RLS), find it in our RPC list
+                        if (!m.profiles && allProfiles) {
+                            const found = allProfiles.find(p => p.id === m.user_id);
+                            if (found) {
+                                return { ...m, profiles: found };
+                            }
+                        }
+                        return m;
+                    });
+                    return { ...team, team_members: fixedMembers };
+                });
+
+                // Render based on current view
+                switchView(currentView);
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Failed to load teams', 'error');
+            }
+        }
+
+        async function loadCandidates() {
+            // Fetch potential candidates (interns) via RPC to bypass RLS
+            const { data, error } = await supabaseClient.rpc('get_all_profile_emails');
+
+            if (!error && data) {
+                currentCandidates = data;
+            } else if (error) {
+                console.error("Error loading candidates:", error);
+            }
+        }
+
+        async function loadProjects() {
+            const { data, error } = await supabaseClient
+                .from('projects')
+                .select('id, title, status, tech_stack')
+                .eq('is_active', true);
+
+            if (!error && data) {
+                allProjects = data;
+            }
+        }
+
+        async function loadBatches() {
+            const { data, error } = await supabaseClient.from('batches').select('id, name').eq('is_active', true).order('created_at', { ascending: false });
+            if (data) {
+                const sel = document.getElementById('teamBatch');
+                sel.innerHTML = '<option value="">-- No Batch --</option>' +
+                    data.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            }
+        }
+
+        function renderTeamsList() {
+            const tbody = document.getElementById('teamsTableBody');
+
+            if (currentTeams.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--c-text-muted);">
+                            <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                            No teams created yet. <a href="#" onclick="openCreateTeamModal(); return false;">Create one!</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = currentTeams.map(t => {
+                const members = t.team_members || [];
+                const isFull = members.length >= t.max_members;
+                const projectTitle = t.projects && t.projects.length > 0 ? t.projects[0].title : 'No Project';
+                const isTeamActive = t.is_active !== false;
+
+                // Member avatars stack
+                const membersHtml = members.length > 0 ?
+                    `<div style="display:flex; align-items:center;">` +
+                    members.slice(0, 4).map(m => `
+                        <div title="${m.profiles?.full_name || 'User'}" style="width:28px; height:28px; border-radius:50%; background:rgba(99, 102, 241, 0.2); color:#a5b4fc; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; border:2px solid var(--c-bg-card); margin-left:-8px; position:relative; z-index:1;">
+                            ${m.profiles?.avatar_url ? `<img src="${m.profiles.avatar_url}" loading="lazy" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : (m.profiles?.full_name || '?')[0].toUpperCase()}
+                        </div>
+                    `).join('') +
+                    (members.length > 4 ? `<div style="width:28px; height:28px; border-radius:50%; background:var(--c-border); color:var(--c-text-secondary); display:flex; align-items:center; justify-content:center; font-size:0.75rem; border:2px solid var(--c-bg-card); margin-left:-8px; z-index:0;">+${members.length - 4}</div>` : '') +
+                    `</div>`
+                    : '<span style="color:var(--c-text-muted); font-size:0.8rem;">No members</span>';
+
+                return `
+                    <tr style="opacity: ${isTeamActive ? '1' : '0.6'};">
+                        <td>
+                            <div style="font-weight: 600;">${t.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--c-text-muted);">${members.length} / ${t.max_members} Members</div>
+                        </td>
+                        <td>
+                            ${t.batches ? `<span class="badge" style="background:rgba(245,158,11,0.1); color:#f59e0b; border:1px solid rgba(245,158,11,0.2); font-size:0.75rem;">${t.batches.name}</span>` : '<span style="color:var(--c-text-muted);">-</span>'}
+                        </td>
+                        <td>${projectTitle}</td>
+                        <td>${membersHtml}</td>
+                        <td>
+                            <div class="switch-wrapper" title="Active/Inactive">
+                                <label class="switch" style="transform: scale(0.7);">
+                                    <input type="checkbox" ${isTeamActive ? 'checked' : ''} onchange="toggleTeamStatus('${t.id}', this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary btn-sm" onclick="showTeamInfo('${t.id}')" title="View Team Info" style="color: var(--c-primary);">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="openAssignProjectModal('${t.id}')" title="Assign Project">
+                                    <i class="fas fa-tasks"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="openAddCandidateModal('${t.id}')" title="Add Members" ${isFull ? 'disabled' : ''}>
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="deleteTeam('${t.id}')" title="Delete Team" style="color: var(--c-error);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderTeams() {
+            const grid = document.getElementById('teamsGrid');
+            const addCard = `
+                 <div class="add-team-card" onclick="openCreateTeamModal()">
+                    <div class="add-icon"><i class="fas fa-plus"></i></div>
+                    <div style="font-weight: 600;">Create New Team</div>
+                </div>
+            `;
+
+            grid.innerHTML = currentTeams.map(t => {
+                const members = t.team_members || [];
+                const isFull = members.length >= t.max_members;
+                const projectTitle = t.projects && t.projects.length > 0 ? t.projects[0].title : 'No Project Assigned';
+                const isTeamActive = t.is_active !== false; // Default true
+
+                return `
+                <div class="card-premium" style="opacity: ${isTeamActive ? '1' : '0.7'}">
+                    <div class="team-header">
+                        <div>
+                            <div class="team-title">${t.name}</div>
+                            ${t.batches ? `<div style="font-size:0.75rem; color:#f59e0b; margin-bottom:4px; font-weight:600;"><i class="fas fa-layer-group"></i> ${t.batches.name}</div>` : ''}
+                            <div style="font-size:0.85rem; color:var(--c-text-muted); display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-briefcase" style="font-size: 0.8rem;"></i> ${projectTitle}
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <label class="switch" title="Toggle Team Status" style="transform: scale(0.7);">
+                                <input type="checkbox" ${isTeamActive ? 'checked' : ''} onchange="toggleTeamStatus('${t.id}', this.checked)">
+                                <span class="slider round"></span>
+                             </label>
+                             <button class="btn-icon-danger" onclick="deleteTeam('${t.id}')" title="Delete Team"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="team-body">
+                        <div class="team-members-list">
+                            ${members.length > 0 ? members.map(m => `
+                                <div class="team-member-row" style="justify-content:space-between; opacity:${m.is_active !== false ? '1' : '0.5'};">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div class="member-avatar">
+                                            ${m.profiles?.avatar_url ? `<img src="${m.profiles.avatar_url}" loading="lazy" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : (m.profiles?.full_name || '?')[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div style="font-size:0.9rem; font-weight:600;">${m.profiles?.full_name || 'Unknown'}</div>
+                                            <div style="font-size:0.75rem; color:var(--c-text-muted);">${m.role}</div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <div class="role-toggle">
+                                            <button class="role-pill ${m.role === 'Member' ? 'active-member' : ''}" onclick="updateMemberRole('${m.id}', 'Member', '${t.id}')">Member</button>
+                                            <button class="role-pill ${m.role === 'Leader' ? 'active-leader' : ''}" onclick="updateMemberRole('${m.id}', 'Leader', '${t.id}')"><i class="fas fa-crown" style="font-size:0.6rem;"></i> Leader</button>
+                                        </div>
+                                        <button class="btn-icon-danger" onclick="removeMember('${t.id}', '${m.user_id}')" title="Remove Member"><i class="fas fa-times"></i></button>
+                                    </div>
+                                </div>
+                            `).join('') : '<div style="color:var(--c-text-muted); font-size:0.9rem; text-align:center; padding:12px; border:1px dashed #e2e8f0; border-radius:6px;">No members joined yet</div>'}
+                        </div>
+                    </div>
+                    
+                    <div class="team-footer">
+                        <button class="btn btn-secondary btn-sm" onclick="openAssignProjectModal('${t.id}')" style="flex:1; font-size:0.85rem;"><i class="fas fa-tasks"></i> Assign Project</button>
+                        ${!isFull ? `<button class="btn btn-primary btn-sm" onclick="openAddCandidateModal('${t.id}')" style="flex:1; font-size:0.85rem;"><i class="fas fa-user-plus"></i> Add Member</button>` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('') + addCard;
+        }
+
+        async function toggleTeamStatus(teamId, isActive) {
+            try {
+                const { error } = await supabaseClient.from('teams').update({ is_active: isActive }).eq('id', teamId);
+                if (error) throw error;
+                await loadTeams();
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Toast.fire({ icon: 'success', title: `Team ${isActive ? 'Activated' : 'Deactivated'}` });
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to update team status', 'error');
+            }
+        }
+
+        async function deleteTeam(id) {
+            Swal.fire({
+                title: 'Delete Team?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const { error } = await supabaseClient.from('teams').delete().eq('id', id);
+                    if (error) {
+                        Swal.fire('Error', 'Could not delete team.', 'error');
+                    } else {
+                        loadTeams();
+                        Swal.fire('Deleted!', 'Team has been deleted.', 'success');
+                    }
+                }
+            });
+        }
+
+        async function removeMember(teamId, userId) {
+            Swal.fire({
+                title: 'Remove Member?',
+                text: "They will be removed from this team.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove'
+            }).then(async (r) => {
+                if (r.isConfirmed) {
+                    const { error } = await supabaseClient.from('team_members').delete().match({ team_id: teamId, user_id: userId });
+                    if (!error) {
+                        loadTeams();
+                        Swal.fire('Removed!', 'Member has been removed.', 'success');
+                    }
+                }
+            });
+        }
+
+        async function updateMemberRole(memberId, newRole, teamId) {
+            try {
+                // If setting to leader, optionally remove other leaders? 
+                // For now, just update.
+                const { error } = await supabaseClient
+                    .from('team_members')
+                    .update({ role: newRole })
+                    .eq('id', memberId);
+
+                if (error) throw error;
+
+                // If new role is Leader, we might want to refresh to visually show the change immediately
+                // or ensure single leader logic if required.
+
+                await loadTeams(); // Reload to update UI
+
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+                Toast.fire({ icon: 'success', title: `Role updated to ${newRole}` });
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to update role', 'error');
+            }
+        }
+
+        // Smart Match Logic in Assignment
+        document.getElementById('projectSelect')?.addEventListener('change', function () {
+            const pid = this.value;
+            const project = allProjects.find(p => p.id === pid);
+            if (project) {
+                // Mock match score for visualization
+                const score = Math.floor(Math.random() * 40) + 60;
+                document.getElementById('matchScoreVal').textContent = score + '%';
+                document.getElementById('matchScoreBar').style.width = score + '%';
+                document.getElementById('projectDetails').style.display = 'block';
+                document.getElementById('projectTitle').textContent = project.title;
+            }
+        });
+
+        async function confirmAssignProject() {
+            const tid = document.getElementById('assignProjectTeamId').value;
+            const pid = document.getElementById('projectSelect').value;
+            if (!tid || !pid) return;
+
+            try {
+                // Update project with team id
+                const { error } = await supabaseClient.from('projects').update({ assigned_team_id: tid, status: 'assigned' }).eq('id', pid);
+                if (error) throw error;
+
+                closeModal('assignProjectModal');
+                // document.getElementById('assignProjectModal').classList.remove('open'); // Redundant
+
+                Swal.fire('Assigned', 'Project has been assigned to the team.', 'success');
+                loadTeams();
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
+        }
+
+
+
+        // Modals
+        function openCreateTeamModal() { document.getElementById('createTeamModal').classList.add('open'); }
+        function openAssignProjectModal(id) {
+            document.getElementById('assignProjectTeamId').value = id;
+            const sel = document.getElementById('projectSelect');
+            sel.innerHTML = '<option value="">-- Select --</option>' + allProjects.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
+            document.getElementById('assignProjectModal').classList.add('open');
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        // ── Candidate Slide-in Panel ──
+        let candStatusFilter = 'all';
+        let allApplications = []; // holds {full_name, email, id, status}
+
+        function toggleCandPanel() {
+            const panel = document.getElementById('candPanel');
+            const overlay = document.getElementById('candPanelOverlay');
+            if (panel.classList.contains('open')) {
+                panel.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            } else {
+                overlay.style.display = 'block';
+                overlay.offsetHeight;
+                overlay.style.opacity = '1';
+                panel.classList.add('open');
+                if (allApplications.length === 0) fetchApplicationsForPanel();
+                else renderCandidateList();
+            }
+        }
+
+        function openAddCandidateModal(id) {
+            document.getElementById('targetTeamId').value = id;
+            selectedCandidates.clear();
+            updateCandSelectedCount();
+            toggleCandPanel();
+        }
+
+        async function fetchApplicationsForPanel() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('applications')
+                    .select('full_name, email, status')
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                const unique = new Map();
+                (data || []).forEach(a => {
+                    if (a.email && !unique.has(a.email.toLowerCase())) unique.set(a.email.toLowerCase(), a);
+                });
+                allApplications = Array.from(unique.values());
+                updateCandFilterCounts();
+                renderCandidateList();
+            } catch (e) {
+                console.error('Error fetching applications:', e);
+                document.getElementById('candidateSelectList').innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle fa-2x"></i><p style="margin-top:10px">Failed to load candidates.</p></div>';
+            }
+        }
+
+        function getVisibleCandidates() {
+            const term = (document.getElementById('candidateSearch')?.value || '').toLowerCase();
+            return allApplications.filter(c => {
+                const matchesSearch = (c.full_name || '').toLowerCase().includes(term) || (c.email || '').toLowerCase().includes(term);
+                const matchesStatus = candStatusFilter === 'all' || (c.status || '').toLowerCase() === candStatusFilter.toLowerCase();
+                return matchesSearch && matchesStatus;
+            });
+        }
+
+        function setCandFilter(status, btn) {
+            candStatusFilter = status;
+            document.querySelectorAll('.cand-fpill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            filterCandidates();
+        }
+
+        function filterCandidates() {
+            const visible = getVisibleCandidates();
+            renderCandidateList(visible);
+            document.getElementById('candListCount').textContent = `${visible.length} shown`;
+        }
+
+        function updateCandFilterCounts() {
+            const counts = { all: allApplications.length };
+            allApplications.forEach(a => {
+                const s = (a.status || 'unknown').toLowerCase();
+                counts[s] = (counts[s] || 0) + 1;
+            });
+            document.querySelectorAll('.cand-fpill').forEach(pill => {
+                const s = pill.dataset.status;
+                const el = pill.querySelector('.fp-count');
+                if (el) el.textContent = counts[s.toLowerCase()] || 0;
+            });
+        }
+
+        function renderCandidateList(list) {
+            if (!list) list = getVisibleCandidates();
+            const container = document.getElementById('candidateSelectList');
+            document.getElementById('candListCount').textContent = `${list.length} shown`;
+
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--c-text-muted);"><i class="fas fa-search" style="font-size:1.5rem; opacity:0.3; margin-bottom:8px;"></i><p>No candidates found.</p></div>';
+                return;
+            }
+
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'];
+            container.innerHTML = list.map(c => {
+                // Match by email to existing profiles (for user_id lookup)
+                const profile = currentCandidates.find(p => p.email?.toLowerCase() === c.email?.toLowerCase());
+                const uid = profile ? profile.id : null;
+                if (!uid) return ''; // skip if no profile match
+                const isSelected = selectedCandidates.has(uid);
+                const initials = (c.full_name || '??').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+                let hash = 0;
+                for (let i = 0; i < (c.email || '').length; i++) hash = (c.email || '').charCodeAt(i) + ((hash << 5) - hash);
+                const color = colors[Math.abs(hash) % colors.length];
+                const s = (c.status || '').toLowerCase();
+                let bc = 'cand-badge-default';
+                if (s === 'approved') bc = 'cand-badge-approved';
+                else if (s === 'rejected') bc = 'cand-badge-rejected';
+                else if (s === 'pending') bc = 'cand-badge-pending';
+                else if (s === 'shortlisted') bc = 'cand-badge-shortlisted';
+                else if (s.includes('interview')) bc = 'cand-badge-interview';
+
+                return `
+                <div class="cand-item ${isSelected ? 'selected' : ''}" onclick="toggleCandSelection('${uid}', this)">
+                    <div class="cand-chk"></div>
+                    <div class="cand-avatar" style="color:${color}; background:${color}15; border:1px solid ${color}30;">${initials}</div>
+                    <div class="cand-info">
+                        <div class="cand-name">${c.full_name || 'Unknown'}</div>
+                        <div class="cand-email">${c.email}</div>
+                    </div>
+                    <span class="cand-badge ${bc}">${c.status || 'N/A'}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleCandSelection(uid, el) {
+            if (selectedCandidates.has(uid)) { selectedCandidates.delete(uid); el.classList.remove('selected'); }
+            else { selectedCandidates.add(uid); el.classList.add('selected'); }
+            updateCandSelectedCount();
+        }
+
+        function updateCandSelectedCount() {
+            document.getElementById('candSelectedCount').textContent = selectedCandidates.size;
+        }
+
+        function toggleCandSelectAll() {
+            const checked = document.getElementById('candSelectAll').checked;
+            getVisibleCandidates().forEach(c => {
+                const profile = currentCandidates.find(p => p.email?.toLowerCase() === c.email?.toLowerCase());
+                if (profile) {
+                    if (checked) selectedCandidates.add(profile.id);
+                    else selectedCandidates.delete(profile.id);
+                }
+            });
+            renderCandidateList();
+            updateCandSelectedCount();
+        }
+
+        async function createNewTeam() {
+            const name = document.getElementById('teamName').value;
+            const batchId = document.getElementById('teamBatch').value || null;
+            if (!name) return Swal.fire('Error', 'Team name required', 'error');
+
+            const saveBtn = document.querySelector('#createTeamModal .btn-primary');
+            const originalBtnText = saveBtn.innerHTML;
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+                const { error } = await supabaseClient.from('teams').insert([{ name, max_members: 4, batch_id: batchId }]);
+                if (error) throw error;
+
+                closeModal('createTeamModal');
+                loadTeams();
+                Swal.fire('Success', 'Team created successfully', 'success');
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to create team: ' + e.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        async function confirmAddCandidates() {
+            const tid = document.getElementById('targetTeamId').value;
+            if (selectedCandidates.size === 0) {
+                Swal.fire('No selection', 'Please select at least one candidate.', 'warning');
+                return;
+            }
+
+            const inserts = Array.from(selectedCandidates).map(uid => ({
+                team_id: tid,
+                user_id: uid,
+                role: 'Member'
+            }));
+
+            try {
+                const { error } = await supabaseClient.from('team_members').insert(inserts);
+                if (error) throw error;
+
+                toggleCandPanel();
+                loadTeams();
+                Swal.fire('Added', 'Members added to team', 'success');
+            } catch (e) {
+                Swal.fire('Error', 'Failed to add members: ' + e.message, 'error');
+            }
+        }
+
+        // Show detailed team info in a popup
+        function showTeamInfo(teamId) {
+            const team = currentTeams.find(t => t.id === teamId);
+            if (!team) return;
+
+            const members = team.team_members || [];
+            const projects = team.projects || [];
+
+            // Find leader and other members
+            const leader = members.find(m => m.role === 'Leader');
+            const otherMembers = members.filter(m => m.role !== 'Leader');
+
+            // Build projects HTML
+            const projectsHtml = projects.length > 0
+                ? projects.map(p => {
+                    let statusColor = 'neutral';
+                    let statusLabel = p.status || 'Draft';
+                    if (p.status === 'assigned') statusColor = 'warning';
+                    if (p.status === 'in_progress') { statusColor = 'primary'; statusLabel = 'In Progress'; }
+                    if (p.status === 'completed' || p.status === 'approved') { statusColor = 'success'; statusLabel = p.status === 'approved' ? 'Approved' : 'Completed'; }
+                    if (p.status === 'under_review') { statusColor = 'info'; statusLabel = 'Under Review'; }
+                    if (p.status === 'rejected') { statusColor = 'error'; statusLabel = 'Rejected'; }
+
+                    return `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--c-bg-app); border-radius:6px; margin-bottom:8px;">
+                            <span style="font-weight:500;">${p.title}</span>
+                            <span class="badge badge-${statusColor}" style="font-size:0.7rem;">${statusLabel}</span>
+                        </div>
+                    `;
+                }).join('')
+                : '<div style="color:var(--c-text-muted); text-align:center; padding:12px;">No projects assigned</div>';
+
+            // Build members HTML
+            const buildMemberHtml = (member, isLeader = false) => {
+                const name = member.profiles?.full_name || 'Unknown';
+                const email = member.profiles?.email || '';
+                const initial = name[0]?.toUpperCase() || '?';
+                const avatarUrl = member.profiles?.avatar_url;
+
+                return `
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--c-bg-app); border-radius:8px; margin-bottom:8px; ${isLeader ? 'border-left:3px solid #f59e0b;' : ''}">
+                        <div style="width:40px; height:40px; border-radius:50%; background:${isLeader ? 'rgba(245,158,11,0.2)' : 'rgba(99,102,241,0.2)'}; color:${isLeader ? '#fbbf24' : '#a5b4fc'}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem;">
+                            ${avatarUrl ? `<img src="${avatarUrl}" loading="lazy" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-weight:600; display:flex; align-items:center; gap:8px;">
+                                ${name}
+                                ${isLeader ? '<span style="background:rgba(245,158,11,0.2); color:#fbbf24; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:700;">LEADER</span>' : ''}
+                            </div>
+                            <div style="font-size:0.8rem; color:var(--c-text-muted);">${email}</div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const leaderHtml = leader ? buildMemberHtml(leader, true) : '<div style="color:var(--c-text-muted); text-align:center; padding:12px;">No leader assigned</div>';
+            const membersHtml = otherMembers.length > 0
+                ? otherMembers.map(m => buildMemberHtml(m, false)).join('')
+                : '<div style="color:var(--c-text-muted); text-align:center; padding:12px;">No other members</div>';
+
+            Swal.fire({
+                title: `<i class="fas fa-users" style="margin-right:8px; color:var(--c-primary);"></i> ${team.name}`,
+                html: `
+                    <div style="text-align:left;">
+                        <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
+                            <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:4px;">Team Status</div>
+                            <span class="badge badge-${team.is_active !== false ? 'success' : 'neutral'}">${team.is_active !== false ? 'Active' : 'Inactive'}</span>
+                            <span style="margin-left:12px; font-size:0.85rem; color:var(--c-text-secondary);">${members.length} / ${team.max_members} Members</span>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <div style="font-size:0.85rem; font-weight:600; color:var(--c-text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-project-diagram"></i> Assigned Projects
+                            </div>
+                            ${projectsHtml}
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <div style="font-size:0.85rem; font-weight:600; color:var(--c-text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-crown" style="color:#fbbf24;"></i> Team Leader
+                            </div>
+                            ${leaderHtml}
+                        </div>
+
+                        <div>
+                            <div style="font-size:0.85rem; font-weight:600; color:var(--c-text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-user-friends"></i> Team Members
+                            </div>
+                            ${membersHtml}
+                        </div>
+                    </div>
+                `,
+                width: '500px',
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'team-info-popup'
+                }
+            });
+        }
+
+        init();
+    </script>
+
+    <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
+</body>
+
+</html>

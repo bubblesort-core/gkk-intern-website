@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Resources | GKK-Hire</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Specific Styles for Resources */
+        .resource-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .resource-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .resource-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .icon-pdf {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .icon-doc {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .icon-link {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .icon-video {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .icon-default {
+            background: rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+        }
+
+        .resource-content {
+            flex: 1;
+        }
+
+        .resource-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--c-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .resource-meta {
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .target-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 99px;
+            background: var(--c-bg-secondary);
+            border: 1px solid var(--c-border);
+            color: var(--c-text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--c-bg-secondary);
+            color: var(--c-text-primary);
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- App Loading Overlay -->
+    <div id="admin-loading-overlay"
+        style="position: fixed; inset: 0; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s;">
+        <div style="position: relative; width: 60px; height: 60px; margin-bottom: 20px;">
+            <style>
+                .loader-ring {
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 50%;
+                    border: 2px solid transparent;
+                    border-top-color: #3b82f6;
+                    animation: l-spin 1s linear infinite;
+                }
+
+                .loader-icon-admin {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #60a5fa;
+                    font-size: 1.5rem;
+                }
+
+                @keyframes l-spin {
+                    100% {
+                        transform: rotate(360deg);
+                    }
+                }
+            </style>
+            <div class="loader-ring"></div>
+            <div class="loader-icon-admin"><i class="fas fa-book"></i></div>
+        </div>
+        <div style="font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 500; color: white;">Loading
+            Resources...</div>
+        <script>
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const al = document.getElementById('admin-loading-overlay');
+                    if (al) { al.style.opacity = '0'; setTimeout(() => al.remove(), 500); }
+                }, 800);
+            });
+        </script>
+    </div>
+
+    <div class="admin-layout">
+        <!-- Sidebar (Injected) -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <h1 class="page-title">Resources</h1>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn btn-primary" id="addResourceBtn" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i> Add Resource
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div id="resourcesList">
+                    <!-- Resources injected here -->
+                    <div style="padding: 2rem; text-align: center; color: var(--c-text-muted);">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Resource Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-container" style="max-width: 600px; width: 100%;">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Resource</h3>
+                <button class="modal-close" onclick="closeModal('createModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="resourceForm" onsubmit="event.preventDefault(); createResource();">
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="resTitle" class="form-input" placeholder="e.g. React Basics Guide"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select id="resType" class="form-select" onchange="toggleUrlType()">
+                            <option value="link">External Link</option>
+                            <option value="pdf">PDF Document</option>
+                            <option value="doc">Word/Text Doc</option>
+                            <option value="video">Video Link</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="urlGroup">
+                        <label class="form-label">URL / Link</label>
+                        <input type="url" id="resUrl" class="form-input" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group" id="fileGroup" style="display:none;">
+                        <label class="form-label">Upload File</label>
+                        <div style="border: 2px dashed var(--c-border); padding: 20px; border-radius: 8px; text-align: center; cursor: pointer;"
+                            onclick="document.getElementById('resFile').click()">
+                            <i class="fas fa-cloud-upload-alt"
+                                style="font-size: 2rem; color: var(--c-primary); margin-bottom: 10px;"></i>
+                            <p style="color: var(--c-text-secondary); margin-bottom: 0;">Click to upload file</p>
+                            <span id="fileName"
+                                style="display:block; margin-top:8px; font-size:0.85rem; color:var(--c-text-primary); font-weight:600;"></span>
+                        </div>
+                        <input type="file" id="resFile" style="display: none;" onchange="updateFileName()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea id="resDesc" class="form-input" rows="3"
+                            placeholder="Brief description..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Target Audience</label>
+                        <select id="targetType" class="form-select" onchange="toggleTargetSelect()">
+                            <option value="all">All Interns</option>
+                            <option value="interns">Specific Interns</option>
+                            <option value="teams">Specific Teams</option>
+                            <option value="batches">Specific Batches</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Target Selection -->
+                    <div id="targetSelectionArea"
+                        style="display: none; margin-top: 10px; padding: 12px; background: var(--c-bg-secondary); border-radius: 8px;">
+                        <input type="text" id="targetSearch" class="form-input" placeholder="Search..."
+                            oninput="filterTargets()" style="margin-bottom: 8px;">
+                        <div id="targetList"
+                            style="max-height: 150px; overflow-y: auto; border: 1px solid var(--c-border); border-radius: 6px; background: var(--c-bg-card);">
+                            <!-- Target items injected here -->
+                        </div>
+                        <div style="margin-top:8px; font-size:0.85rem; color:var(--c-text-muted);">
+                            Selected: <span id="selectedCount">0</span>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createModal')">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn" onclick="createResource()">Create Resource</button>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="../js/supabase-client.js"></script>
+        <script src="../js/admin-sidebar.js"></script>
+        <script src="../js/admin-identity.js"></script>
+
+        <script>
+            // --- Sidebar Logic ---
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.toggle('open');
+            }
+
+
+            // --- Event Listeners ---
+            // (Removed to prevent conflicts)
+
+            // --- Logic ---
+            let selectedTargetIds = new Set();
+            let internMap = new Map(), teamMap = new Map(), batchMap = new Map();
+
+
+            // Expose functions globally for HTML event handlers
+            window.openCreateModal = function () {
+                try {
+                    const form = document.getElementById('resourceForm');
+                    if (form) form.reset();
+
+                    const modal = document.getElementById('createModal');
+                    if (modal) modal.classList.add('open');
+
+                    selectedTargetIds.clear();
+                    toggleUrlType();
+                    toggleTargetSelect();
+                } catch (e) {
+                    console.error('Error opening modal:', e);
+                    alert('Error opening form: ' + e.message);
+                }
+            };
+
+            window.closeModal = function (id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.remove('open');
+            };
+
+            window.toggleUrlType = function () {
+                const typeEl = document.getElementById('resType');
+                const urlGroup = document.getElementById('urlGroup');
+                const fileGroup = document.getElementById('fileGroup');
+                const urlInput = document.getElementById('resUrl');
+
+                if (!typeEl || !urlGroup || !fileGroup || !urlInput) return;
+
+                const type = typeEl.value;
+                if (type === 'pdf' || type === 'doc') {
+                    urlGroup.style.display = 'none';
+                    fileGroup.style.display = 'block';
+                    urlInput.required = false;
+                } else {
+                    urlGroup.style.display = 'block';
+                    fileGroup.style.display = 'none';
+                    urlInput.required = true;
+                }
+            };
+
+            window.updateFileName = function () {
+                const file = document.getElementById('resFile').files[0];
+                const nameEl = document.getElementById('fileName');
+                if (nameEl) nameEl.textContent = file ? file.name : '';
+            };
+
+            window.toggleTargetSelect = function () {
+                const typeEl = document.getElementById('targetType');
+                const area = document.getElementById('targetSelectionArea');
+
+                if (!typeEl || !area) return;
+
+                selectedTargetIds.clear();
+                updateSelectedCount();
+
+                const type = typeEl.value;
+                if (type === 'all') {
+                    area.style.display = 'none';
+                } else {
+                    area.style.display = 'block';
+                    renderTargetList(type);
+                }
+            };
+
+            window.filterTargets = function () {
+                const type = document.getElementById('targetType').value;
+                const filter = document.getElementById('targetSearch').value;
+                renderTargetList(type, filter);
+            };
+
+            window.toggleTargetId = function (id) {
+                if (selectedTargetIds.has(id)) selectedTargetIds.delete(id);
+                else selectedTargetIds.add(id);
+
+                // Re-render
+                const type = document.getElementById('targetType').value;
+                const filter = document.getElementById('targetSearch').value;
+                renderTargetList(type, filter);
+                updateSelectedCount();
+            };
+
+            async function init() {
+                // Auth Check
+                const session = getAdminSession();
+                if (!session) return window.location.href = 'login.html';
+
+                await initLookups();
+                await loadResources();
+            }
+
+            async function initLookups() {
+                try {
+                    const interns = await getAllInterns();
+                    interns.forEach(i => internMap.set(i.id, i.full_name || i.email));
+                    const teams = await getAllTeams();
+                    teams.forEach(t => teamMap.set(t.id, t.team_name || t.name));
+
+                    const batches = await getAllBatches();
+                    batches.forEach(b => batchMap.set(b.id, b.batch_name || b.name));
+                } catch (e) { console.error("Lookup Init Error", e); }
+            }
+
+            async function loadResources() {
+                const list = document.getElementById('resourcesList');
+                if (!list) return;
+
+                list.innerHTML = '<div style="text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('resources')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        list.innerHTML = `
+                        <div style="text-align: center; padding: 4rem 2rem; color: var(--c-text-muted);">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"><i class="fas fa-folder-open"></i></div>
+                            <h3>No resources yet</h3>
+                            <p>Click "Add Resource" to upload materials for interns.</p>
+                        </div>`;
+                        return;
+                    }
+
+                    list.innerHTML = data.map(r => {
+                        let iconClass = 'icon-default';
+                        let icon = 'file';
+
+                        if (r.type === 'pdf') { iconClass = 'icon-pdf'; icon = 'file-pdf'; }
+                        else if (r.type === 'doc') { iconClass = 'icon-doc'; icon = 'file-word'; }
+                        else if (r.type === 'video') { iconClass = 'icon-video'; icon = 'video'; }
+                        else if (r.type === 'link') { iconClass = 'icon-link'; icon = 'link'; }
+
+                        let targetLabel = 'Global';
+                        // ... (existing logic kept but cleaned) ...
+                        if (r.target_type !== 'all') {
+                            const count = r.target_ids ? r.target_ids.length : 0;
+                            targetLabel = `${count} ${r.target_type}`;
+                            if (r.target_type === 'interns' && count === 1) targetLabel = internMap.get(r.target_ids[0]) || 'Unknown Intern';
+                            if (r.target_type === 'teams' && count === 1) {
+                                targetLabel = teamMap.get(r.target_ids[0]) || 'Specific Team';
+                            }
+                        }
+
+                        return `
+                    <div class="resource-card">
+                        <div class="resource-header">
+                            <div class="resource-icon ${iconClass}">
+                                <i class="fas fa-${icon}"></i>
+                            </div>
+                            <div class="resource-content">
+                                <h4 class="resource-title">${r.title}</h4>
+                                <div class="resource-meta">
+                                    <span class="target-badge">${r.target_type}</span>
+                                    <span><i class="far fa-calendar"></i> ${new Date(r.created_at).toLocaleDateString()}</span>
+                                    ${r.description ? `<span>• ${r.description}</span>` : ''}
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <a href="${r.url}" target="_blank" class="action-btn" title="View/Download">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                <button class="action-btn delete-btn" onclick="deleteResource('${r.id}', '${r.type}', '${r.url}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+
+                } catch (e) {
+                    console.error(e);
+                    list.innerHTML = `<div style="color:red; text-align:center;">Failed to load resources: ${e.message}</div>`;
+                }
+            }
+
+            async function renderTargetList(type, filter = '') {
+                const container = document.getElementById('targetList');
+                if (!container) return;
+                container.innerHTML = '<div style="padding:10px;">Loading...</div>';
+
+                let items = [];
+                try {
+                    if (type === 'interns') items = await getAllInterns();
+                    if (type === 'teams') items = await getAllTeams();
+                    if (type === 'batches') items = await getAllBatches();
+                } catch (e) {
+                    console.error("Error loading targets", e);
+                    container.innerHTML = '<div style="padding:10px; color:red;">Error loading targets</div>';
+                    return;
+                }
+
+                const listHtml = items
+                    .filter(item => {
+                        const name = item.full_name || item.team_name || item.name || item.batch_name || '';
+                        return name.toLowerCase().includes(filter.toLowerCase());
+                    })
+                    .map(item => {
+                        const id = item.id;
+                        const name = item.full_name || item.team_name || item.name || item.batch_name || 'Unknown';
+                        const isSelected = selectedTargetIds.has(id);
+                        return `
+                    <div onclick="toggleTargetId('${id}')" 
+                        style="padding: 8px 12px; border-bottom: 1px solid var(--c-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: ${isSelected ? 'rgba(59,130,246,0.1)' : 'transparent'};">
+                        <span>${name}</span>
+                        ${isSelected ? '<i class="fas fa-check" style="color:var(--c-primary)"></i>' : ''}
+                    </div>
+                `}).join('');
+
+                container.innerHTML = listHtml;
+            }
+
+            function updateSelectedCount() {
+                const el = document.getElementById('selectedCount');
+                if (el) el.textContent = selectedTargetIds.size;
+            }
+
+            // Make create/delete global too
+            window.createResource = async function () {
+                const saveBtn = document.getElementById('saveBtn');
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                try {
+                    const title = document.getElementById('resTitle').value;
+                    const type = document.getElementById('resType').value;
+                    const desc = document.getElementById('resDesc').value;
+                    const targetType = document.getElementById('targetType').value;
+
+                    let url = document.getElementById('resUrl').value;
+
+                    // Handle File Upload
+                    if (type === 'pdf' || type === 'doc') {
+                        const fileInput = document.getElementById('resFile');
+                        if (!fileInput.files || fileInput.files.length === 0) throw new Error("Please upload a file");
+
+                        const file = fileInput.files[0];
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+                        // Upload to 'resources' bucket
+                        const { data, error } = await supabaseClient.storage
+                            .from('resources')
+                            .upload(fileName, file);
+
+                        if (error) throw error;
+
+                        // Get Public URL
+                        const { data: publicData } = supabaseClient.storage
+                            .from('resources')
+                            .getPublicUrl(fileName);
+
+                        url = publicData.publicUrl;
+                    }
+
+                    if (!url) throw new Error("URL or File is required");
+
+                    const payload = {
+                        title,
+                        type,
+                        description: desc,
+                        url,
+                        target_type: targetType,
+                        target_ids: Array.from(selectedTargetIds)
+                    };
+
+                    const { error } = await supabaseClient.from('resources').insert([payload]);
+                    if (error) throw error;
+
+                    closeModal('createModal');
+                    loadResources();
+                    Swal.fire({ icon: 'success', title: 'Resource Added', timer: 2000, showConfirmButton: false });
+
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Error', e.message, 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = 'Create Resource';
+                }
+            };
+
+            window.deleteResource = async function (id, type, url) {
+                const result = await Swal.fire({
+                    title: 'Delete Resource?',
+                    text: "This cannot be undone.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Yes, delete it'
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const { error } = await supabaseClient.from('resources').delete().eq('id', id);
+                        if (error) throw error;
+                        loadResources();
+                        Swal.fire('Deleted!', 'Resource has been removed.', 'success');
+                    } catch (e) {
+                        Swal.fire('Error', e.message, 'error');
+                    }
+                }
+            };
+
+            init();
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,1338 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications | GKK Interns - Code. Build. Deploy.</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        /* Page Specific Styles */
+        .filters-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: var(--c-bg-card);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--c-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 4px;
+            background: #0f172a;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--c-border);
+        }
+
+        .filter-tab {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: var(--c-text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover {
+            color: var(--c-text-primary);
+        }
+
+        .filter-tab.active {
+            background: var(--c-bg-card);
+            /* or a highlight color */
+            background: #1e293b;
+            color: var(--c-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            border: 1px solid var(--c-border);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--c-text-muted);
+            pointer-events: none;
+        }
+
+        .search-box input {
+            padding-left: 42px;
+            background: #0f172a;
+            border-color: var(--c-border);
+        }
+
+        .search-box input:focus {
+            background: #1e293b;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-width: 220px;
+        }
+
+        .skill-tag {
+            font-size: 0.7rem;
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--c-text-secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* Modal footer with multiple buttons */
+        #applicationActions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        /* Modal tweaks */
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 8px;
+            /* avoid scrollbar overlap */
+        }
+
+        /* Custom Scrollbar for modal */
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: var(--c-border);
+            border-radius: 4px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: var(--c-text-muted);
+        }
+
+        tr.application-row {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        tr.application-row:hover {
+            background-color: rgba(59, 130, 246, 0.05) !important;
+        }
+
+        tr.application-row:hover td {
+            background: transparent;
+            /* Override default hover if needed */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Applications</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="loadApplications()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="openExportModal()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-input" placeholder="Search by name or email..." id="searchInput">
+                    </div>
+
+                    <!-- Date Range Filter -->
+                    <div
+                        style="display:flex; align-items:center; gap:8px; background:#0f172a; padding:4px 12px; border-radius:8px; border:1px solid var(--c-border);">
+
+                        <!-- Filter Mode -->
+                        <select id="dateFilterMode" class="form-select"
+                            style="border:none; background:transparent; font-size:0.85rem; padding:4px; font-weight:600; color:var(--c-text-primary); cursor:pointer;">
+                            <option value="created_at">📅 Applied</option>
+                            <option value="preferred_interview_date">🎥 Interview</option>
+                        </select>
+
+                        <div style="width:1px; height:20px; background:var(--c-border); margin:0 4px;"></div>
+
+                        <input type="date" id="startDate" class="form-input"
+                            style="border:none; padding:4px; height:auto; width:130px; font-size:0.85rem; background:transparent;"
+                            placeholder="Start Date">
+                        <span style="color:var(--c-text-muted);">-</span>
+                        <input type="date" id="endDate" class="form-input"
+                            style="border:none; padding:4px; height:auto; width:130px; font-size:0.85rem; background:transparent;"
+                            placeholder="End Date">
+
+                        <div style="width:1px; height:20px; background:var(--c-border); margin:0 4px;"></div>
+
+                        <!-- Time Slot Filter -->
+                        <select id="timeSlotFilter" class="form-select"
+                            style="border:none; background:transparent; font-size:0.85rem; padding:4px; width:100px; color:var(--c-text-secondary);">
+                            <option value="">🕒 Any Time</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-status="all">All</button>
+                        <button class="filter-tab" data-status="pending">Pending</button>
+                        <button class="filter-tab" data-status="shortlisted">Shortlisted</button>
+                        <button class="filter-tab" data-status="interview_ready">Interview Ready</button>
+                        <button class="filter-tab" data-status="approved">Approved</button>
+                        <button class="filter-tab" data-status="rejected">Rejected</button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Candidate</th>
+                                    <th>Contact</th>
+                                    <th style="min-width: 150px;">Skills</th>
+                                    <th>Status</th>
+                                    <th>Applied On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTable">
+                                <!-- Skeleton injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div
+                        style="padding: 16px; border-top: 1px solid var(--c-border); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: var(--c-text-muted);" id="pageInfo">Showing 0
+                            entries</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn btn-secondary btn-sm" id="prevPageBtn" onclick="changePage(-1)"
+                                disabled>Prev</button>
+                            <span id="pageNumbers" style="font-size: 0.85rem; color: var(--c-text-secondary);"></span>
+                            <button class="btn btn-secondary btn-sm" id="nextPageBtn" onclick="changePage(1)"
+                                disabled>Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- View Application Modal -->
+    <div class="modal-overlay" id="viewApplicationModal">
+        <div class="modal-container" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <h3 class="modal-title">Application Details</h3>
+                <button class="modal-close" onclick="closeModal('viewApplicationModal')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="applicationDetails">
+                <!-- Dynamic Content -->
+            </div>
+            <div class="modal-footer" id="applicationActions">
+                <!-- Dynamic Actions -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Modal (Removed - replaced by SweetAlert) -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+    <script>
+        let allApplications = [];
+        let allProfiles = new Set(); // Store registered emails
+        let currentFilter = 'all';
+        let currentPage = 1;
+        const PAGE_SIZE = 10;
+        let currentApplication = null;
+        let pendingApprovalId = null;
+        let availableTimeSlots = [];
+
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+
+            if (sidebar.classList.contains('open')) {
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            toggleSidebar(); // Close it
+        });
+
+        // First init removed — merged into the init at the bottom of the script
+
+        async function loadApplications() {
+            try {
+                // Fetch Applications
+                const { data: apps, error: appError } = await supabaseClient
+                    .from('applications')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (appError) throw appError;
+
+                // Fetch Profiles (Using RPC to bypass RLS)
+                const { data: profs, error: profError } = await supabaseClient
+                    .rpc('get_all_profile_emails');
+
+                if (profError) {
+                    console.error('Error fetching profiles:', profError);
+                }
+
+                if (!profError && profs) {
+                    // RPC returns array of objects like [{email: '...'}, ...]
+                    allProfiles = new Set(profs.map(p => p.email ? p.email.toLowerCase() : ''));
+                }
+
+                // Fetch Settings for Time Slots
+                const { data: settings } = await supabaseClient
+                    .from('form_settings')
+                    .select('time_slots')
+                    .limit(1)
+                    .single();
+
+                if (settings && settings.time_slots) {
+                    availableTimeSlots = settings.time_slots.sort();
+                    populateTimeSlots();
+                }
+
+                allApplications = apps || [];
+                renderApplications();
+            } catch (error) { console.error(error); }
+        }
+
+        function populateTimeSlots() {
+            const select = document.getElementById('timeSlotFilter');
+            select.innerHTML = '<option value="">🕒 Any Time</option>';
+            availableTimeSlots.forEach(time => {
+                // Convert 24h to 12h
+                const [h, m] = time.split(':');
+                const hour = parseInt(h);
+                const suffix = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+                const label = `${hour12}:${m} ${suffix}`;
+
+                select.innerHTML += `<option value="${time}">${label}</option>`;
+            });
+        }
+
+        function parseTime(t) {
+            if (!t) return null;
+            t = t.trim().toLowerCase();
+            const isPM = t.includes('pm');
+            const isAM = t.includes('am');
+            let clean = t.replace(/[a-z\s]/g, '');
+            const parts = clean.split(':');
+            if (parts.length < 2) return null;
+            let h = parseInt(parts[0], 10);
+            let m = parseInt(parts[1], 10);
+
+            if (isPM && h < 12) h += 12;
+            if (isAM && h === 12) h = 0;
+            return h * 60 + m;
+        }
+
+        function formatTime12h(t) {
+            if (!t) return '';
+            const mins = parseTime(t);
+            if (mins === null) return t;
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        let currentFilteredApps = [];
+
+        function renderApplications() {
+            const tbody = document.getElementById('applicationsTable');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const dateMode = document.getElementById('dateFilterMode').value;
+            const timeSlot = document.getElementById('timeSlotFilter').value;
+
+            // Update Header for Date Column
+            const dateHeader = document.querySelector('th:nth-child(6)');
+            if (dateHeader) {
+                dateHeader.textContent = dateMode === 'preferred_interview_date' ? 'Interview' : 'Applied On';
+            }
+
+            let filtered = allApplications;
+
+            // Status Filter
+            if (currentFilter !== 'all') filtered = filtered.filter(a => a.status === currentFilter);
+
+            // Search Filter
+            if (search) filtered = filtered.filter(a => a.full_name.toLowerCase().includes(search) || a.email.toLowerCase().includes(search));
+
+            // Date Range Filter
+            if (startDate) {
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                filtered = filtered.filter(a => {
+                    const targetDate = a[dateMode];
+                    if (!targetDate) return false;
+                    return new Date(targetDate) >= start;
+                });
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                filtered = filtered.filter(a => {
+                    const targetDate = a[dateMode];
+                    if (!targetDate) return false;
+                    return new Date(targetDate) <= end;
+                });
+            }
+
+            // Universal Time Check
+            if (timeSlot) {
+                const filterMins = parseTime(timeSlot);
+                filtered = filtered.filter(a => {
+                    const rowMins = parseTime(a.preferred_interview_time);
+                    console.log(`App Filter: ${timeSlot} (${filterMins}), Row: ${a.preferred_interview_time} (${rowMins})`);
+                    return filterMins !== null && rowMins === filterMins;
+                });
+            }
+
+            // Capture filtered list for export
+            currentFilteredApps = filtered;
+
+            const totalFiltered = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIdx = (currentPage - 1) * PAGE_SIZE;
+            const endIdx = Math.min(startIdx + PAGE_SIZE, totalFiltered);
+            const pageItems = filtered.slice(startIdx, endIdx);
+
+            // Update count display
+            const pageInfo = document.getElementById('pageInfo');
+            if (pageInfo) {
+                pageInfo.textContent = `Showing ${startIdx + 1}–${endIdx} of ${totalFiltered} entries${totalFiltered !== allApplications.length ? ` (${allApplications.length} total)` : ''}`;
+            }
+
+            // Update pagination buttons
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+            document.getElementById('pageNumbers').textContent = `Page ${currentPage} of ${totalPages}`;
+
+            // Update filter tab counts (based on overall list, not current date filter for now, or should it?)
+            // Let's keep counts reflective of current filters to be useful
+            // Actually, usually tab counts show TOTAL for that status. Let's keep standard behavior.
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                const status = tab.dataset.status;
+                if (status === 'all') {
+                    tab.textContent = `All (${allApplications.length})`;
+                } else {
+                    const count = allApplications.filter(a => a.status === status).length;
+                    const label = status === 'interview_ready' ? 'Interview Ready' : status.charAt(0).toUpperCase() + status.slice(1);
+                    tab.textContent = `${label} (${count})`;
+                }
+            });
+
+            if (totalFiltered === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--c-text-muted);">No applications found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pageItems.map((app, index) => {
+                const globalIndex = startIdx + index;
+
+                // Account Label Logic
+                const hasAccount = allProfiles.has(app.email.toLowerCase());
+                let accountLabel = '';
+                if (app.status === 'approved') {
+                    if (hasAccount) {
+                        accountLabel = '<span class="badge badge-success" style="font-size:0.7rem; margin-top:4px;"><i class="fas fa-check-circle"></i> Account Created</span>';
+                    } else {
+                        accountLabel = '<span class="badge badge-error" style="font-size:0.7rem; margin-top:4px;"><i class="fas fa-exclamation-circle"></i> No Account</span>';
+                    }
+                }
+
+                let statusBadge = '';
+                switch (app.status) {
+                    case 'approved': statusBadge = '<span class="status-badge status-approved"><i class="fas fa-check-circle"></i> Approved</span>'; break;
+                    case 'rejected': statusBadge = '<span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> Rejected</span>'; break;
+                    default: statusBadge = '<span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>';
+                }
+
+                let dateDisplay = new Date(app.created_at).toLocaleDateString();
+                let timeDisplay = '';
+                if (dateMode === 'preferred_interview_date') {
+                    if (app.preferred_interview_date) {
+                        dateDisplay = new Date(app.preferred_interview_date).toLocaleDateString();
+                        if (app.preferred_interview_time) {
+                            timeDisplay = `<div style="font-size:0.75rem; color:var(--c-text-muted); margin-top:2px;">${formatTime12h(app.preferred_interview_time)}</div>`;
+                        }
+                    } else {
+                        dateDisplay = '-';
+                    }
+                }
+
+                return `
+                <tr class="application-row">
+                    <td style="text-align:center; font-weight:600; color:var(--c-text-muted); font-size:0.85rem;">${globalIndex + 1}</td>
+                    <td onclick="viewApplication('${app.id}')">
+                        <div style="font-weight:600;">${app.full_name}</div>
+                        <div style="font-size:0.8rem; color:var(--c-text-secondary);">${app.college || ''}</div>
+                    </td>
+                    <td onclick="viewApplication('${app.id}')">
+                        <div style="font-size:0.9rem;">${app.email}</div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted);">${app.phone || ''}</div>
+                    </td>
+                    <td onclick="viewApplication('${app.id}')">
+                        <div class="skills-list">
+                            ${(app.skills || []).slice(0, 3).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                            ${(app.skills || []).length > 3 ? `<span class="skill-tag">+${app.skills.length - 3}</span>` : ''}
+                        </div>
+                    </td>
+                    <td onclick="viewApplication('${app.id}')">
+                        <span class="badge badge-${getStatusBadge(app.status)}">${app.status}</span>
+                        <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                           ${accountLabel}
+                        </div>
+                    </td>
+                    <td onclick="viewApplication('${app.id}')" style="font-size:0.85rem; color:var(--c-text-secondary);">
+                        <div style="font-weight:500;">${dateDisplay}</div>
+                         ${timeDisplay}
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="viewApplication('${app.id}')">Review</button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteApplication('${app.id}')" title="Delete" style="color:var(--c-error); border-color:var(--c-border);"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function formatTime12(time) {
+            if (!time) return '';
+            const [h, m] = time.split(':');
+            const hour = parseInt(h);
+            const suffix = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+            return `${hour12}:${m} ${suffix}`;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderApplications();
+        }
+
+        function getStatusBadge(s) {
+            if (s === 'pending') return 'warning';
+            if (s === 'shortlisted') return 'info';
+            if (s === 'interview_ready') return 'warning';
+            if (s === 'approved') return 'success';
+            if (s === 'rejected') return 'error';
+            return 'neutral';
+        }
+
+        function setupFilters() {
+            document.querySelectorAll('.filter-tab').forEach(t => {
+                t.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(x => x.classList.remove('active'));
+                    t.classList.add('active');
+                    currentFilter = t.dataset.status;
+                    currentPage = 1;
+                    renderApplications();
+                })
+            });
+            document.getElementById('searchInput').addEventListener('input', () => {
+                currentPage = 1;
+                renderApplications();
+            });
+
+            // Date Filter Listeners
+            document.getElementById('startDate').addEventListener('change', () => {
+                currentPage = 1;
+                renderApplications();
+            });
+            document.getElementById('endDate').addEventListener('change', () => {
+                currentPage = 1;
+                renderApplications();
+            });
+
+            // New Filter Listeners
+            document.getElementById('dateFilterMode').addEventListener('change', () => {
+                currentPage = 1;
+                renderApplications();
+            });
+            document.getElementById('timeSlotFilter').addEventListener('change', () => {
+                currentPage = 1;
+                renderApplications();
+            });
+        }
+
+        function viewApplication(id) {
+            const app = allApplications.find(a => a.id === id);
+            if (!app) return;
+            currentApplication = app;
+
+            const details = document.getElementById('applicationDetails');
+            details.innerHTML = `
+                <!-- Header Section -->
+                <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--c-border);">
+                   <div style="width:64px; height:64px; background:var(--c-bg-secondary); color:var(--c-text); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.8rem; box-shadow:var(--shadow-sm);">${app.full_name[0]}</div>
+                   <div style="flex:1">
+                       <h3 style="font-size:1.4rem; font-weight:700; color:var(--c-text); margin-bottom:4px;">${app.full_name}</h3>
+                       <div style="color:var(--c-text-secondary); font-size:0.95rem;"><i class="fas fa-envelope" style="margin-right:6px; opacity:0.7;"></i>${app.email}</div>
+                   </div>
+                   <div style="text-align:right;">
+                       <span class="badge badge-${getStatusBadge(app.status)}" style="font-size:0.9rem; padding:6px 12px;">${app.status.toUpperCase()}</span>
+                       <div style="font-size:0.8rem; color:var(--c-text-muted); margin-top:6px;">Applied: ${app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}</div>
+                   </div>
+                </div>
+
+                <!-- Main Grid -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+                    
+                    <!-- Left Column -->
+                    <div style="display:flex; flex-col; gap:24px;">
+                        
+                        <!-- Contact Card -->
+                         <div style="background:var(--c-bg-card); padding:20px; border-radius:12px; border:1px solid var(--c-border); box-shadow:var(--shadow-sm);">
+                            <h4 style="font-size:0.8rem; font-weight:700; margin-bottom:16px; color:var(--c-text-muted); text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center gap:8px;">
+                                <i class="fas fa-address-card" style="margin-right:8px;"></i> Contact Info
+                            </h4>
+                            <div style="display:grid; gap:16px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="width:32px; height:32px; background:rgba(59, 130, 246, 0.1); color:#3b82f6; border-radius:8px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-phone"></i></div>
+                                        <div>
+                                            <div style="font-size:0.75rem; color:var(--c-text-secondary);">Phone</div>
+                                            <div style="font-size:0.95rem; font-weight:600;">+91 ${app.phone || '-'}</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-ghost" onclick="navigator.clipboard.writeText('+91${app.phone}')" title="Copy"><i class="fas fa-copy"></i></button>
+                                </div>
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                     <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="width:32px; height:32px; background:rgba(34, 197, 94, 0.1); color:#22c55e; border-radius:8px; display:flex; align-items:center; justify-content:center;"><i class="fab fa-whatsapp"></i></div>
+                                        <div>
+                                            <div style="font-size:0.75rem; color:var(--c-text-secondary);">WhatsApp</div>
+                                            <div style="font-size:0.95rem; font-weight:600;">+91 ${app.whatsapp_number || app.phone || '-'}</div>
+                                        </div>
+                                    </div>
+                                    <a href="https://wa.me/91${app.whatsapp_number || app.phone}" target="_blank" class="btn btn-sm btn-ghost" title="Chat"><i class="fas fa-external-link-alt"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+                         <!-- Personal Info -->
+                        <div>
+                            <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:12px; color:var(--c-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Personal Details</h4>
+                             <div style="background:var(--c-bg-secondary); padding:16px; border-radius:12px;">
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                    <div><span style="font-size:0.8rem; color:var(--c-text-secondary);">Age</span> <div style="font-weight:600;">${app.age || '-'}</div></div>
+                                    <div><span style="font-size:0.8rem; color:var(--c-text-secondary);">Sex</span> <div style="font-weight:600;">${app.sex || '-'}</div></div>
+                                    <div style="grid-column:span 2;"><span style="font-size:0.8rem; color:var(--c-text-secondary);">Discovery Source</span> <div style="font-weight:600;">${app.discovery_source || '-'}</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column -->
+                    <div style="display:flex; flex-col; gap:24px;">
+                        
+                        <!-- Education -->
+                        <div>
+                             <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:12px; color:var(--c-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Education & Experience</h4>
+                             <div style="background:var(--c-bg-secondary); padding:16px; border-radius:12px; display:flex; flex-direction:column; gap:12px;">
+                                <div>
+                                    <span style="font-size:0.8rem; color:var(--c-text-secondary);">College / University</span>
+                                    <div style="font-weight:600; font-size:0.95rem;">${app.college || '-'}</div>
+                                </div>
+                                 <div style="display:flex; gap:12px; border-top:1px solid rgba(255,255,255,0.05); pt-3 margin-top:4px;">
+                                    <div>
+                                        <span style="font-size:0.8rem; color:var(--c-text-secondary);">Status</span>
+                                        <div style="font-weight:600;">${app.college?.includes('Dropout') ? '<span style="color:#ef4444"><i class="fas fa-user-slash"></i> Dropout</span>' : '<span style="color:#3b82f6"><i class="fas fa-user-graduate"></i> Student</span>'}</div>
+                                    </div>
+                                    <div>
+                                        <span style="font-size:0.8rem; color:var(--c-text-secondary);">Experience</span>
+                                        <div style="font-weight:600;">${app.experience || 'Fresher'}</div>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+
+                         <!-- Links -->
+                        <div>
+                            <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:12px; color:var(--c-text-secondary); text-transform:uppercase; letter-spacing:0.5px;">Digital Footprint</h4>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                ${app.linkedin_url ?
+                    `<a href="${app.linkedin_url}" target="_blank" style="padding:10px; background:#0077b520; color:#0077b5; border:1px solid #0077b540; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:0.9rem; transition:all 0.2s;" onmouseover="this.style.background='#0077b530'" onmouseout="this.style.background='#0077b520'"><i class="fab fa-linkedin"></i> LinkedIn</a>`
+                    : '<div style="opacity:0.5; padding:10px; border:1px dashed var(--c-border); border-radius:8px; text-align:center; font-size:0.85rem;">No LinkedIn</div>'}
+                                
+                                ${app.github_url ?
+                    `<a href="${app.github_url}" target="_blank" style="padding:10px; background:#33333320; color:#e2e8f0; border:1px solid #33333340; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:0.9rem; transition:all 0.2s;" onmouseover="this.style.background='#33333340'" onmouseout="this.style.background='#33333320'"><i class="fab fa-github"></i> GitHub</a>`
+                    : '<div style="opacity:0.5; padding:10px; border:1px dashed var(--c-border); border-radius:8px; text-align:center; font-size:0.85rem;">No GitHub</div>'}
+                                
+                                ${app.portfolio_url ?
+                    `<a href="${app.portfolio_url}" target="_blank" style="padding:10px; background:#8b5cf620; color:#8b5cf6; border:1px solid #8b5cf640; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:0.9rem; transition:all 0.2s; grid-column:span 2;" onmouseover="this.style.background='#8b5cf630'" onmouseout="this.style.background='#8b5cf620'"><i class="fas fa-globe"></i> Portfolio / Website</a>`
+                    : ''}
+
+                                ${app.resume_url ?
+                    `<a href="${app.resume_url}" target="_blank" style="padding:10px; background:#ef444420; color:#ef4444; border:1px solid #ef444440; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:0.9rem; transition:all 0.2s; grid-column:span 2;" onmouseover="this.style.background='#ef444430'" onmouseout="this.style.background='#ef444420'"><i class="fas fa-file-pdf"></i> View Resume / CV</a>`
+                    : '<div style="grid-column:span 2; opacity:0.5; padding:10px; border:1px dashed var(--c-border); border-radius:8px; text-align:center; font-size:0.85rem;">No Resume Uploaded</div>'}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Full Width Sections -->
+                
+                ${app.preferred_interview_date || app.preferred_interview_time ? `
+                <div style="background:rgba(16, 185, 129, 0.05); padding:16px; border-radius:8px; margin-bottom:24px; border:1px solid rgba(16, 185, 129, 0.2); display:flex; align-items:center; gap:20px;">
+                    <div style="width:40px; height:40px; background:#10b981; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem;"><i class="fas fa-calendar-check"></i></div>
+                    <div>
+                        <h4 style="font-size:0.9rem; font-weight:700; color:#10b981; margin-bottom:4px;">Interview Preferences</h4>
+                         <div style="font-size:0.95rem; color:#d1fae5; display:flex; gap:16px;">
+                            <span><i class="far fa-calendar-alt"></i> ${app.preferred_interview_date || 'N/A'}</span>
+                            <span><i class="far fa-clock"></i> ${app.preferred_interview_time || 'N/A'}</span>
+                         </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${app.project_description ? `
+                <div style="margin-bottom:24px;">
+                    <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:10px; color:var(--c-text-secondary); text-transform:uppercase; letter-spacing:0.5px;"><i class="fas fa-align-left"></i> Project Description</h4>
+                    <div style="background:var(--c-bg-secondary); padding:16px; border-radius:12px; font-size:0.95rem; color:var(--c-text); line-height:1.6; max-height:150px; overflow-y:auto; border:1px solid var(--c-border);">
+                        ${app.project_description}
+                    </div>
+                </div>
+                ` : ''}
+
+                <div style="margin-bottom:12px;">
+                    <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:10px; color:var(--c-text-secondary); text-transform:uppercase; letter-spacing:0.5px;"><i class="fas fa-tags"></i> Skills & Interests</h4>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        ${(app.skills || []).map(s => `<span class="badge badge-neutral" style="padding:6px 12px; font-size:0.85rem; border:1px solid var(--c-border); background:var(--c-bg-secondary);">${s}</span>`).join('')}
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--c-border);">
+                     <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:10px; color:var(--c-text-secondary); text-transform:uppercase; letter-spacing:0.5px;"><i class="fas fa-sticky-note"></i> Internal Remarks</h4>
+                     <div style="display:flex; gap:10px;">
+                        <textarea id="remarkInput" class="form-input" placeholder="Add internal notes for admins..." style="min-height:80px; resize:vertical;">${app.remark || ''}</textarea>
+                        <button class="btn btn-secondary" onclick="saveRemark('${app.id}')" style="height:fit-content;"><i class="fas fa-save"></i> Save</button>
+                     </div>
+                </div>
+            `;
+
+            // Actions - Show all status buttons together
+            let btns = '<button class="btn btn-ghost" onclick="closeModal(\'viewApplicationModal\')">Close</button>';
+
+            // Shortlist button
+            if (app.status === 'shortlisted') {
+                btns += `<button class="btn btn-info" disabled style="opacity:0.6; cursor:not-allowed;"><i class="fas fa-check"></i> Shortlisted</button>`;
+            } else {
+                btns += `<button class="btn btn-info" onclick="updateStatus('${app.id}', 'shortlisted')"><i class="fas fa-star"></i> Shortlist</button>`;
+            }
+
+            // Interview Ready button
+            if (app.status === 'interview_ready') {
+                btns += `<button class="btn btn-warning" disabled style="opacity:0.6; cursor:not-allowed;"><i class="fas fa-check"></i> Interview Ready</button>`;
+            } else {
+                btns += `<button class="btn btn-warning" onclick="updateStatus('${app.id}', 'interview_ready')"><i class="fas fa-calendar-check"></i> Ready for Interview</button>`;
+            }
+
+            // Approve button
+            if (app.status === 'approved') {
+                btns += `<button class="btn btn-success" disabled style="opacity:0.6; cursor:not-allowed;"><i class="fas fa-check"></i> Approved</button>`;
+            } else {
+                btns += `<button class="btn btn-success" onclick="approveAfterInterview('${app.id}')"><i class="fas fa-check-circle"></i> Approve</button>`;
+            }
+
+            // Reject button
+            if (app.status === 'rejected') {
+                btns += `<button class="btn btn-danger" disabled style="opacity:0.6; cursor:not-allowed;"><i class="fas fa-check"></i> Rejected</button>`;
+            } else {
+                btns += `<button class="btn btn-danger" onclick="updateStatus('${app.id}', 'rejected')"><i class="fas fa-times-circle"></i> Reject</button>`;
+            }
+
+            document.getElementById('applicationActions').innerHTML = btns;
+            document.getElementById('viewApplicationModal').classList.add('open');
+        }
+
+        async function updateStatus(id, stat) {
+            const app = allApplications.find(a => a.id === id);
+            if (!app) return;
+
+            // Config per status
+            const confirmConfig = {
+                shortlisted: {
+                    title: 'Shortlist Candidate?',
+                    html: `Move <b>${app.full_name}</b> to <b>Shortlisted</b>?<br><small style="color:#94a3b8">A shortlisting email will be sent.</small>`,
+                    icon: 'info',
+                    confirmButtonText: '<i class="fas fa-star"></i> Yes, Shortlist',
+                    confirmButtonColor: '#3b82f6'
+                },
+                interview_ready: {
+                    title: 'Mark as Interview Ready?',
+                    html: `Move <b>${app.full_name}</b> to <b>Ready for Interview</b>?<br><small style="color:#94a3b8">An interview notification email will be sent.</small>`,
+                    icon: 'question',
+                    confirmButtonText: '<i class="fas fa-calendar-check"></i> Yes, Mark Ready',
+                    confirmButtonColor: '#f59e0b'
+                },
+                rejected: {
+                    title: 'Reject Candidate?',
+                    html: `Are you sure you want to <b style="color:#ef4444">reject</b> <b>${app.full_name}</b>?<br><small style="color:#94a3b8">A rejection email will be sent. This can be undone later.</small>`,
+                    icon: 'warning',
+                    confirmButtonText: '<i class="fas fa-times-circle"></i> Yes, Reject',
+                    confirmButtonColor: '#ef4444'
+                }
+            };
+
+            const cfg = confirmConfig[stat] || {
+                title: 'Confirm Action?',
+                html: `Update <b>${app.full_name}</b> status to <b>${stat}</b>?`,
+                icon: 'question',
+                confirmButtonText: 'Confirm',
+                confirmButtonColor: '#3b82f6'
+            };
+
+            const result = await Swal.fire({
+                title: cfg.title,
+                html: cfg.html,
+                icon: cfg.icon,
+                showCancelButton: true,
+                confirmButtonText: cfg.confirmButtonText,
+                cancelButtonText: 'Cancel',
+                cancelButtonColor: '#6b7280',
+                confirmButtonColor: cfg.confirmButtonColor,
+                background: '#1a1f2e',
+                color: '#e2e8f0',
+                customClass: { popup: 'swal-dark-popup' }
+            });
+
+            if (!result.isConfirmed) return;
+
+            closeModal('viewApplicationModal');
+
+            // Show optimistic feedback
+            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+            Toast.fire({ icon: 'info', title: 'Updating status...' });
+
+            try {
+                // 1. Update DB
+                const { error } = await supabaseClient.from('applications').update({ status: stat }).eq('id', id);
+                if (error) throw error;
+
+                // 2. Trigger Email
+                const app = allApplications.find(a => a.id === id);
+                if (app) {
+                    let emailType = stat;
+                    if (stat === 'interview_ready') emailType = 'interview';
+
+                    // Only invoke for relevant statuses
+                    if (['shortlisted', 'interview', 'rejected'].includes(emailType)) {
+
+
+                        try {
+                            const emailBody = {
+                                email: app.email,
+                                name: app.full_name,
+                                type: emailType
+                            };
+
+                            // Add interview timing details if it's an interview email
+                            if (emailType === 'interview') {
+                                emailBody.preferredDate = app.preferred_interview_date || '';
+                                emailBody.preferredTiming = app.preferred_interview_time || '';
+
+
+                            }
+
+                            const { data: mailData, error: mailError } = await supabaseClient.functions.invoke('send-decision-email', {
+                                body: emailBody
+                            });
+
+                            if (mailError) {
+                                console.error('Email function error:', mailError);
+                                const errorMsg = mailError.message || 'Email sending failed';
+                                Toast.fire({ icon: 'warning', title: `Status updated, but email failed: ${errorMsg}` });
+                            } else if (mailData && mailData.success === false) {
+                                console.error('Email returned error:', mailData);
+                                Toast.fire({ icon: 'warning', title: `Status updated, but email failed: ${mailData.error || 'Unknown error'}` });
+                            } else {
+
+                                Toast.fire({ icon: 'success', title: 'Status updated & Email sent' });
+                            }
+                        } catch (emailErr) {
+                            console.error('Email invocation error:', emailErr);
+                            Toast.fire({ icon: 'warning', title: 'Status updated, but email service unavailable' });
+                        }
+                    } else {
+                        Toast.fire({ icon: 'success', title: 'Status updated' });
+                    }
+                }
+
+                await loadApplications();
+
+            } catch (err) {
+                console.error('Update error:', err);
+                Swal.fire('Error', 'Failed to update status', 'error');
+            }
+        }
+
+        async function deleteApplication(id) {
+            const app = allApplications.find(a => a.id === id);
+            if (!app) return;
+
+            let timerInterval;
+            let timeLeft = 5;
+
+            const result = await Swal.fire({
+                title: 'Delete Intern?',
+                html: `You are about to delete <b>${app.full_name}</b>.<br>
+                       This action is <b style="color:red">PERMANENT</b>.<br>
+                       It will delete the application record <b>AND</b> the user account.<br><br>
+                       Confirm in <b id="del-timer" style="font-size:1.2em">5</b> seconds...`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it!',
+                didOpen: () => {
+                    const confirmBtn = Swal.getConfirmButton();
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                    confirmBtn.style.cursor = 'not-allowed';
+
+                    timerInterval = setInterval(() => {
+                        timeLeft--;
+                        const timerEl = Swal.getHtmlContainer().querySelector('#del-timer');
+                        if (timerEl) timerEl.textContent = timeLeft;
+
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            confirmBtn.disabled = false;
+                            confirmBtn.style.opacity = '1';
+                            confirmBtn.style.cursor = 'pointer';
+                            if (timerEl) {
+                                timerEl.parentElement.innerHTML = '<b>You can now delete.</b>';
+                            }
+                        }
+                    }, 1000);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                }
+            });
+
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Removing user from database and auth system.',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    // Call Edge Function for complete deletion
+                    const { data, error } = await supabaseClient.functions.invoke('delete-user', {
+                        body: { applicationId: id, email: app.email }
+                    });
+
+                    if (error) {
+                        console.error('Edge Function Error:', error);
+                        throw error;
+                    }
+
+                    if (data && data.errors && data.errors.length > 0) {
+                        console.warn('Partial deletion errors:', data.errors);
+                        Swal.fire('Warning', `Deleted with issues: ${data.errors.join(', ')}`, 'warning');
+                    } else {
+                        await loadApplications();
+                        Swal.fire('Deleted', 'Intern has been completely removed.', 'success');
+                    }
+
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    Swal.fire('Error', 'Failed to delete user completely. Check console for details.', 'error');
+                }
+            }
+        }
+
+
+        async function approveAfterInterview(id) {
+            const app = allApplications.find(a => a.id === id);
+            if (!app) return;
+
+            const result = await Swal.fire({
+                title: 'Approve Candidate?',
+                html: `Approve <b>${app.full_name}</b>?<br><small style="color:#94a3b8">This will create their intern profile and send an approval email.</small>`,
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-check-circle"></i> Yes, Approve',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                background: '#1a1f2e',
+                color: '#e2e8f0',
+                customClass: { popup: 'swal-dark-popup' }
+            });
+
+            if (!result.isConfirmed) return;
+
+            // Close the details modal
+            closeModal('viewApplicationModal');
+
+            // Show loading
+            Swal.fire({
+                title: 'Approving...',
+                text: 'Updating profile details and sending email.',
+                background: '#1a1f2e',
+                color: '#e2e8f0',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                // Update application status
+                await supabaseClient.from('applications').update({ status: 'approved' }).eq('id', id);
+
+                // Copy all application data to the user's profile
+                const profileUpdates = {
+                    full_name: app.full_name,
+                    phone: app.phone,
+                    skills: app.skills || [],
+                    linkedin_url: app.linkedin_url,
+                    github_url: app.github_url,
+                    portfolio_url: app.portfolio_url,
+                    college: app.college,
+                    status: 'active', // Mark as active intern
+                    social_links: {
+                        linkedin: app.linkedin_url || '',
+                        github: app.github_url || '',
+                        website: app.portfolio_url || ''
+                    }
+                };
+
+                // Update profile by email
+                const { error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .update(profileUpdates)
+                    .eq('email', app.email);
+
+                if (profileError) {
+                    console.error('Profile update error:', profileError);
+                }
+
+                // --- Send Approval Email ---
+                try {
+                    const { data: mailData, error: mailError } = await supabaseClient.functions.invoke('send-decision-email', {
+                        body: {
+                            email: app.email,
+                            name: app.full_name,
+                            type: 'approved'
+                        }
+                    });
+
+                    if (mailError) {
+                        console.error('Email function error:', mailError);
+                        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 }).fire({
+                            icon: 'warning',
+                            title: `Approved, but email failed: ${mailError.message || 'Error'}`
+                        });
+                    } else if (mailData && mailData.success === false) {
+                        console.error('Email returned error:', mailData);
+                        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 }).fire({
+                            icon: 'warning',
+                            title: `Approved, but email failed: ${mailData.error || 'Unknown error'}`
+                        });
+                    } else {
+                        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }).fire({
+                            icon: 'success',
+                            title: 'Approved & Email Sent'
+                        });
+                    }
+                } catch (emailErr) {
+                    console.error('Email invocation error:', emailErr);
+                    Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 4000 }).fire({
+                        icon: 'warning',
+                        title: 'Approved, but email service unavailable'
+                    });
+                }
+
+                await loadApplications();
+
+            } catch (err) {
+                console.error('Approval error:', err);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to approve application',
+                    icon: 'error',
+                    background: '#1a1f2e',
+                    color: '#e2e8f0'
+                });
+            }
+        }
+
+        async function saveRemark(id) {
+            const remark = document.getElementById('remarkInput').value;
+            const btn = document.querySelector('button[onclick^="saveRemark"]');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('applications')
+                    .update({ remark: remark })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                // Update local state
+                const app = allApplications.find(a => a.id === id);
+                if (app) app.remark = remark;
+
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                Toast.fire({ icon: 'success', title: 'Remark saved' });
+
+            } catch (err) {
+                console.error('Error saving remark:', err);
+                Swal.fire('Error', 'Failed to save remark', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function exportApplications() { /* Export logic same as before */ alert('Export triggered'); }
+
+        // Init Logic
+        async function init() {
+            const session = getAdminSession();
+            if (!session) return window.location.href = 'login.html';
+
+            // Show Skeleton immediately
+            const tbody = document.getElementById('applicationsTable');
+            if (tbody && typeof SkeletonUI !== 'undefined') {
+                tbody.innerHTML = SkeletonUI.generateTableRows(5, 7);
+            }
+
+            // Check URL Params for Search
+            const urlParams = new URLSearchParams(window.location.search);
+            const search = urlParams.get('search');
+            if (search) {
+                document.getElementById('searchInput').value = search;
+            }
+
+            setupFilters();
+            await loadApplications();
+        }
+        init();
+    </script>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal" style="display:none;">
+        <div class="modal-container" style="max-width: 500px; width: 100%;">
+            <div class="modal-header">
+                <h3 class="modal-title">Export Applications</h3>
+                <button class="modal-close" onclick="closeExportModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px; color: var(--c-text-secondary);">
+                    You are about to export applications based on the currently active filters.
+                </p>
+
+                <div
+                    style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 8px; border: 1px solid var(--c-border);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: var(--c-text-muted);">Total Records:</span>
+                        <strong style="color: var(--c-text-primary);" id="exportCount">0</strong>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <span
+                            style="display: block; color: var(--c-text-muted); font-size: 0.85rem; margin-bottom: 6px;">Active
+                            Filters:</span>
+                        <ul id="exportFiltersList"
+                            style="list-style: none; padding: 0; margin: 0; font-size: 0.9rem; color: var(--c-text-secondary);">
+                            <!-- Dynamic -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmExport()">
+                    <i class="fas fa-download"></i> Download CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openExportModal() {
+            // 1. Get current count
+            const count = currentFilteredApps.length;
+            document.getElementById('exportCount').textContent = count;
+
+            // 2. Build filters list
+            const list = document.getElementById('exportFiltersList');
+            list.innerHTML = '';
+
+            const status = document.querySelector('.filter-tab.active').dataset.status;
+            const search = document.getElementById('searchInput').value;
+            const dateMode = document.getElementById('dateFilterMode').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const timeSlot = document.getElementById('timeSlotFilter').value;
+
+            const addFilterItem = (label, value) => {
+                list.innerHTML += `<li style="margin-bottom: 4px;"><i class="fas fa-check" style="color: var(--c-primary); margin-right: 8px; font-size: 0.8rem;"></i> <strong>${label}:</strong> ${value}</li>`;
+            };
+
+            addFilterItem('Status', status === 'all' ? 'All Applications' : status.charAt(0).toUpperCase() + status.slice(1));
+
+            if (search) addFilterItem('Search', `"${search}"`);
+
+            if (startDate || endDate) {
+                const modeLabel = dateMode === 'interview_date' ? 'Interview Date' : 'Application Date';
+                const start = startDate ? new Date(startDate).toLocaleDateString() : 'Start';
+                const end = endDate ? new Date(endDate).toLocaleDateString() : 'Now';
+                addFilterItem(modeLabel, `${start} - ${end}`);
+            }
+
+            if (timeSlot) {
+                addFilterItem('Interview Time', timeSlot);
+            }
+
+            // 3. Show Modal
+            const modal = document.getElementById('exportModal');
+            modal.style.display = 'flex';
+            // slight delay to allow display flex to apply before opacity transition if handled by css class
+            setTimeout(() => modal.classList.add('open'), 10);
+        }
+
+        function closeExportModal() {
+            const modal = document.getElementById('exportModal');
+            modal.classList.remove('open');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function confirmExport() {
+            if (!currentFilteredApps || currentFilteredApps.length === 0) {
+                alert('No data to export.');
+                return;
+            }
+
+            // Generate CSV
+            const headers = ['ID', 'Full Name', 'Email', 'Phone', 'College', 'Graduation Year', 'Status', 'Applied Date', 'Interview Date', 'Interview Time', 'Skills', 'Remark'];
+            const csvRows = [headers.join(',')];
+
+            currentFilteredApps.forEach(app => {
+                const row = [
+                    app.id,
+                    `"${(app.full_name || '').replace(/"/g, '""')}"`,
+                    `"${(app.email || '').replace(/"/g, '""')}"`,
+                    `"${(app.phone || '').replace(/"/g, '""')}"`,
+                    `"${(app.college || '').replace(/"/g, '""')}"`,
+                    `"${(app.graduation_year || '').replace(/"/g, '""')}"`,
+                    app.status,
+                    app.created_at ? new Date(app.created_at).toISOString().split('T')[0] : '',
+                    app.preferred_interview_date || '',
+                    app.preferred_interview_time || '',
+                    `"${(app.skills || []).join('; ')}"`,
+                    `"${(app.remark || '').replace(/"/g, '""')}"`
+                ];
+                csvRows.push(row.join(','));
+            });
+
+            const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const filename = `applications_export_${new Date().toISOString().split('T')[0]}.csv`;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            closeExportModal();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Local Netlify folder
+.netlify/
+
+# Build cache
+.vite/
+dist/
+
+# Environment files (keep .env.example)
+# .env
+# .env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
