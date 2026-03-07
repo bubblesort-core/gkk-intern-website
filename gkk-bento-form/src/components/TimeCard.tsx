@@ -5,6 +5,7 @@ import { getFormSettings, getBookedSlots, holdSlot, releaseSlot, releaseSlotKeep
 const TimeCard: React.FC = () => {
     const { formData, updateFormData } = useFormContext();
     const [timeSlots, setTimeSlots] = useState<string[]>([]);
+    const [settings, setSettings] = useState<any>(null);
     const [maxPerSlot, setMaxPerSlot] = useState<number>(1);
     const [bookedCounts, setBookedCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
@@ -15,10 +16,25 @@ const TimeCard: React.FC = () => {
     const [holdCountdown, setHoldCountdown] = useState<number>(0); // seconds remaining
     const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+    // Clean up orphaned holds from previous reloads
+    useEffect(() => {
+        const orphanedHoldId = sessionStorage.getItem('gkk_slot_hold_id');
+        if (orphanedHoldId) {
+            releaseSlot(orphanedHoldId).then(() => {
+                sessionStorage.removeItem('gkk_slot_hold_id');
+                // Just in case it actually freed up a space we were looking at
+                if (formData.interview_date) {
+                    refreshBookedSlots();
+                }
+            });
+        }
+    }, []);
+
     // Load admin time slots + max capacity on mount
     useEffect(() => {
         async function loadTimeSlots() {
             const { data } = await getFormSettings();
+            setSettings(data);
             if (data?.time_slots && data.time_slots.length > 0) {
                 setTimeSlots(data.time_slots.sort());
             } else {
@@ -50,6 +66,17 @@ const TimeCard: React.FC = () => {
         if (!formData.interview_date) {
             setBookedCounts({});
             return;
+        }
+
+        // Dynamically update time slots based on the selected date
+        if (settings) {
+            const dateObj = new Date(formData.interview_date);
+            const dateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+            if (settings.specific_date_times && settings.specific_date_times[dateKey]) {
+                setTimeSlots(settings.specific_date_times[dateKey].sort());
+            } else {
+                setTimeSlots(settings.time_slots ? settings.time_slots.sort() : []);
+            }
         }
 
         async function fetchInitial() {
@@ -142,6 +169,7 @@ const TimeCard: React.FC = () => {
         if (formData.interview_time === formatted) {
             if (holdIdRef.current) {
                 await releaseSlot(holdIdRef.current);
+                sessionStorage.removeItem('gkk_slot_hold_id');
                 holdIdRef.current = null;
             }
             if (holdTimerRef.current) {
@@ -158,6 +186,7 @@ const TimeCard: React.FC = () => {
         // Release previous hold if any
         if (holdIdRef.current) {
             await releaseSlot(holdIdRef.current);
+            sessionStorage.removeItem('gkk_slot_hold_id');
             holdIdRef.current = null;
         }
         if (holdTimerRef.current) {
@@ -176,6 +205,7 @@ const TimeCard: React.FC = () => {
 
         if (result.success && result.holdId) {
             holdIdRef.current = result.holdId;
+            sessionStorage.setItem('gkk_slot_hold_id', result.holdId);
             updateFormData({ interview_time: formatted, slot_hold_id: result.holdId });
             startHoldTimer();
             refreshBookedSlots();
@@ -221,6 +251,7 @@ const TimeCard: React.FC = () => {
         e.stopPropagation();
         if (holdIdRef.current) {
             await releaseSlot(holdIdRef.current);
+            sessionStorage.removeItem('gkk_slot_hold_id');
             holdIdRef.current = null;
         }
         if (holdTimerRef.current) {

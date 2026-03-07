@@ -144,11 +144,6 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
         requestAnimationFrame(() => { syncingFromExternal.current = false; });
     }, [formData.full_name]);
 
-    const handleFocus = () => {
-        updateFormData({ mascot_emotion: 'typing' });
-        onFocus();
-    };
-
     const handleClear = (e: React.MouseEvent) => {
         e.stopPropagation();
         updateFormData({ full_name: '', email: '', is_email_verified: false, college: '' });
@@ -162,8 +157,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 flex flex-col gap-6"
-            onClick={handleFocus}
+            className="w-full h-full bento-card glass-hub p-4 md:p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 flex flex-col gap-4 md:gap-6"
         >
             <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1">
@@ -300,25 +294,29 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
                     <span className="text-sm font-semibold text-text-secondary">Education Status <span className="text-red-500">*</span></span>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Status Selector */}
-                        <div className="relative">
-                            <select
-                                value={status}
-                                onChange={(e) => handleStatusChange(e.target.value as any)}
-                                className="w-full bg-[#1e293b] border border-[#334155] rounded-xl h-14 px-4 text-[#f8fafc] focus:border-[#10b981] focus:ring-4 focus:ring-[#10b981]/15 outline-none transition-all appearance-none cursor-pointer animate-fadeInFast"
-                                onFocus={handleFocus}
-                                onBlur={onBlur}
-                            >
-                                <option value="college">College / University</option>
-                                <option value="dropout">Dropout</option>
-                                <option value="other">None / Other</option>
-                            </select>
-                            {/* Custom Arrow */}
-                            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#94a3b8" viewBox="0 0 16 16">
-                                    <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
-                                </svg>
-                            </div>
+                        {/* Status Selector - Simple Buttons */}
+                        <div className="flex gap-2">
+                            {([
+                                { key: 'college' as const, label: 'College / University', icon: 'school' },
+                                { key: 'dropout' as const, label: 'Dropout', icon: 'trending_down' },
+                                { key: 'other' as const, label: 'Other', icon: 'more_horiz' },
+                            ]).map(({ key, label, icon }) => {
+                                const isSelected = status === key;
+                                return (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => handleStatusChange(key)}
+                                        className={`flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-xs font-bold transition-all duration-200 border-2 ${isSelected
+                                            ? 'bg-primary/15 border-primary text-primary shadow-md'
+                                            : 'border-border bg-background-card text-text-secondary hover:border-primary/50 hover:text-primary'
+                                            }`}
+                                    >
+                                        <span className="material-symbols-outlined text-lg">{icon}</span>
+                                        {label}
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         {/* Conditional Inputs */}
@@ -338,7 +336,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
 
                             {/* DROPOUT TAGS */}
                             {status === 'dropout' && (
-                                <div className="flex flex-wrap gap-2 animate-slideUp min-h-[3.5rem] items-center">
+                                <div className="flex flex-wrap gap-2 animate-slideUp min-h-14 items-center">
                                     {['0-1 years', '1-2 years', '2+ years', 'Start-up Dropout'].map((opt) => {
                                         const value = `Dropout: ${opt}`;
                                         const isSelected = formData.college === value;
@@ -352,7 +350,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
                                                 }}
                                                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border ${isSelected
                                                     ? 'bg-[#10b981] text-white border-[#10b981] shadow-lg shadow-emerald-900/20 transform scale-105'
-                                                    : 'bg-[#0f172a] border-[#334155] text-[#94a3b8] hover:border-[#10b981]/50 hover:text-[#10b981]'
+                                                    : 'bg-background-light border-border text-text-secondary hover:border-primary/50 hover:text-primary'
                                                     }`}
                                             >
                                                 {opt}
@@ -376,7 +374,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
                                     rows={1}
                                     onFocus={onFocus}
                                     onBlur={onBlur}
-                                    className="w-full bg-[#1e293b] border border-[#334155] rounded-xl h-14 px-4 py-3.5 text-[#f8fafc] focus:border-[#10b981] focus:ring-4 focus:ring-[#10b981]/15 outline-none transition-all duration-300 resize-none text-sm animate-fadeIn hover:shadow-md focus:scale-[1.01] focus:shadow-lg transform origin-center"
+                                    className="w-full bg-background-card border border-border rounded-xl h-14 px-4 py-3.5 text-text-primary focus:border-primary focus:ring-4 focus:ring-primary/15 outline-none transition-all duration-300 resize-none text-sm animate-fadeIn hover:shadow-md focus:scale-[1.01] focus:shadow-lg transform origin-center"
                                     style={{ lineHeight: '1.5' }}
                                 />
                             )}

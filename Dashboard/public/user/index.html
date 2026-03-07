@@ -366,76 +366,9 @@
             }
         }
 
-        /* App Download Button Pulse Animation & Responsiveness */
-        .app-download-btn {
-            display: none;
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            border: none;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-            font-weight: 600;
-            padding: 0.4rem 1rem;
-            border-radius: 8px;
-            color: white;
-            text-decoration: none;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-text-content {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            line-height: 1.1;
-        }
-
-        .btn-label {
-            font-size: 0.85rem;
-        }
-
-        .btn-subtext {
-            font-size: 0.65rem;
-            opacity: 0.8;
-            font-weight: 400;
-        }
-
-        @media (max-width: 600px) {
-            .app-download-btn {
-                padding: 0.4rem 0.6rem;
-                gap: 0.3rem;
-            }
-
-            .btn-subtext {
-                display: none;
-            }
-
-            .btn-label {
-                font-size: 0.75rem;
-            }
-        }
-
-        @keyframes pulse-glow {
-            0% {
-                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-            }
-        }
-
-        .pulse-glow {
-            animation: pulse-glow 2s infinite;
-        }
-
         /* Header Decluttering for Mobile */
         @media (max-width: 768px) {
 
-            .app-download-btn .btn-text-content,
             .header-signout-btn span {
                 display: none !important;
             }
@@ -448,20 +381,263 @@
                 font-size: 1.1rem !important;
             }
 
-            .app-download-btn {
-                padding: 0.5rem !important;
-                width: 38px;
-                height: 38px;
-                display: inline-flex;
-                justify-content: center;
-                align-items: center;
-            }
-
             .header-signout-btn {
                 padding: 0.5rem !important;
                 width: 38px;
                 height: 38px;
                 justify-content: center;
+            }
+        }
+
+        /* ============================================
+           MOBILE APP DOWNLOAD SECTION
+           ============================================ */
+        .app-download-section {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .app-download-hero {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-download-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.06), transparent 50%);
+            pointer-events: none;
+        }
+
+        .app-download-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        }
+
+        .app-download-hero h2 {
+            color: white;
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .app-download-hero .app-desc {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .app-download-btn-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .app-download-btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.45);
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+        }
+
+        .app-download-btn-main i {
+            font-size: 1.2rem;
+        }
+
+        .app-features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-top: 2.5rem;
+        }
+
+        .app-feature-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .app-feature-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .app-feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            margin: 0 auto 0.75rem;
+        }
+
+        .app-feature-card h4 {
+            color: white;
+            font-size: 0.95rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .app-feature-card p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .app-version-info {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .app-version-info span {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 500;
+            margin-left: 0.35rem;
+        }
+
+        /* App Section Locked State */
+        .app-locked-overlay {
+            position: relative;
+        }
+
+        .app-locked-overlay .app-download-hero {
+            filter: blur(2px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .app-locked-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            text-align: center;
+            z-index: 10;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .app-locked-banner .lock-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1rem;
+            background: rgba(245, 158, 11, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #f59e0b;
+        }
+
+        .app-locked-banner h3 {
+            color: white;
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-locked-banner p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .app-download-hero {
+                padding: 2rem 1.25rem;
+            }
+
+            .app-download-hero h2 {
+                font-size: 1.35rem;
+            }
+
+            .app-download-hero .app-desc {
+                font-size: 0.9rem;
+            }
+
+            .app-features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .app-download-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 1.5rem;
+                border-radius: 16px;
+            }
+
+            .app-download-btn-main {
+                padding: 0.875rem 1.5rem;
+                font-size: 0.95rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .app-locked-banner {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-download-hero {
+                padding: 1.5rem 1rem;
+                border-radius: 14px;
+            }
+
+            .app-download-hero h2 {
+                font-size: 1.2rem;
+            }
+
+            .app-feature-card {
+                padding: 1.25rem;
             }
         }
     </style>
@@ -607,6 +783,10 @@
                     <i class="fas fa-user-plus"></i>
                     <span>Invite Friends</span>
                 </a>
+                <a href="#mobileapp" class="nav-item" data-section="mobileapp" id="navMobileApp">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile App</span>
+                </a>
 
             </nav>
 
@@ -640,17 +820,6 @@
                     <p id="headerSubtitle" style="display: none;">Welcome back</p>
                 </div>
                 <div class="header-actions">
-                    <!-- App Download Button (Paid Interns Only) -->
-                    <a href="https://github.com/noreplaygkk26-png/gkk-app-releases/releases/download/v1.1.7/app-release.apk"
-                        class="btn btn-primary btn-sm app-download-btn pulse-glow" id="appDownloadBtn"
-                        title="Download our official APK for real-time notifications, project updates, and easier access to all dashboard features directly from your mobile device.">
-                        <i class="fas fa-mobile-alt" style="font-size: 1.2rem;"></i>
-                        <div class="btn-text-content">
-                            <span class="btn-label">Get Mobile App</span>
-                            <span class="btn-subtext">Real-time updates & alerts</span>
-                        </div>
-                    </a>
-
                     <button class="btn btn-secondary btn-sm" onclick="refreshDashboard()" id="refreshBtn"
                         title="Check for updates"
                         style="background: transparent; border: 1px solid rgba(255,255,255,0.1);">
@@ -931,7 +1100,7 @@
 
                         <!-- Main Content Split -->
                         <div class="overview-split-grid"
-                            style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                            style="display: grid; gap: 2rem;">
 
                             <!-- Left: Current Focus -->
                             <div class="overview-column">
@@ -1044,14 +1213,14 @@
 
                 <!-- RECORDINGS SECTION -->
                 <section id="recordings" class="section-content">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div class="recordings-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <h2 style="font-size: 1.75rem; color: white;">Recorded Sessions</h2>
                             <p style="color: var(--text-secondary); margin-top: 0.5rem;">Browse through all previous
                                 session recordings</p>
                         </div>
-                        <div class="search-box-wrap" style="width: 300px;">
+                        <div class="search-box-wrap" style="width: 300px; max-width: 100%; position: relative;">
                             <i class="fas fa-search"
                                 style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
                             <input type="text" id="recordingsSearch" placeholder="Search sessions..."
@@ -1364,6 +1533,57 @@
                             <div class="skeleton-image"
                                 style="width: 80px; height: 80px; margin: 0 auto 20px auto; border-radius: 50%;"></div>
                             <div class="skeleton-line" style="width: 50%; margin: 0 auto;"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MOBILE APP DOWNLOAD SECTION -->
+                <section id="mobileapp" class="section-content">
+                    <h3 style="margin-bottom: 0.5rem;"><i class="fas fa-mobile-alt" style="color: #6366f1; margin-right: 8px;"></i>Mobile App</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Get the GKK Interns app for the best experience on your phone.</p>
+
+                    <div class="app-download-section" id="appDownloadSection">
+                        <div class="app-download-hero">
+                            <div class="app-download-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h2>GKK Interns Mobile App</h2>
+                            <p class="app-desc">
+                                Stay connected with real-time notifications, track your projects, attend meetings, and access all dashboard features right from your phone.
+                            </p>
+                            <a href="https://github.com/noreplaygkk26-png/gkk-app-releases/releases/download/v1.3.0/app-release.apk"
+                                class="app-download-btn-main" id="appDownloadLink">
+                                <i class="fab fa-android"></i>
+                                Download APK
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <div class="app-version-info">
+                                Version <span>v1.3.0</span> &middot; Android
+                            </div>
+                        </div>
+
+                        <div class="app-features-grid">
+                            <div class="app-feature-card">
+                                <div class="app-feature-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h4>Push Notifications</h4>
+                                <p>Get instant alerts for meetings, announcements &amp; deadlines</p>
+                            </div>
+                            <div class="app-feature-card">
+                                <div class="app-feature-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                                    <i class="fas fa-project-diagram"></i>
+                                </div>
+                                <h4>Project Tracking</h4>
+                                <p>View and manage your assigned projects on the go</p>
+                            </div>
+                            <div class="app-feature-card">
+                                <div class="app-feature-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <h4>Team Chat</h4>
+                                <p>Connect with your team directly from the app</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -1924,9 +2144,6 @@
             if (currentProfile.status === 'active') {
                 isLocked = false;
                 document.getElementById('navPayment').style.display = 'none';
-                // Show App Download Button
-                const appBtn = document.getElementById('appDownloadBtn');
-                if (appBtn) appBtn.style.display = 'inline-flex';
             } else {
                 isLocked = true;
                 document.getElementById('navPayment').style.display = 'flex';
@@ -2481,13 +2698,32 @@
         }
 
         function lockNavigation() {
-            const lockedSections = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards', 'leaderboard', 'referrals'];
+            const lockedSections = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards', 'leaderboard', 'referrals', 'mobileapp'];
             lockedSections.forEach(sec => {
                 const link = document.querySelector(`.nav-item[data-section="${sec}"]`);
                 if (link) {
                     link.classList.add('locked');
                 }
             });
+            // Lock mobile app section with overlay
+            lockMobileAppSection();
+        }
+
+        function lockMobileAppSection() {
+            const section = document.getElementById('appDownloadSection');
+            if (!section) return;
+            section.classList.add('app-locked-overlay');
+            const overlay = document.createElement('div');
+            overlay.className = 'app-locked-banner';
+            overlay.innerHTML = `
+                <div class="lock-icon"><i class="fas fa-lock"></i></div>
+                <h3>Feature Locked</h3>
+                <p>Complete your registration payment to download the mobile app.</p>
+                <button class="btn btn-primary" onclick="navigateTo('payment')" style="background: #f59e0b; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; width: 100%;">
+                    <i class="fas fa-unlock"></i> Unlock Now
+                </button>
+            `;
+            section.appendChild(overlay);
         }
 
         function lockStreakBadge() {
@@ -2511,7 +2747,7 @@
         }
 
         function tryNavigate(sectionId) {
-            const lockedSections = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards', 'leaderboard', 'referrals'];
+            const lockedSections = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards', 'leaderboard', 'referrals', 'mobileapp'];
 
             if (isLocked && lockedSections.includes(sectionId)) {
                 Swal.fire({
@@ -2894,7 +3130,8 @@
                 'leaderboard': 'Intern Leaderboard',
                 'resources': 'Learning Resources',
                 'rewards': 'Rewards & Coupons',
-                'referrals': 'Invite Friends'
+                'referrals': 'Invite Friends',
+                'mobileapp': 'Mobile App'
             };
             document.getElementById('headerTitle').textContent = titles[sectionId] || 'Dashboard';
 

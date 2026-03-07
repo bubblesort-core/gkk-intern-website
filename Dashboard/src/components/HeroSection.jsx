@@ -31,7 +31,7 @@ export default function HeroSection() {
         <section className="hero-section">
             <div className="hero-visual-shape" style={{ top: '-100px', right: '-100px' }}></div>
             <div className="container">
-                <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+                <div className="grid hero-grid" style={{ gap: '4rem', alignItems: 'center' }}>
                     {/* Left — Content */}
                     <div className="hero-content">
                         <div
@@ -80,10 +80,12 @@ export default function HeroSection() {
 
                         {/* Stats */}
                         <div
+                            className="hero-stats"
                             style={{
                                 marginTop: '4rem',
                                 display: 'flex',
                                 gap: '3rem',
+                                flexWrap: 'wrap',
                                 borderTop: '1px solid var(--border)',
                                 paddingTop: '2rem',
                             }}

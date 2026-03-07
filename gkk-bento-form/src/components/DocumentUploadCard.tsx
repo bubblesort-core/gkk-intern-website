@@ -129,7 +129,7 @@ const DocumentUploadCard: React.FC = () => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub border border-border p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)] flex flex-col gap-4"
+            className="w-full h-full bento-card glass-hub border border-border p-4 md:p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)] flex flex-col gap-4"
             tabIndex={0}
             onFocus={() => updateFormData({ mascot_emotion: 'thinking' })}
             onMouseEnter={() => updateFormData({ mascot_emotion: 'thinking' })}
@@ -167,7 +167,7 @@ const DocumentUploadCard: React.FC = () => {
                 )}
             </div>
             <div
-                className={`flex-1 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-8 gap-4 transition-all cursor-pointer relative overflow-hidden group duration-300 hover:scale-[1.01] hover:bg-primary/5 active:scale-[0.99] ${isDragging
+                className={`flex-1 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 md:p-8 gap-3 md:gap-4 transition-all cursor-pointer relative overflow-hidden group duration-300 hover:scale-[1.01] hover:bg-primary/5 active:scale-[0.99] ${isDragging
                     ? "border-primary bg-primary/10 scale-[1.02]"
                     : fileName
                         ? "border-primary bg-primary/10"

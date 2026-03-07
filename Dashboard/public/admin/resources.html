@@ -389,8 +389,8 @@
 
             async function init() {
                 // Auth Check
+                if (!await ensureAdminAuth()) return;
                 const session = getAdminSession();
-                if (!session) return window.location.href = 'login.html';
 
                 await initLookups();
                 await loadResources();

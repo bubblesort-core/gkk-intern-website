@@ -14,10 +14,23 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
   bool _loading = true;
   bool _hasUnsavedChanges = false;
 
+  // Lock-message controller kept alive across rebuilds
+  late final TextEditingController _lockMsgCtrl;
+  late final TextEditingController _batchCtrl;
+
   @override
   void initState() {
     super.initState();
+    _lockMsgCtrl = TextEditingController();
+    _batchCtrl = TextEditingController();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _lockMsgCtrl.dispose();
+    _batchCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -26,6 +39,8 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
     if (mounted) {
       setState(() {
         _settings = data;
+        _lockMsgCtrl.text = data?['lock_message'] ?? '';
+        _batchCtrl.text = data?['active_batch'] ?? '';
         _loading = false;
         _hasUnsavedChanges = false;
       });
@@ -49,6 +64,20 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
         ).showSnackBar(SnackBar(content: Text('Error saving settings: $e')));
       }
     }
+  }
+
+  /// Generate all possible 15-min slots from 9 AM to 11 PM
+  List<String> get _allSlots {
+    final list = <String>[];
+    for (int h = 9; h <= 22; h++) {
+      for (int m = 0; m < 60; m += 15) {
+        if (h == 23) break;
+        list.add(
+          '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}',
+        );
+      }
+    }
+    return list;
   }
 
   @override
@@ -78,13 +107,16 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
             _buildSectionHeader('Availability Overview'),
             _buildFormLockCard(),
             const SizedBox(height: 24),
+            _buildSectionHeader('Batch & Capacity'),
+            _buildBatchCapacityCard(),
+            const SizedBox(height: 24),
             _buildSectionHeader('Weekly Recurring Days'),
             _buildWeeklyDaysCard(),
             const SizedBox(height: 24),
             _buildSectionHeader('Specific Dates'),
             _buildSpecificDatesCard(),
             const SizedBox(height: 24),
-            _buildSectionHeader('Time Slots'),
+            _buildSectionHeader('Default Time Slots'),
             _buildTimeSlotsCard(),
             const SizedBox(height: 32),
             SizedBox(
@@ -132,6 +164,7 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
     );
   }
 
+  // ── Form Lock ──
   Widget _buildFormLockCard() {
     final isLocked = _settings!['is_form_locked'] == true;
     return Container(
@@ -199,9 +232,7 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
             const Divider(color: AppTheme.border, height: 1),
             const SizedBox(height: 16),
             TextField(
-              controller: TextEditingController(
-                text: _settings!['lock_message'] ?? '',
-              ),
+              controller: _lockMsgCtrl,
               onChanged: (val) {
                 _settings!['lock_message'] = val;
                 _hasUnsavedChanges = true;
@@ -224,6 +255,120 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
     );
   }
 
+  // ── Batch & Slot Capacity ──
+  Widget _buildBatchCapacityCard() {
+    final int capacity = _settings!['max_per_slot'] ?? 1;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.border),
+      ),
+      child: Column(
+        children: [
+          // Active Batch
+          TextField(
+            controller: _batchCtrl,
+            onChanged: (val) {
+              _settings!['active_batch'] = val;
+              _hasUnsavedChanges = true;
+            },
+            style: const TextStyle(color: AppTheme.textMain, fontSize: 13),
+            decoration: InputDecoration(
+              labelText: 'Active Batch',
+              labelStyle: const TextStyle(color: AppTheme.textMuted),
+              hintText: 'e.g., Batch 3',
+              prefixIcon: const Icon(
+                Icons.group_work,
+                size: 20,
+                color: AppTheme.textMuted,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Slot Capacity
+          Row(
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Slot Capacity',
+                      style: TextStyle(
+                        color: AppTheme.textMain,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      'Max interviews per time slot',
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: capacity > 1
+                    ? () {
+                        setState(() {
+                          _settings!['max_per_slot'] = capacity - 1;
+                          _hasUnsavedChanges = true;
+                        });
+                      }
+                    : null,
+                icon: const Icon(Icons.remove_circle_outline),
+                color: AppTheme.primary,
+                iconSize: 28,
+              ),
+              Container(
+                width: 48,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppTheme.bgBody,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.border),
+                ),
+                child: Center(
+                  child: Text(
+                    '$capacity',
+                    style: const TextStyle(
+                      color: AppTheme.textMain,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: capacity < 50
+                    ? () {
+                        setState(() {
+                          _settings!['max_per_slot'] = capacity + 1;
+                          _hasUnsavedChanges = true;
+                        });
+                      }
+                    : null,
+                icon: const Icon(Icons.add_circle_outline),
+                color: AppTheme.primary,
+                iconSize: 28,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Weekly Days ──
   Widget _buildWeeklyDaysCard() {
     final days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     final selectedDays = List<int>.from(_settings!['available_days'] ?? []);
@@ -263,10 +408,11 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
               ),
               child: Center(
                 child: Text(
-                  days[idx][0],
+                  days[idx],
                   style: TextStyle(
                     color: isSelected ? Colors.white : AppTheme.textMuted,
                     fontWeight: FontWeight.bold,
+                    fontSize: 11,
                   ),
                 ),
               ),
@@ -277,11 +423,16 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
     );
   }
 
+  // ── Specific Dates with per-date custom times ──
   Widget _buildSpecificDatesCard() {
     final List<String> dates = List<String>.from(
       _settings!['available_dates'] ?? [],
     );
     dates.sort();
+
+    final Map<String, dynamic> specificDateTimes = Map<String, dynamic>.from(
+      _settings!['specific_date_times'] ?? {},
+    );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -297,7 +448,7 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Add Calendar Exceptions',
+                'Calendar Exceptions',
                 style: TextStyle(color: AppTheme.textMain, fontSize: 13),
               ),
               IconButton(
@@ -342,32 +493,50 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: dates
-                  .map(
-                    (d) => Chip(
-                      label: Text(
-                        d,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.white,
-                        ),
-                      ),
-                      backgroundColor: AppTheme.primary.withValues(alpha: 0.6),
-                      deleteIcon: const Icon(
-                        Icons.close,
-                        size: 14,
+              children: dates.map((d) {
+                final hasCustomTimes = specificDateTimes.containsKey(d);
+                return GestureDetector(
+                  onTap: () => _showDateTimesModal(d),
+                  child: Chip(
+                    avatar: hasCustomTimes
+                        ? const Icon(
+                            Icons.schedule,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : null,
+                    label: Text(
+                      d,
+                      style: const TextStyle(
+                        fontSize: 11,
                         color: Colors.white,
                       ),
-                      onDeleted: () {
-                        setState(() {
-                          dates.remove(d);
-                          _settings!['available_dates'] = dates;
-                          _hasUnsavedChanges = true;
-                        });
-                      },
                     ),
-                  )
-                  .toList(),
+                    backgroundColor: hasCustomTimes
+                        ? AppTheme.accent.withValues(alpha: 0.7)
+                        : AppTheme.primary.withValues(alpha: 0.6),
+                    deleteIcon: const Icon(
+                      Icons.close,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                    onDeleted: () {
+                      setState(() {
+                        dates.remove(d);
+                        specificDateTimes.remove(d);
+                        _settings!['available_dates'] = dates;
+                        _settings!['specific_date_times'] = specificDateTimes;
+                        _hasUnsavedChanges = true;
+                      });
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Tap a date to set custom time slots for it.',
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
             ),
           ] else
             const Text(
@@ -379,20 +548,223 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
     );
   }
 
+  /// Modal to choose custom time overrides for a specific date
+  void _showDateTimesModal(String dateStr) {
+    final Map<String, dynamic> specificDateTimes = Map<String, dynamic>.from(
+      _settings!['specific_date_times'] ?? {},
+    );
+    final List<String> dateTimes = List<String>.from(
+      specificDateTimes[dateStr] ?? [],
+    );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.bgBody,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (ctx, scroll) => SingleChildScrollView(
+                controller: scroll,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppTheme.textMuted.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Custom Times for $dateStr',
+                      style: const TextStyle(
+                        color: AppTheme.textMain,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${dateTimes.length} slot(s) selected',
+                      style: const TextStyle(
+                        color: AppTheme.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Quick actions
+                    Row(
+                      children: [
+                        _quickBtn('Select All', () {
+                          setSheetState(() {
+                            dateTimes.clear();
+                            dateTimes.addAll(_allSlots);
+                          });
+                        }),
+                        const SizedBox(width: 8),
+                        _quickBtn('Evening (6-9 PM)', () {
+                          setSheetState(() {
+                            dateTimes.clear();
+                            for (final s in _allSlots) {
+                              final h = int.parse(s.split(':')[0]);
+                              if (h >= 18 && h < 21) dateTimes.add(s);
+                            }
+                          });
+                        }),
+                        const SizedBox(width: 8),
+                        _quickBtn('Clear', () {
+                          setSheetState(() => dateTimes.clear());
+                        }),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 6,
+                        mainAxisSpacing: 6,
+                        childAspectRatio: 2.2,
+                      ),
+                      itemCount: _allSlots.length,
+                      itemBuilder: (ctx, i) {
+                        final slot = _allSlots[i];
+                        final isOn = dateTimes.contains(slot);
+                        return GestureDetector(
+                          onTap: () {
+                            setSheetState(() {
+                              isOn
+                                  ? dateTimes.remove(slot)
+                                  : dateTimes.add(slot);
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isOn
+                                  ? AppTheme.accent
+                                  : AppTheme.bgCard,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isOn
+                                    ? AppTheme.accent
+                                    : AppTheme.border,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _formatTime(slot),
+                                style: TextStyle(
+                                  color: isOn
+                                      ? Colors.white
+                                      : AppTheme.textMuted,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              // Remove custom override for this date
+                              specificDateTimes.remove(dateStr);
+                              _settings!['specific_date_times'] =
+                                  specificDateTimes;
+                              _hasUnsavedChanges = true;
+                              setState(() {});
+                              Navigator.pop(ctx);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: AppTheme.error),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: const Text(
+                              'Use Default',
+                              style: TextStyle(color: AppTheme.error),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              specificDateTimes[dateStr] = dateTimes;
+                              _settings!['specific_date_times'] =
+                                  specificDateTimes;
+                              _hasUnsavedChanges = true;
+                              setState(() {});
+                              Navigator.pop(ctx);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: const Text(
+                              'Save Custom Times',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _quickBtn(String label, VoidCallback onTap) {
+    return Expanded(
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppTheme.border),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.textBody,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Default Time Slots (15-min intervals) ──
   Widget _buildTimeSlotsCard() {
     final List<String> slots = List<String>.from(
       _settings!['time_slots'] ?? [],
     );
-
-    // Generate base range for selection if empty or for common pickers
-    final List<String> allPossiblySlots = [];
-    for (int h = 9; h <= 21; h++) {
-      for (int m = 0; m < 60; m += 30) {
-        allPossiblySlots.add(
-          '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}',
-        );
-      }
-    }
+    final allPossiblySlots = _allSlots;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -404,11 +776,30 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Active Time Slots',
-                style: TextStyle(color: AppTheme.textMain, fontSize: 13),
+              const Expanded(
+                child: Text(
+                  'Active Time Slots',
+                  style: TextStyle(color: AppTheme.textMain, fontSize: 13),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    // Quick Evening: 6-9 PM
+                    slots.clear();
+                    for (final s in allPossiblySlots) {
+                      final h = int.parse(s.split(':')[0]);
+                      if (h >= 18 && h < 21) slots.add(s);
+                    }
+                    _settings!['time_slots'] = slots;
+                    _hasUnsavedChanges = true;
+                  });
+                },
+                child: const Text(
+                  'Evening',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
               TextButton(
                 onPressed: () {
@@ -427,18 +818,24 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
                   slots.length == allPossiblySlots.length
                       ? 'Clear All'
                       : 'Select All',
+                  style: const TextStyle(fontSize: 12),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
+          Text(
+            '${slots.length} of ${allPossiblySlots.length} slots active  •  15-min intervals',
+            style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+          ),
+          const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
               childAspectRatio: 2.2,
             ),
             itemCount: allPossiblySlots.length,

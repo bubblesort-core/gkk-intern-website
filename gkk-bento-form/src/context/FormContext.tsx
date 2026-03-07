@@ -10,6 +10,7 @@ interface FormContextType {
     activeCard: string | null;
     setActiveCard: (card: string | null) => void;
     calculateProgress: () => number;
+    activeBatch: string;
 }
 
 const initialFormData: FormSubmission = {
@@ -36,13 +37,23 @@ const initialFormData: FormSubmission = {
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
-export function FormProvider({ children }: { children: ReactNode }) {
+export function FormProvider({ children, initialBatch = 'Batch 1' }: { children: ReactNode, initialBatch?: string }) {
     const [formData, setFormData] = useState<FormSubmission>(initialFormData);
     const [cvFile, setCvFile] = useState<File | null>(null);
     const [activeCard, setActiveCard] = useState<string | null>(null);
 
     const updateFormData = (data: Partial<FormSubmission>) => {
-        setFormData((prev) => ({ ...prev, ...data }));
+        setFormData((prev) => {
+            let hasChanges = false;
+            for (const key in data) {
+                if (data[key as keyof FormSubmission] !== prev[key as keyof FormSubmission]) {
+                    hasChanges = true;
+                    break;
+                }
+            }
+            if (!hasChanges) return prev;
+            return { ...prev, ...data };
+        });
     };
 
     const resetForm = () => {
@@ -70,7 +81,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
     return (
         <FormContext.Provider value={{
             formData, updateFormData, resetForm, cvFile, setCvFile,
-            activeCard, setActiveCard, calculateProgress
+            activeCard, setActiveCard, calculateProgress, activeBatch: initialBatch
         }}>
             {children}
         </FormContext.Provider>

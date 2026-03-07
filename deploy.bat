@@ -110,6 +110,7 @@ echo /dashboard/css/*    /css/:splat    301
 echo /dashboard/js/*     /js/:splat     301
 echo /dashboard/apply/*  /dashboard/apply/index.html  200
 echo /Dashboard/*        /dashboard/:splat        301
+echo /dashboard/assets/*  /dashboard/assets/:splat  200
 echo /dashboard/*        /dashboard/index.html        200
 echo /community-chat/*   /community-chat/index.html   200
 echo /*                  /index.html                  200

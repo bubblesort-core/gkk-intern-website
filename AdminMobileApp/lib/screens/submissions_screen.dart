@@ -116,6 +116,8 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
                     ? AppTheme.success
                     : status == 'rejected'
                     ? AppTheme.error
+                    : status == 'changes_requested'
+                    ? Colors.orange
                     : AppTheme.warning;
                 return GestureDetector(
                   onTap: () => _showReviewDialog(s),
@@ -345,92 +347,156 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
     final gradeCtrl = TextEditingController(
       text: submission['grade']?.toString() ?? '',
     );
+
+    // Quick feedback templates
+    final templates = [
+      {'icon': '✨', 'label': 'Great Work', 'text': 'Great work! Your submission meets all requirements.'},
+      {'icon': '🎨', 'label': 'UI Improvements', 'text': 'Please improve the UI/UX design and responsiveness.'},
+      {'icon': '💻', 'label': 'Code Quality', 'text': 'Code quality needs improvement. Please refactor and add comments.'},
+      {'icon': '📋', 'label': 'Missing Features', 'text': 'Missing required features. Please review the project requirements.'},
+      {'icon': '🐛', 'label': 'Fix Bugs', 'text': 'Fix bugs and test thoroughly before resubmitting.'},
+    ];
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.bgCard,
-        title: const Text(
-          'Review Submission',
-          style: TextStyle(color: AppTheme.textMain),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Project: ${submission['projects']?['title']}',
-              style: const TextStyle(
-                color: AppTheme.textBody,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.bgCard,
+          title: const Text(
+            'Review Submission',
+            style: TextStyle(color: AppTheme.textMain),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Project: ${submission['projects']?['title']}',
+                  style: const TextStyle(
+                    color: AppTheme.textBody,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'By: ${submission['profiles']?['full_name']}',
+                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                // Quick Feedback Templates
+                const Text(
+                  'Quick Feedback',
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: templates.map((t) => InkWell(
+                    onTap: () {
+                      setDialogState(() {
+                        feedbackCtrl.text = t['text']!;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppTheme.bgBody,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppTheme.border),
+                      ),
+                      child: Text(
+                        '${t['icon']} ${t['label']}',
+                        style: const TextStyle(fontSize: 11, color: AppTheme.textBody),
+                      ),
+                    ),
+                  )).toList(),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Feedback',
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                ),
+                TextField(
+                  controller: feedbackCtrl,
+                  maxLines: 3,
+                  style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: 'Add your review comments here...',
+                    hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Grade / XP Awarded',
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                ),
+                TextField(
+                  controller: gradeCtrl,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. 50',
+                    hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            // Changes Requested
+            TextButton(
+              onPressed: () async {
+                await AdminSupabaseService.reviewSubmission(
+                  submission['id'].toString(),
+                  'changes_requested',
+                  feedback: feedbackCtrl.text,
+                  grade: int.tryParse(gradeCtrl.text),
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                _loadAssigned();
+              },
+              child: const Text(
+                'Changes',
+                style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w600),
               ),
             ),
-            Text(
-              'By: ${submission['profiles']?['full_name']}',
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Feedback',
-              style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
-            ),
-            TextField(
-              controller: feedbackCtrl,
-              maxLines: 3,
-              style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: 'Add your review comments here...',
-                hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+            // Reject
+            TextButton(
+              onPressed: () async {
+                await AdminSupabaseService.reviewSubmission(
+                  submission['id'].toString(),
+                  'rejected',
+                  feedback: feedbackCtrl.text,
+                  grade: int.tryParse(gradeCtrl.text),
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                _loadAssigned();
+              },
+              child: const Text(
+                'Reject',
+                style: TextStyle(color: AppTheme.error),
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Grade / XP Awarded',
-              style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
-            ),
-            TextField(
-              controller: gradeCtrl,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: AppTheme.textMain, fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: 'e.g. 50',
-                hintStyle: TextStyle(color: AppTheme.textMuted, fontSize: 13),
-              ),
+            // Approve
+            ElevatedButton(
+              onPressed: () async {
+                await AdminSupabaseService.reviewSubmission(
+                  submission['id'].toString(),
+                  'approved',
+                  feedback: feedbackCtrl.text,
+                  grade: int.tryParse(gradeCtrl.text),
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                _loadAssigned();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success),
+              child: const Text('Approve', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await AdminSupabaseService.reviewSubmission(
-                submission['id'].toString(),
-                'rejected',
-                feedback: feedbackCtrl.text,
-                grade: int.tryParse(gradeCtrl.text),
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
-              _loadAssigned();
-            },
-            child: const Text(
-              'Reject',
-              style: TextStyle(color: AppTheme.error),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await AdminSupabaseService.reviewSubmission(
-                submission['id'].toString(),
-                'approved',
-                feedback: feedbackCtrl.text,
-                grade: int.tryParse(gradeCtrl.text),
-              );
-              if (ctx.mounted) Navigator.pop(ctx);
-              _loadAssigned();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success),
-            child: const Text('Approve', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
   }
@@ -595,6 +661,38 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
               const SizedBox(height: 24),
               Row(
                 children: [
+                  // Changes Requested
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Colors.orange),
+                        ),
+                        side: const BorderSide(color: Colors.orange),
+                      ),
+                      onPressed: () async {
+                        await AdminSupabaseService.reviewCustomSubmission(
+                          submission['id'].toString(),
+                          'changes_requested',
+                          adminNotes: notesCtrl.text,
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        _loadCustom();
+                      },
+                      child: const Text(
+                        'Changes',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Reject
                   Expanded(
                     child: TextButton(
                       style: TextButton.styleFrom(
@@ -622,7 +720,8 @@ class _SubmissionsScreenState extends State<SubmissionsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
+                  // Approve
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(

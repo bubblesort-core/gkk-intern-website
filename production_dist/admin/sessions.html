@@ -607,6 +607,46 @@
             font-variant-numeric: tabular-nums;
             margin-left: 0.5rem;
         }
+
+        /* ═══ Security: Prevent YouTube native UI interaction ═══ */
+        .rec-security-shield {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            cursor: pointer;
+            background: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .rec-yt-cover-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            z-index: 13;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .rec-yt-cover-bottom-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 140px;
+            height: 42px;
+            z-index: 13;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        /* Block pointer events on YouTube iframe itself */
+        #recPlayerIframeContainer iframe,
+        .custom-player-wrapper iframe {
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -627,6 +667,11 @@
             </div>
             <div class="recording-modal-body" id="recordingPlayerBody">
                 <div id="recPlayerIframeContainer"></div>
+
+                <!-- Security: Block YouTube native UI -->
+                <div class="rec-security-shield" onclick="toggleRecPlay()"></div>
+                <div class="rec-yt-cover-top" onclick="toggleRecPlay()"></div>
+                <div class="rec-yt-cover-bottom-right" onclick="toggleRecPlay()"></div>
 
                 <!-- Loading State -->
                 <div class="rec-loading-overlay" id="recLoadingOverlay">
@@ -662,6 +707,9 @@
 
                         <button class="rec-control-btn" onclick="toggleRecFullscreen()"><i
                                 class="fas fa-expand"></i></button>
+                        <button class="rec-control-btn" id="recSpeedBtn" onclick="cycleRecSpeed()"
+                            title="Playback Speed"
+                            style="font-size:0.75rem;font-weight:700;width:auto;padding:0 8px;background:rgba(255,255,255,0.1);border-radius:6px;">1x</button>
                     </div>
                 </div>
             </div>
@@ -912,10 +960,24 @@
                     </div>
                     <!-- Recordings Grid -->
                     <div style="margin-top:24px;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <div
+                            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
                             <h3 style="font-weight:600;">All Recordings</h3>
-                            <input type="text" class="form-input" placeholder="Search recordings..."
-                                style="width:250px;" onkeyup="searchRecordings(this.value)">
+                            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                                <div class="filter-pills" id="recFilterPills">
+                                    <button class="pill active" onclick="filterRecordings('all',this)">All</button>
+                                    <button class="pill" onclick="filterRecordings('target_all',this)"><i
+                                            class="fas fa-users" style="margin-right:4px;"></i>All Interns</button>
+                                    <button class="pill" onclick="filterRecordings('batch',this)"><i
+                                            class="fas fa-layer-group" style="margin-right:4px;"></i>Batch</button>
+                                    <button class="pill" onclick="filterRecordings('team',this)"><i
+                                            class="fas fa-user-friends" style="margin-right:4px;"></i>Team</button>
+                                    <button class="pill" onclick="filterRecordings('intern',this)"><i
+                                            class="fas fa-user" style="margin-right:4px;"></i>Intern</button>
+                                </div>
+                                <input type="text" class="form-input" placeholder="Search recordings..."
+                                    style="width:250px;" onkeyup="searchRecordings(this.value)">
+                            </div>
                         </div>
                         <div class="rec-grid" id="recordingsGrid"></div>
                     </div>
@@ -958,6 +1020,7 @@
         let selectedInterns = new Set();
         let currentLiveSessionId = null;
         let sessionFilter = 'all', sessionSearch = '';
+        let recFilter = 'all', recSearch = '';
 
         // === Sidebar Mobile Toggle ===
         function toggleSidebar() {
@@ -969,8 +1032,8 @@
 
         // === Init ===
         async function init() {
+            if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-            if (!session) return window.location.href = 'login.html';
             await Promise.all([loadSessions(), loadRecordings(), fetchTargetData(), fetchInterns()]);
             setDefaultScheduleTime();
         }
@@ -1076,7 +1139,7 @@
         // === YouTube Helper ===
         function extractVideoId(url) {
             if (!url) return null;
-            const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^"&?\/\s]{11})/);
+            const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^"&?\/\s]{11})/);
             return m ? m[1] : null;
         }
 
@@ -1179,7 +1242,7 @@
             const container = document.getElementById('liveVideoContainer');
             if (!container || !url) return;
 
-            const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+            const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
             const videoId = videoIdMatch ? videoIdMatch[1] : null;
 
             if (!videoId) {
@@ -1192,6 +1255,10 @@
                 <div class="custom-player-wrapper" id="adminLiveWrapper" style="position:relative; width:100%; height:100%; background:#000;">
                     <div id="adminYtLive"></div>
                     
+                    <div class="rec-security-shield" onclick="toggleAdminLivePlay()"></div>
+                    <div class="rec-yt-cover-top" onclick="toggleAdminLivePlay()"></div>
+                    <div class="rec-yt-cover-bottom-right" onclick="toggleAdminLivePlay()"></div>
+
                     <div class="rec-loading-overlay" id="adminLiveLoading" style="display:none;">
                         <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--c-primary, #10b981); margin-bottom:1rem;"></i>
                         <p>Loading Live Stream...</p>
@@ -1421,10 +1488,33 @@
             renderRecordings();
         }
 
-        function renderRecordings(query = '') {
+        function getTargetLabel(r) {
+            if (!r.target_type || r.target_type === 'all') return { text: 'All Interns', cls: 'badge-primary', icon: 'fa-users' };
+            const ids = r.target_ids || [];
+            if (r.target_type === 'batch') {
+                const names = ids.map(id => { const b = batches.find(x => x.id === id); return b ? b.name : 'Batch'; }).join(', ');
+                return { text: names || 'Batch', cls: 'badge-warning', icon: 'fa-layer-group' };
+            }
+            if (r.target_type === 'team') {
+                const names = ids.map(id => { const t = teams.find(x => x.id === id); return t ? t.name : 'Team'; }).join(', ');
+                return { text: names || 'Team', cls: 'badge-purple', icon: 'fa-user-friends' };
+            }
+            if (r.target_type === 'intern') return { text: `${ids.length} Intern${ids.length !== 1 ? 's' : ''}`, cls: 'badge-neutral', icon: 'fa-user' };
+            return { text: 'Unknown', cls: 'badge-neutral', icon: 'fa-question' };
+        }
+
+        function renderRecordings() {
             const grid = document.getElementById('recordingsGrid');
             let recs = allRecordings;
-            if (query) recs = recs.filter(r => (r.title || '').toLowerCase().includes(query.toLowerCase()));
+
+            // Apply audience filter
+            if (recFilter === 'target_all') recs = recs.filter(r => !r.target_type || r.target_type === 'all');
+            else if (recFilter === 'batch') recs = recs.filter(r => r.target_type === 'batch');
+            else if (recFilter === 'team') recs = recs.filter(r => r.target_type === 'team');
+            else if (recFilter === 'intern') recs = recs.filter(r => r.target_type === 'intern');
+
+            // Apply search
+            if (recSearch) recs = recs.filter(r => (r.title || '').toLowerCase().includes(recSearch));
 
             if (!recs.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--c-text-muted);"><i class="fas fa-play-circle" style="font-size:3rem;opacity:0.3;margin-bottom:16px;display:block;"></i>No recordings found</div>'; return; }
 
@@ -1432,11 +1522,13 @@
                 const vid = r.youtube_video_id || extractVideoId(r.youtube_url);
                 const thumb = vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : '';
                 const safeTitle = (r.title || '').replace(/'/g, "\\'");
+                const tgt = getTargetLabel(r);
                 return `<div class="rec-card">
                 <div class="rec-thumb">
                     ${thumb ? `<img src="${thumb}" alt="${r.title}" loading="lazy" onerror="this.style.display='none'">` : ''}
                     <div class="play-circle"><i class="fas fa-play" style="margin-left:2px;"></i></div>
                     ${r.duration_label ? `<span style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.8);color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;">${r.duration_label}</span>` : ''}
+                    <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:white;padding:3px 8px;border-radius:6px;font-size:0.7rem;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px);"><i class="fas ${tgt.icon}" style="font-size:0.6rem;"></i> ${tgt.text}</span>
                 </div>
                 <div class="rec-body">
                     <h4>${r.title}</h4>
@@ -1450,7 +1542,13 @@
             </div>`;
             }).join('');
         }
-        function searchRecordings(q) { renderRecordings(q); }
+        function filterRecordings(f, el) {
+            recFilter = f;
+            document.querySelectorAll('#recFilterPills .pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            renderRecordings();
+        }
+        function searchRecordings(q) { recSearch = q.toLowerCase(); renderRecordings(); }
 
         // === ADD RECORDING ===
         async function addRecording() {
@@ -1474,19 +1572,67 @@
             loadRecordings();
         }
 
-        // === EDIT RECORDING ===
+        // === EDIT RECORDING (Enhanced with target editing) ===
         async function editRecording(id) {
             const r = allRecordings.find(x => x.id === id);
             if (!r) return;
+
+            // Build batch/team options
+            const batchOpts = batches.map(b => `<option value="${b.id}" ${(r.target_type === 'batch' && (r.target_ids || []).includes(b.id)) ? 'selected' : ''}>${b.name}</option>`).join('');
+            const teamOpts = teams.map(t => `<option value="${t.id}" ${(r.target_type === 'team' && (r.target_ids || []).includes(t.id)) ? 'selected' : ''}>${t.name}</option>`).join('');
+
+            const showBatch = r.target_type === 'batch' ? 'block' : 'none';
+            const showTeam = r.target_type === 'team' ? 'block' : 'none';
+
             const { value } = await Swal.fire({
                 title: 'Edit Recording', background: 'var(--c-bg-card)', color: 'var(--c-text-primary)',
-                html: `<div style="text-align:left;"><label class="form-label">Title</label><input id="swal-rt" class="form-input" value="${r.title}"><label class="form-label" style="margin-top:12px;">YouTube URL</label><input id="swal-ru" class="form-input" value="${r.youtube_url}"><label class="form-label" style="margin-top:12px;">Duration</label><input id="swal-rd" class="form-input" value="${r.duration_label || ''}"></div>`,
-                showCancelButton: true, confirmButtonText: 'Save',
-                preConfirm: () => ({ t: document.getElementById('swal-rt').value, u: document.getElementById('swal-ru').value, d: document.getElementById('swal-rd').value })
+                width: 560,
+                html: `<div style="text-align:left;">
+                    <label class="form-label">Title</label>
+                    <input id="swal-rt" class="form-input" value="${(r.title || '').replace(/"/g, '&quot;')}" style="margin-bottom:12px;">
+                    <label class="form-label">YouTube URL</label>
+                    <input id="swal-ru" class="form-input" value="${r.youtube_url || ''}" style="margin-bottom:12px;">
+                    <div style="display:flex;gap:12px;">
+                        <div style="flex:1;"><label class="form-label">Duration</label>
+                            <input id="swal-rd" class="form-input" value="${r.duration_label || ''}">
+                        </div>
+                        <div style="flex:1;"><label class="form-label">Audience</label>
+                            <select id="swal-rtarget" class="form-input" onchange="document.getElementById('swal-rbatch-wrap').style.display=this.value==='batch'?'block':'none'; document.getElementById('swal-rteam-wrap').style.display=this.value==='team'?'block':'none';">
+                                <option value="all" ${r.target_type === 'all' || !r.target_type ? 'selected' : ''}>All Interns</option>
+                                <option value="batch" ${r.target_type === 'batch' ? 'selected' : ''}>Specific Batch</option>
+                                <option value="team" ${r.target_type === 'team' ? 'selected' : ''}>Specific Team</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="swal-rbatch-wrap" style="display:${showBatch};margin-top:12px;"><label class="form-label">Select Batch</label>
+                        <select id="swal-rbatch" class="form-input">${batchOpts}</select>
+                    </div>
+                    <div id="swal-rteam-wrap" style="display:${showTeam};margin-top:12px;"><label class="form-label">Select Team</label>
+                        <select id="swal-rteam" class="form-input">${teamOpts}</select>
+                    </div>
+                </div>`,
+                showCancelButton: true, confirmButtonText: 'Save Changes',
+                preConfirm: () => {
+                    const tType = document.getElementById('swal-rtarget').value;
+                    let tIds = [];
+                    if (tType === 'batch') { const v = document.getElementById('swal-rbatch').value; if (v) tIds = [v]; }
+                    else if (tType === 'team') { const v = document.getElementById('swal-rteam').value; if (v) tIds = [v]; }
+                    return {
+                        t: document.getElementById('swal-rt').value,
+                        u: document.getElementById('swal-ru').value,
+                        d: document.getElementById('swal-rd').value,
+                        targetType: tType, targetIds: tIds
+                    };
+                }
             });
             if (!value) return;
             const vid = extractVideoId(value.u);
-            await supabaseClient.from('recordings').update({ title: value.t, youtube_url: value.u, youtube_video_id: vid, thumbnail_url: vid ? `https://img.youtube.com/vi/${vid}/maxresdefault.jpg` : null, duration_label: value.d || null }).eq('id', id);
+            await supabaseClient.from('recordings').update({
+                title: value.t, youtube_url: value.u, youtube_video_id: vid,
+                thumbnail_url: vid ? `https://img.youtube.com/vi/${vid}/maxresdefault.jpg` : null,
+                duration_label: value.d || null,
+                target_type: value.targetType, target_ids: value.targetIds
+            }).eq('id', id);
             loadRecordings();
         }
 
@@ -1510,12 +1656,14 @@
         let recPlayer = null;
         let isRecPlayerReady = false;
         let recProgressInterval;
+        let recCurrentSpeed = 1;
+        const REC_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
         function openRecordingPlayer(videoUrl, title) {
             if (!videoUrl) return;
 
             // Extract Video ID
-            const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/|y2u\.be(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+            const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=)|y2u\.be\/)([^&?]+)/);
             const videoId = videoIdMatch ? videoIdMatch[1] : null;
 
             if (!videoId) {
@@ -1537,6 +1685,8 @@
             document.getElementById('recProgressFill').style.width = '0%';
             document.getElementById('recCurrentTime').innerText = '0:00';
             document.getElementById('recTotalTime').innerText = '0:00';
+            recCurrentSpeed = 1;
+            document.getElementById('recSpeedBtn').textContent = '1x';
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -1676,6 +1826,14 @@
             document.getElementById('recProgressFill').style.width = (pos * 100) + '%';
         }
 
+        function cycleRecSpeed() {
+            if (!isRecPlayerReady || !recPlayer) return;
+            const idx = REC_SPEEDS.indexOf(recCurrentSpeed);
+            recCurrentSpeed = REC_SPEEDS[(idx + 1) % REC_SPEEDS.length];
+            recPlayer.setPlaybackRate(recCurrentSpeed);
+            document.getElementById('recSpeedBtn').textContent = recCurrentSpeed + 'x';
+        }
+
         function startRecProgressTracking() {
             stopRecProgressTracking();
             recProgressInterval = setInterval(() => {
@@ -1732,6 +1890,12 @@
                     closeRecordingPlayer();
                 }
             }
+        });
+
+        // Security: prevent right-click on player areas
+        ['recordingPlayerBody', 'liveVideoContainer'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('contextmenu', e => e.preventDefault());
         });
 
         init();

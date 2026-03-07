@@ -17,6 +17,8 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
   bool _loading = true;
   String _statusFilter = '';
   String _searchQuery = '';
+  String? _batchFilter;
+  List<String> _availableBatches = [];
   final _searchController = TextEditingController();
 
   final _statusOptions = [
@@ -48,8 +50,25 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
       );
       if (mounted) {
+        // Extract unique batch numbers
+        final batches = <String>{};
+        for (final app in data) {
+          final b = app['batch_number']?.toString();
+          if (b != null && b.isNotEmpty) batches.add(b);
+        }
+        final batchList = batches.toList()..sort();
+
+        // Apply batch filter client-side
+        var filtered = data;
+        if (_batchFilter != null) {
+          filtered = filtered
+              .where((a) => a['batch_number']?.toString() == _batchFilter)
+              .toList();
+        }
+
         setState(() {
-          _applications = data;
+          _applications = filtered;
+          _availableBatches = batchList;
           _loading = false;
         });
       }
@@ -154,6 +173,47 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
                   }).toList(),
                 ),
               ),
+              // Batch Filter
+              if (_availableBatches.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.group_work, size: 16, color: AppTheme.textMuted),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: _batchFilter,
+                        hint: const Text(
+                          'All Batches',
+                          style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
+                        ),
+                        isExpanded: true,
+                        isDense: true,
+                        underline: const SizedBox(),
+                        dropdownColor: AppTheme.bgCard,
+                        style: const TextStyle(color: AppTheme.textMain, fontSize: 13),
+                        items: [
+                          const DropdownMenuItem<String>(
+                            value: null,
+                            child: Text('All Batches',
+                                style: TextStyle(color: AppTheme.textMuted)),
+                          ),
+                          ..._availableBatches.map(
+                            (b) => DropdownMenuItem(
+                              value: b,
+                              child: Text('Batch $b'),
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) {
+                          setState(() => _batchFilter = val);
+                          _loadApplications();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -232,6 +292,8 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
         : '';
     final phone = app['phone'] ?? '';
     final college = app['college'] ?? '';
+    final interviewDate = app['preferred_interview_date'];
+    final interviewTime = app['preferred_interview_time'];
 
     return GestureDetector(
       onTap: () => _showApplicationDetails(app),
@@ -346,12 +408,30 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
               ),
             ],
             const SizedBox(height: 6),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                createdAt,
-                style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-              ),
+            Row(
+              children: [
+                if (interviewDate != null) ...[
+                  Icon(
+                    Icons.event,
+                    size: 13,
+                    color: Colors.orange.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$interviewDate${interviewTime != null ? ' $interviewTime' : ''}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.orange,
+                    ),
+                  ),
+                  const Spacer(),
+                ],
+                if (interviewDate == null) const Spacer(),
+                Text(
+                  createdAt,
+                  style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                ),
+              ],
             ),
           ],
         ),
@@ -504,6 +584,55 @@ class _ApplicationDetailSheetState extends State<_ApplicationDetailSheet> {
     }
   }
 
+  Future<void> _deleteApplication() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.bgCard,
+        title: const Text(
+          'Delete Application',
+          style: TextStyle(color: AppTheme.error),
+        ),
+        content: const Text(
+          'This will permanently delete the application and cannot be undone. Are you sure?',
+          style: TextStyle(color: AppTheme.textBody),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            child: const Text('Delete Permanently', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _updating = true);
+    try {
+      await AdminSupabaseService.deleteApplication(_app['id'].toString());
+      widget.onChanged();
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Application deleted')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _updating = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -622,6 +751,19 @@ class _ApplicationDetailSheetState extends State<_ApplicationDetailSheet> {
                   ]),
                   const SizedBox(height: 24),
 
+                  // Interview Preferences
+                  if (_app['preferred_interview_date'] != null) ...[
+                    _buildSectionTitle(
+                      'Interview Preferences',
+                      Icons.event_available_rounded,
+                    ),
+                    _buildDetailGrid([
+                      _DetailItem('Date', _app['preferred_interview_date'] ?? '-'),
+                      _DetailItem('Time', _app['preferred_interview_time'] ?? '-'),
+                    ]),
+                    const SizedBox(height: 24),
+                  ],
+
                   // Skills & Why Join
                   _buildSectionTitle('Skills', Icons.stars_rounded),
                   Wrap(
@@ -729,6 +871,18 @@ class _ApplicationDetailSheetState extends State<_ApplicationDetailSheet> {
 
                   // Actions
                   _buildActionButtons(),
+                  const SizedBox(height: 16),
+                  // Delete Application
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: _deleteApplication,
+                      icon: const Icon(Icons.delete_forever, size: 18, color: AppTheme.error),
+                      label: const Text(
+                        'Delete Application',
+                        style: TextStyle(color: AppTheme.error, fontSize: 13),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 40),
                 ],
               ),

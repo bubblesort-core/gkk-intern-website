@@ -28,11 +28,23 @@ class _OverviewScreenState extends State<OverviewScreen> {
       final results = await Future.wait([
         SupabaseService.getCurrentProfile(),
         SupabaseService.getMyProjects(),
+        SupabaseService.getMyTeam(),
       ]);
 
       if (mounted) {
+        final profile = results[0] as Map<String, dynamic>?;
+        final teamData = results[2] as Map<String, dynamic>?;
+
+        if (profile != null && teamData != null && teamData['teams'] != null) {
+          final team = teamData['teams'];
+          profile['team_name'] = team['name'];
+          if (team['batches'] != null) {
+            profile['batch_name'] = team['batches']['name'];
+          }
+        }
+
         setState(() {
-          _profile = results[0] as Map<String, dynamic>?;
+          _profile = profile;
           _projectCount = (results[1] as List).length;
         });
       }
@@ -56,7 +68,15 @@ class _OverviewScreenState extends State<OverviewScreen> {
           );
         }
 
-        final profile = snapshot.data ?? _profile;
+        var profile = snapshot.data ?? _profile;
+        if (profile != null && _profile != null) {
+          // Re-inject the manually fetched data from initState over the stream data
+          if (_profile!['team_name'] != null)
+            profile['team_name'] = _profile!['team_name'];
+          if (_profile!['batch_name'] != null)
+            profile['batch_name'] = _profile!['batch_name'];
+        }
+
         if (profile == null) {
           return Center(
             child: Column(
@@ -129,12 +149,24 @@ class _OverviewScreenState extends State<OverviewScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        "You're doing great! Check your active projects and connect with your team.",
-                        style: TextStyle(
+                      Text(
+                        profile['role']?.toString().toUpperCase() ?? 'INTERN',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        profile['college'] ?? 'No college assigned',
+                        style: const TextStyle(
                           color: AppTheme.textBody,
                           fontSize: 14,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -253,7 +285,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
                   },
                 ),
 
-                // Stats Row
+                // Stats Row 1
                 Row(
                       children: [
                         _buildStatCard(
@@ -273,6 +305,29 @@ class _OverviewScreenState extends State<OverviewScreen> {
                     )
                     .animate()
                     .fadeIn(duration: 500.ms, delay: 200.ms)
+                    .slideY(begin: 0.2, end: 0),
+                const SizedBox(height: 12),
+
+                // Stats Row 2 (Intern info)
+                Row(
+                      children: [
+                        _buildStatCard(
+                          Icons.group,
+                          profile['team_name'] ?? 'None',
+                          'Team',
+                          const Color(0xFF10B981),
+                        ),
+                        const SizedBox(width: 12),
+                        _buildStatCard(
+                          Icons.class_,
+                          profile['batch_name'] ?? 'Unassigned',
+                          'Batch',
+                          const Color(0xFF8B5CF6),
+                        ),
+                      ],
+                    )
+                    .animate()
+                    .fadeIn(duration: 500.ms, delay: 250.ms)
                     .slideY(begin: 0.2, end: 0),
                 const SizedBox(height: 20),
 

@@ -508,11 +508,7 @@
 
         // Init
         async function init() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = '../admin/login.html';
-                return;
-            }
+            if (!await ensureAdminAuth()) return;
             loadHistory();
             loadInterns();
         }

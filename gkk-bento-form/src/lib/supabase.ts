@@ -2,17 +2,15 @@ import { createClient } from "@supabase/supabase-js";
 
 // Use reverse proxy for API since direct URL gets blocked by CORS or timeouts.
 // We remove WebSockets (Realtime) since the proxy doesn't handle them reliably
-const supabaseUrl = window.location.origin + '/supabase-main';
+const supabaseDirectUrl = 'https://hjpsyxqakzrhvzegehtm.supabase.co';
+const supabaseProxyUrl = window.location.origin + '/supabase-main';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createClient(supabaseDirectUrl, supabaseKey, {
     global: {
         fetch: async (url, options) => {
-            const response = await fetch(url, options);
-            if (response.status === 429) {
-                // Rate limit exceeded
-            }
-            return response;
+            const fetchUrl = url.toString().replace(supabaseDirectUrl, supabaseProxyUrl);
+            return fetch(fetchUrl, options);
         }
     }
 });
@@ -40,6 +38,7 @@ export interface FormSubmission {
     is_email_verified?: boolean;
     mascot_emotion?: 'neutral' | 'typing' | 'excited' | 'thinking' | 'curious' | 'angry';
     slot_hold_id?: string; // Temporary hold ID for movie-style slot reservation
+    batch_number?: string;
     created_at?: string;
 }
 
@@ -61,6 +60,7 @@ interface ApplicationRecord {
     preferred_interview_time?: string;
     alternative_interview_time?: string;
     discovery_source?: string;
+    batch_number?: string;
     status: string;
 }
 
@@ -117,6 +117,7 @@ export async function submitFormData(data: FormSubmission): Promise<string> {
         preferred_interview_date: data.interview_date,
         preferred_interview_time: data.interview_time,
         discovery_source: data.discovery_source,
+        batch_number: data.batch_number || 'Batch 1',
         status: 'pending'
     };
 
@@ -159,8 +160,10 @@ export async function submitFormData(data: FormSubmission): Promise<string> {
 export interface FormSettings {
     available_days: number[];  // 0=Sunday, 1=Monday, 6=Saturday
     available_dates: string[]; // Specific dates in YYYY-MM-DD format
+    specific_date_times?: Record<string, string[]>; // Map of YYYY-MM-DD to custom time slots
     time_slots: string[];      // 24h format like "18:00", "18:30"
     max_per_slot: number;      // Max applicants per time slot
+    active_batch: string;      // Current recruitment batch
     is_form_locked: boolean;
     lock_message: string;
 }
@@ -170,7 +173,7 @@ export async function getFormSettings(): Promise<{ data: FormSettings | null, er
     try {
         const { data, error } = await supabase
             .from('form_settings')
-            .select('available_days, available_dates, time_slots, max_per_slot, is_form_locked, lock_message')
+            .select('available_days, available_dates, specific_date_times, time_slots, max_per_slot, active_batch, is_form_locked, lock_message')
             .eq('id', '00000000-0000-0000-0000-000000000001')
             .single();
 
@@ -338,7 +341,7 @@ export async function releaseSlot(holdId: string): Promise<void> {
 
 // Hard-release a held slot during page unloads/refreshes explicitly using keepalive fetch
 export function releaseSlotKeepalive(holdId: string): void {
-    const url = `${supabaseUrl}/rest/v1/slot_bookings?id=eq.${holdId}&status=eq.held`;
+    const url = `${supabaseProxyUrl}/rest/v1/slot_bookings?id=eq.${holdId}&status=eq.held`;
     try {
         // Modern approach: POST with method override
         fetch(url, {

@@ -41,7 +41,7 @@ export default function LoginPage() {
                     if (profile.role === 'admin') {
                         window.location.replace('/admin/index.html');
                     } else {
-                        window.location.replace('/user/index.html');
+                        window.location.replace('/dashboard/user/dashboard');
                     }
                 }
             }
@@ -165,10 +165,10 @@ export default function LoginPage() {
                 if (profile.role === 'admin') {
                     window.location.href = '/admin/index.html';
                 } else {
-                    window.location.href = '/user/index.html';
+                    window.location.href = '/dashboard/user/dashboard';
                 }
             } else {
-                window.location.href = '/user/index.html';
+                window.location.href = '/dashboard/user/dashboard';
             }
         } catch (error) {
             Swal.fire({ icon: 'error', title: 'Login Failed', text: error.message, confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f1f5f9' });

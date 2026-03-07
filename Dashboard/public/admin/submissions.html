@@ -272,8 +272,8 @@
         });
 
         async function init() {
+            if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-            if (!session) return window.location.href = 'login.html';
 
             // Inject Skeleton
             const tbody = document.getElementById('submissionsTable');

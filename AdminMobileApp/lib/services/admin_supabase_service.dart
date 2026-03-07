@@ -457,7 +457,31 @@ class AdminSupabaseService {
         .eq('id', sessionId);
   }
 
+  /// Go Live: ends any currently live session, then sets [sessionId] to live.
+  static Future<void> goLiveSession(String sessionId) async {
+    final now = DateTime.now().toIso8601String();
+    // End any currently live session first
+    await client
+        .from('sessions')
+        .update({'status': 'ended', 'actual_end': now})
+        .eq('status', 'live');
+    // Set the target session to live
+    await client
+        .from('sessions')
+        .update({'status': 'live', 'actual_start': now})
+        .eq('id', sessionId);
+  }
+
+  /// Cascade delete: cleans up meeting_messages, unlinks recordings, then deletes session.
   static Future<void> deleteSession(String sessionId) async {
+    // Delete chat messages
+    await client.from('meeting_messages').delete().eq('session_id', sessionId);
+    // Unlink recordings (set session_id to null instead of deleting)
+    await client
+        .from('recordings')
+        .update({'session_id': null})
+        .eq('session_id', sessionId);
+    // Delete the session itself
     await client.from('sessions').delete().eq('id', sessionId);
   }
 
@@ -513,12 +537,32 @@ class AdminSupabaseService {
             'email': email,
             'application_id': applicationId,
             'team_id': teamId,
+            'status': 'sent',
             'created_by': user?.id,
           },
         ])
         .select()
         .single();
     return response;
+  }
+
+  /// Load all invitations with optional team name join.
+  static Future<List<Map<String, dynamic>>> getAllInvitations() async {
+    try {
+      final data = await client
+          .from('invitations')
+          .select('*, teams(name)')
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(data);
+    } catch (e) {
+      debugPrint('[AdminSupabase] Invitations error: $e');
+      return [];
+    }
+  }
+
+  /// Revoke (delete) an invitation by ID.
+  static Future<void> revokeInvitation(String invitationId) async {
+    await client.from('invitations').delete().eq('id', invitationId);
   }
 
   // ═══════════════════════════════════════════════

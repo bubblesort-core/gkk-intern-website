@@ -123,7 +123,7 @@ class SupabaseService {
 
       final membership = await client
           .from('team_members')
-          .select('team_id, role, teams(*)')
+          .select('team_id, role, teams(*, batches(*))')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -301,14 +301,53 @@ class SupabaseService {
   // ─── LEADERBOARD ───
   static Future<List<Map<String, dynamic>>> getLeaderboard() async {
     try {
-      final data = await client
+      final team = await getMyTeam();
+      final batchId =
+          team?['teams']?['batch_id'] ?? team?['teams']?['batches']?['id'];
+
+      List<dynamic> userIds = [];
+      if (batchId != null) {
+        final batchTeams = await client
+            .from('teams')
+            .select('id')
+            .eq('batch_id', batchId);
+        if (batchTeams.isNotEmpty) {
+          final teamIds = batchTeams.map((t) => t['id']).toList();
+
+          List<dynamic> allMembers = [];
+          for (var tId in teamIds) {
+            final members = await client
+                .from('team_members')
+                .select('user_id')
+                .eq('team_id', tId);
+            allMembers.addAll(members);
+          }
+          userIds = allMembers.map((m) => m['user_id']).toSet().toList();
+        }
+      }
+
+      var query = client
           .from('profiles')
-          .select('id, full_name, avatar_url, xp, current_streak')
+          .select('id, full_name, avatar_url, xp, current_streak, level')
           .eq('role', 'intern')
-          .not('full_name', 'ilike', '%(Test)%')
-          .order('xp', ascending: false)
-          .limit(50);
-      return List<Map<String, dynamic>>.from(data);
+          .order('xp', ascending: false);
+
+      final data = await query.limit(500);
+      var results = List<Map<String, dynamic>>.from(data);
+
+      results = results
+          .where(
+            (p) =>
+                !(p['full_name']?.toString().contains('(Test)') ?? false) &&
+                p['full_name'] != 'GKK Admin',
+          )
+          .toList();
+
+      if (userIds.isNotEmpty) {
+        results = results.where((p) => userIds.contains(p['id'])).toList();
+      }
+
+      return results.take(50).toList();
     } catch (e) {
       debugPrint('Error fetching leaderboard: $e');
       return [];
@@ -467,18 +506,46 @@ class SupabaseService {
     }
   }
 
-  static Stream<List<Map<String, dynamic>>> getLeaderboardStream() {
+  static Future<Stream<List<Map<String, dynamic>>>>
+  getLeaderboardStream() async {
+    final team = await getMyTeam();
+    final batchId =
+        team?['teams']?['batch_id'] ?? team?['teams']?['batches']?['id'];
+
+    List<dynamic> userIds = [];
+    if (batchId != null) {
+      final batchTeams = await client
+          .from('teams')
+          .select('id')
+          .eq('batch_id', batchId);
+      if (batchTeams.isNotEmpty) {
+        final teamIds = batchTeams.map((t) => t['id']).toList();
+
+        List<dynamic> allMembers = [];
+        for (var tId in teamIds) {
+          final members = await client
+              .from('team_members')
+              .select('user_id')
+              .eq('team_id', tId);
+          allMembers.addAll(members);
+        }
+        userIds = allMembers.map((m) => m['user_id']).toSet().toList();
+      }
+    }
+
     return client
         .from('profiles')
         .stream(primaryKey: ['id'])
         .eq('role', 'intern')
         .order('xp', ascending: false)
-        .limit(100) // Fetch more to allow for filtering
+        .limit(500) // Fetch more to allow for filtering
         .map((data) {
           return data
               .where(
                 (p) =>
-                    !(p['full_name']?.toString().contains('(Test)') ?? false),
+                    !(p['full_name']?.toString().contains('(Test)') ?? false) &&
+                    p['full_name'] != 'GKK Admin' &&
+                    (userIds.isEmpty || userIds.contains(p['id'])),
               )
               .take(50)
               .toList();

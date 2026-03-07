@@ -68,6 +68,17 @@
   to = "/dashboard/:splat"
   status = 301
 
+# Dashboard SPA routing
+[[redirects]]
+  from = "/dashboard/assets/*"
+  to = "/dashboard/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/user/*"
+  to = "/dashboard/index.html"
+  status = 200
+
 # Serve apply form static assets directly (must come before SPA fallback)
 [[redirects]]
   from = "/apply/assets/*"

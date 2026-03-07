@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import confetti from 'canvas-confetti';
 
 const SubmitSection: React.FC = () => {
-    const { formData, updateFormData, resetForm, cvFile } = useFormContext();
+    const { formData, updateFormData, resetForm, cvFile, activeBatch } = useFormContext();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Validation - check if all mandatory fields are filled
@@ -200,6 +200,7 @@ const SubmitSection: React.FC = () => {
 
                 const recordId = await submitFormData({
                     ...formData,
+                    batch_number: activeBatch,
                     cv_url: undefined,
                 });
 
@@ -313,10 +314,10 @@ const SubmitSection: React.FC = () => {
 
             <button
                 onClick={handleSubmit}
-                disabled={!isFormValid || isSubmitting}
-                className={`font-bold py-4 px-12 rounded-xl transition-all shadow-xl flex items-center justify-center gap-3 w-full sm:w-auto min-w-[300px] text-lg ${isFormValid && !isSubmitting
+                disabled={!isFormValid || isSubmitting || !formData.is_email_verified}
+                className={`font-bold py-4 px-12 rounded-xl transition-all shadow-xl flex items-center justify-center gap-3 w-full sm:w-auto min-w-[300px] text-lg ${isFormValid && !isSubmitting && formData.is_email_verified
                     ? "bg-primary hover:bg-primary-hover text-text-primary shadow-primary/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:scale-[1.02] active:scale-[0.98]"
-                    : "bg-background-card border border-border text-text-muted cursor-not-allowed shadow-none"
+                    : "bg-background-card border border-border text-text-muted cursor-not-allowed opacity-50 shadow-none hover:transform-none select-none pointer-events-none"
                     }`}
             >
                 {isSubmitting ? 'Submitting...' : 'Submit Application'}

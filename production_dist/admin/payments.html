@@ -200,8 +200,8 @@
 
         let allPayments = [];
         async function init() {
+            if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-            if (!session) return window.location.href = 'login.html';
 
             // Skeleton
             const tbody = document.getElementById('paymentsTableBody');

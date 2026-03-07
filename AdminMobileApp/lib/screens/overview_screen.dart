@@ -17,6 +17,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
   List<Map<String, dynamic>> _recentApps = [];
   List<Map<String, dynamic>> _allInterns = [];
   List<Map<String, dynamic>> _filteredInterns = [];
+  List<Map<String, dynamic>> _payments = [];
   bool _loading = true;
   bool _isDatabaseView = false;
   String _searchQuery = '';
@@ -32,15 +33,20 @@ class _OverviewScreenState extends State<OverviewScreen> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
-      final stats = await AdminSupabaseService.getDashboardStats();
-      final apps = await AdminSupabaseService.getAllApplications();
-      final interns = await AdminSupabaseService.getAllInterns();
+      final results = await Future.wait([
+        AdminSupabaseService.getDashboardStats(),
+        AdminSupabaseService.getAllApplications(),
+        AdminSupabaseService.getAllInterns(),
+        AdminSupabaseService.getPayments(),
+      ]);
 
       if (mounted) {
         setState(() {
-          _stats = stats;
-          _recentApps = apps.take(10).toList();
-          _allInterns = interns;
+          _stats = results[0] as Map<String, dynamic>;
+          _recentApps =
+              (results[1] as List<Map<String, dynamic>>).take(10).toList();
+          _allInterns = results[2] as List<Map<String, dynamic>>;
+          _payments = results[3] as List<Map<String, dynamic>>;
           _applyFilters();
           _loading = false;
         });
@@ -238,6 +244,15 @@ class _OverviewScreenState extends State<OverviewScreen> {
         final status = intern['status'] ?? 'active';
         final color = status == 'active' ? AppTheme.success : AppTheme.warning;
 
+        // Find payment for this intern
+        final payment = _findPayment(intern);
+        final isPaid = payment != null;
+        final paidAmt = isPaid
+            ? ((double.tryParse(payment['amount']?.toString() ?? '0') ?? 0) *
+                    0.98)
+                .round()
+            : 0;
+
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(12),
@@ -283,26 +298,56 @@ class _OverviewScreenState extends State<OverviewScreen> {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  status.toUpperCase(),
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      status.toUpperCase(),
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isPaid ? '₹$paidAmt' : 'Unpaid',
+                    style: TextStyle(
+                      color: isPaid ? AppTheme.success : AppTheme.error,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         );
       },
     );
+  }
+
+  /// Find payment record for an intern by user_id or email match
+  Map<String, dynamic>? _findPayment(Map<String, dynamic> intern) {
+    final userId = intern['id']?.toString();
+    final email = (intern['email'] ?? '').toString().toLowerCase();
+    for (final p in _payments) {
+      final pStatus = (p['status'] ?? '').toString().toLowerCase();
+      if (pStatus != 'completed' && pStatus != 'captured') continue;
+      if (p['user_id']?.toString() == userId) return p;
+      final customerEmail =
+          (p['customer_email'] ?? '').toString().toLowerCase();
+      if (customerEmail.isNotEmpty && customerEmail == email) return p;
+    }
+    return null;
   }
 
   Widget _buildStatsGrid() {

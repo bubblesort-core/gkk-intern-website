@@ -27,7 +27,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final profile = await SupabaseService.getCurrentProfile();
+    final results = await Future.wait([
+      SupabaseService.getCurrentProfile(),
+      SupabaseService.getMyTeam(),
+    ]);
+
+    final profile = results[0];
+    final teamData = results[1];
+
+    if (profile != null) {
+      if (teamData != null && teamData['teams'] != null) {
+        final team = teamData['teams'];
+        profile['team_name'] = team['name'];
+        if (team['batches'] != null) {
+          profile['batch_name'] = team['batches']['name'];
+        }
+      }
+    }
+
     if (mounted) setState(() => _profile = profile);
   }
 
@@ -191,7 +208,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         }
 
-        final profile = snapshot.data ?? _profile;
+        var profile = snapshot.data ?? _profile;
+        if (profile != null && _profile != null) {
+          // Re-inject the manually fetched data from initState over the stream data
+          if (_profile!['team_name'] != null)
+            profile['team_name'] = _profile!['team_name'];
+          if (_profile!['batch_name'] != null)
+            profile['batch_name'] = _profile!['batch_name'];
+        }
+
         if (profile == null) {
           return Center(
             child: Column(

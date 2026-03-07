@@ -117,9 +117,18 @@ const CalendarCard: React.FC = () => {
             // Fetch booking counts for each available date
             // (batch fetch for performance — check each date)
             const promises = availableDatesInMonth.map(async ({ displayStr }) => {
+                const checkDateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), availableDatesInMonth.find(d => d.displayStr === displayStr)!.day);
+                const dateKey = `${checkDateObj.getFullYear()}-${String(checkDateObj.getMonth() + 1).padStart(2, '0')}-${String(checkDateObj.getDate()).padStart(2, '0')}`;
+
+                const timeSlotsForDate = settings?.specific_date_times?.[dateKey] || settings!.time_slots;
+
+                if (timeSlotsForDate.length === 0) {
+                    return; // No slots, so not bookable at all. Or maybe consider it "fully booked". Let's say it's fully booked.
+                }
+
                 const counts = await getBookedSlots(displayStr);
                 // A date is fully booked if EVERY time slot has >= maxPerSlot bookings
-                const allFull = settings!.time_slots.every(time24 => {
+                const allFull = timeSlotsForDate.every((time24: string) => {
                     const [hourStr, minStr] = time24.split(':');
                     const hour = parseInt(hourStr);
                     const suffix = hour >= 12 ? 'PM' : 'AM';
@@ -127,7 +136,7 @@ const CalendarCard: React.FC = () => {
                     const formatted = `${h}:${minStr} ${suffix}`;
                     return (counts[formatted] || 0) >= maxPerSlot;
                 });
-                if (allFull) {
+                if (allFull && timeSlotsForDate.length > 0) {
                     fullyBooked.add(displayStr);
                 }
             });

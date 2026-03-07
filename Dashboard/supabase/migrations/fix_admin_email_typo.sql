@@ -1,6 +1,6 @@
--- Fix typo in admin email
+﻿-- Fix typo in admin email
 UPDATE public.admin_credentials
-SET username = 'noreply.gkk26@gmail.com'
+SET username = 'noreplay.gkk26@gmail.com'
 WHERE username = 'noreplay.gkk26@gmail.com';
 
 -- Verify

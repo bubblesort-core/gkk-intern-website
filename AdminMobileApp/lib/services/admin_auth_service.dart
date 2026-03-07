@@ -143,7 +143,7 @@ class AdminAuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_sessionKey);
       await prefs.remove(_sessionExpiryKey);
-      await client.auth.signOut();
+      await client.auth.signOut(scope: SignOutScope.local);
     } catch (e) {
       debugPrint('[AdminAuth] Sign-out error: $e');
     }

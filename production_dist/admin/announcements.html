@@ -539,12 +539,7 @@
         function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
         async function init() {
-            // Check auth
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) {
-                window.location.href = '../admin/login.html';
-                return;
-            }
+            if (!await ensureAdminAuth()) return;
 
             await initLookups();
             await loadAnnouncements();

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -436,28 +436,50 @@
 
                     <!-- Slot Capacity Card -->
                     <div class="setting-card" style="grid-column: 1 / -1;">
-                        <h3><i class="fas fa-users"></i> Slot Capacity</h3>
-                        <p>Set how many applicants can book the same time slot</p>
+                        <h3><i class="fas fa-users"></i> Slot Capacity & Batch Settings</h3>
+                        <p>Set how many applicants can book the same time slot, and manage the current recruitment
+                            batch.</p>
 
-                        <div
-                            style="display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: var(--radius-md);">
-                            <div style="flex: 1;">
-                                <strong style="font-size: 0.95rem;">Max applicants per slot</strong>
-                                <div style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 4px;">
-                                    When this limit is reached, the slot shows as "Full"
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                            <!-- Slot Capacity -->
+                            <div
+                                style="flex: 1; display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: var(--radius-md);">
+                                <div style="flex: 1;">
+                                    <strong style="font-size: 0.95rem;">Max applicants per slot</strong>
+                                    <div style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 4px;">
+                                        When this limit is reached, the slot shows as "Full"
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <button class="quick-action-btn" onclick="adjustCapacity(-1)"
+                                        style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700;">&minus;</button>
+                                    <input type="number" id="maxPerSlot" value="1" min="1" max="50"
+                                        style="width: 60px; text-align: center; padding: 8px; border: 1px solid var(--c-border); border-radius: 8px; background: rgba(0,0,0,0.2); color: var(--c-text-primary); font-size: 1.1rem; font-weight: 700; appearance: textfield; -moz-appearance: textfield;"
+                                        onchange="markUnsaved()">
+                                    <button class="quick-action-btn" onclick="adjustCapacity(1)"
+                                        style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700;">+</button>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <button class="quick-action-btn" onclick="adjustCapacity(-1)"
-                                    style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700;">&minus;</button>
-                                <input type="number" id="maxPerSlot" value="1" min="1" max="50"
-                                    style="width: 60px; text-align: center; padding: 8px; border: 1px solid var(--c-border); border-radius: 8px; background: rgba(0,0,0,0.2); color: var(--c-text-primary); font-size: 1.1rem; font-weight: 700; appearance: textfield; -moz-appearance: textfield;"
-                                    onchange="markUnsaved()">
-                                <button class="quick-action-btn" onclick="adjustCapacity(1)"
-                                    style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700;">+</button>
+
+                            <!-- Application Batch -->
+                            <div
+                                style="flex: 1; display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: var(--radius-md);">
+                                <div style="flex: 1;">
+                                    <strong style="font-size: 0.95rem;">Active Recruitment Batch</strong>
+                                    <div style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 4px;">
+                                        Current batch parameter applied to incoming applications (e.g. "Batch 3")
+                                    </div>
+                                </div>
+                                <div>
+                                    <input type="text" id="activeBatch" value="Batch 1"
+                                        style="width: 140px; padding: 10px; border: 1px solid var(--c-border); border-radius: 8px; background: rgba(0,0,0,0.2); color: var(--c-text-primary); font-size: 1rem; font-weight: 600;"
+                                        onchange="markUnsaved()">
+                                </div>
                             </div>
                         </div>
                     </div>
+
+
 
                     <!-- Form Lock Card -->
                     <div class="setting-card" style="grid-column: 1 / -1;">
@@ -497,6 +519,40 @@
         </main>
     </div>
 
+    <!-- Specific Times Modal -->
+    <div id="specificTimesModal"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; transition:all 0.3s ease;">
+        <div
+            style="background:rgba(15,23,42,0.85); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.1); border-radius:var(--radius-lg); box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); width:100%; max-width:600px; padding:24px; max-height:90vh; overflow-y:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size:1.2rem; font-weight:600;" id="specificTimesModalTitle">Select Times for Date</h3>
+                <button onclick="closeSpecificTimesModal()"
+                    style="background:none; border:none; color:var(--c-text-muted); font-size:1.2rem; cursor:pointer;"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <p style="color:var(--c-text-muted); font-size:0.9rem; margin-bottom:16px;">
+                Selecting custom times for this date will override the default time slots. If you unselect all, it will
+                revert to the default time slots.
+            </p>
+
+            <div class="time-slots-grid" id="specificTimeSlotsGrid">
+                <!-- Generated by JS -->
+            </div>
+
+            <div class="quick-actions" style="margin-bottom: 24px;">
+                <button class="quick-action-btn" onclick="selectSpecificEveningSlots()">Evening (6-9 PM)</button>
+                <button class="quick-action-btn" onclick="selectAllSpecificSlots()">Select All</button>
+                <button class="quick-action-btn" onclick="clearAllSpecificSlots()">Clear All</button>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:12px;">
+                <button class="btn btn-secondary" onclick="closeSpecificTimesModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSpecificTimesModal()">Save specific times</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
@@ -516,16 +572,19 @@
         let selectedDays = [0, 1, 6]; // Default: Sun, Mon, Sat
         let selectedTimeSlots = [];
         let selectedDates = []; // Specific dates in YYYY-MM-DD format
+        let specificDateTimes = {}; // Custom times for specific dates
+        let activeModalDate = null;
+        let activeModalTimes = [];
         let calendarCurrentDate = new Date();
         let isFormLocked = false;
         let maxPerSlot = 1;
 
-        // Generate time slots (15-min intervals from 9 AM to 10 PM)
+        // Generate time slots (15-min intervals from 9 AM to 11 PM)
         function generateTimeSlots() {
             const grid = document.getElementById('timeSlotsGrid');
             grid.innerHTML = '';
 
-            for (let hour = 9; hour <= 21; hour++) {
+            for (let hour = 9; hour <= 23; hour++) {
                 for (let min = 0; min < 60; min += 15) {
                     const time24 = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
                     const time12 = formatTime12(hour, min);
@@ -716,12 +775,25 @@
             list.innerHTML = selectedDates.map(dateStr => {
                 const date = new Date(dateStr + 'T00:00:00');
                 const formatted = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                const specificTimes = specificDateTimes[dateStr] || [];
+                const timesLabel = specificTimes.length > 0 ? `${specificTimes.length} custom times` : 'Default times';
+
                 return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: var(--c-bg-card); border-radius: 6px; margin-bottom: 6px;">
-                        <span style="font-size: 0.85rem;">${formatted}</span>
-                        <button onclick="removeDate('${dateStr}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
-                            <i class="fas fa-times"></i>
-                        </button>
+                    <div style="display: flex; flex-direction: column; padding: 8px; background: var(--c-bg-card); border-radius: 6px; margin-bottom: 6px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 0.85rem; font-weight: 500;">${formatted}</span>
+                            <div style="display: flex; gap: 4px;">
+                                <button onclick="openSpecificTimesModal('${dateStr}')" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #3b82f6; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                    <i class="fas fa-clock"></i> Times
+                                </button>
+                                <button onclick="removeDate('${dateStr}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--c-text-muted); margin-top: 4px;">
+                            ${timesLabel}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -729,7 +801,99 @@
 
         function removeDate(dateStr) {
             selectedDates = selectedDates.filter(d => d !== dateStr);
+            delete specificDateTimes[dateStr];
             renderCalendar();
+            renderSelectedDatesList();
+            markUnsaved();
+        }
+
+        // Specific Times Modal
+        function openSpecificTimesModal(dateStr) {
+            activeModalDate = dateStr;
+            activeModalTimes = [...(specificDateTimes[dateStr] || [])];
+
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const formatted = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('specificTimesModalTitle').textContent = `Custom Times: ${formatted}`;
+
+            renderSpecificTimeSlots();
+            document.getElementById('specificTimesModal').style.display = 'flex';
+        }
+
+        function closeSpecificTimesModal() {
+            document.getElementById('specificTimesModal').style.display = 'none';
+            activeModalDate = null;
+            activeModalTimes = [];
+        }
+
+        function renderSpecificTimeSlots() {
+            const grid = document.getElementById('specificTimeSlotsGrid');
+            grid.innerHTML = '';
+
+            for (let hour = 9; hour <= 23; hour++) {
+                for (let min = 0; min < 60; min += 15) {
+                    const time24 = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+                    const time12 = formatTime12(hour, min);
+
+                    const slot = document.createElement('div');
+                    slot.className = 'time-slot';
+                    if (activeModalTimes.includes(time24)) {
+                        slot.classList.add('selected');
+                    }
+                    slot.dataset.time = time24;
+                    slot.textContent = time12;
+                    slot.onclick = () => toggleSpecificTimeSlot(slot, time24);
+                    grid.appendChild(slot);
+                }
+            }
+        }
+
+        function toggleSpecificTimeSlot(el, time) {
+            el.classList.toggle('selected');
+            if (el.classList.contains('selected')) {
+                if (!activeModalTimes.includes(time)) activeModalTimes.push(time);
+            } else {
+                activeModalTimes = activeModalTimes.filter(t => t !== time);
+            }
+        }
+
+        function selectSpecificEveningSlots() {
+            document.querySelectorAll('#specificTimeSlotsGrid .time-slot').forEach(slot => {
+                const hour = parseInt(slot.dataset.time.split(':')[0]);
+                if (hour >= 18 && hour < 21) {
+                    slot.classList.add('selected');
+                    if (!activeModalTimes.includes(slot.dataset.time)) {
+                        activeModalTimes.push(slot.dataset.time);
+                    }
+                } else {
+                    slot.classList.remove('selected');
+                    activeModalTimes = activeModalTimes.filter(t => t !== slot.dataset.time);
+                }
+            });
+        }
+
+        function selectAllSpecificSlots() {
+            activeModalTimes = [];
+            document.querySelectorAll('#specificTimeSlotsGrid .time-slot').forEach(slot => {
+                slot.classList.add('selected');
+                activeModalTimes.push(slot.dataset.time);
+            });
+        }
+
+        function clearAllSpecificSlots() {
+            activeModalTimes = [];
+            document.querySelectorAll('#specificTimeSlotsGrid .time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+        }
+
+        function saveSpecificTimesModal() {
+            if (activeModalTimes.length > 0) {
+                specificDateTimes[activeModalDate] = [...activeModalTimes].sort();
+            } else {
+                delete specificDateTimes[activeModalDate];
+            }
+            closeSpecificTimesModal();
             renderSelectedDatesList();
             markUnsaved();
         }
@@ -784,9 +948,20 @@
                     // Specific Dates
                     selectedDates = data.available_dates || [];
 
-                    // Slot capacity
+                    // Specific Date Times
+                    specificDateTimes = data.specific_date_times || {};
+
+                    // Slot capacity and Batch Tracking
                     maxPerSlot = data.max_per_slot || 1;
                     document.getElementById('maxPerSlot').value = maxPerSlot;
+
+                    // Support the new DB field (graceful fallback if missing)
+                    if (document.getElementById('activeBatch')) {
+                        document.getElementById('activeBatch').value = data.active_batch || 'Batch 1';
+                    }
+
+                    document.getElementById('activeBatch').value = data.active_batch || 'Batch 1';
+
                     renderCalendar();
                     renderSelectedDatesList();
 
@@ -807,13 +982,20 @@
             try {
                 maxPerSlot = parseInt(document.getElementById('maxPerSlot').value) || 1;
 
+                let activeBatch = 'Batch 1';
+                if (document.getElementById('activeBatch')) {
+                    activeBatch = document.getElementById('activeBatch').value || 'Batch 1';
+                }
+
                 const { error } = await supabaseClient
                     .from('form_settings')
                     .update({
                         available_days: selectedDays.sort((a, b) => a - b),
                         available_dates: selectedDates.sort(),
+                        specific_date_times: specificDateTimes,
                         time_slots: selectedTimeSlots.sort(),
                         max_per_slot: maxPerSlot,
+                        active_batch: activeBatch,
                         is_form_locked: isFormLocked,
                         lock_message: document.getElementById('lockMessage').value
                     })
@@ -833,11 +1015,8 @@
 
         // Init
         async function init() {
+            if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
             // Remove legacy userName update - handled by sidebar.js now
 
             generateTimeSlots();

@@ -235,6 +235,105 @@ input[type="radio"] {
   animation: flyRight 1.5s ease-in-out infinite;
 }
 
+@keyframes cloudyFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-7px) rotate(-0.8deg);
+  }
+}
+
+.animate-cloudy-float {
+  animation: cloudyFloat 3.8s ease-in-out infinite;
+}
+
+@keyframes cloudyGlow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.75;
+    transform: scale(1.08);
+  }
+}
+
+.animate-cloudy-glow {
+  animation: cloudyGlow 2.8s ease-in-out infinite;
+}
+
+@keyframes cloudyBlink {
+  0%,
+  44%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  45%,
+  47% {
+    transform: scaleY(0.08);
+  }
+}
+
+.animate-cloudy-blink {
+  animation: cloudyBlink 5s ease-in-out infinite;
+}
+
+@keyframes cloudyBlush {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.14);
+  }
+}
+
+.animate-cloudy-blush {
+  animation: cloudyBlush 2.4s ease-in-out infinite;
+}
+
+@keyframes cloudyTwinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+.animate-cloudy-twinkle {
+  animation: cloudyTwinkle 2s ease-in-out infinite;
+}
+
+@keyframes cloudyNameBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-cloudy-nameBob {
+  animation: cloudyNameBob 3.2s ease-in-out infinite;
+}
+
 @keyframes shake {
 
   0%,

@@ -21,6 +21,7 @@ function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [isFormLocked, setIsFormLocked] = useState(false);
   const [lockMessage, setLockMessage] = useState("");
+  const [activeBatch, setActiveBatch] = useState("Batch 1");
   const [checkingLock, setCheckingLock] = useState(true);
 
   // For smooth random movement
@@ -37,6 +38,7 @@ function App() {
       } else if (settings) {
         setIsFormLocked(settings.is_form_locked);
         setLockMessage(settings.lock_message || "Applications are currently closed.");
+        setActiveBatch(settings.active_batch || "Batch 1");
       }
       setCheckingLock(false);
     }
@@ -157,7 +159,7 @@ function App() {
 
             <main className="flex-1 flex items-center justify-center py-10 px-4 md:px-10 lg:px-40">
               <div className="max-w-xl w-full text-center">
-                <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl p-10 shadow-xl">
+                <div className="bg-linear-to-br from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl p-10 shadow-xl">
                   <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                     <span className="material-symbols-outlined text-4xl text-red-500">lock</span>
                   </div>
@@ -197,7 +199,7 @@ function App() {
   }
 
   return (
-    <FormProvider>
+    <FormProvider initialBatch={activeBatch}>
       <ProgressBar />
       <div className="bg-background-light text-text-primary min-h-screen flex flex-col">
         <div className="relative flex-1 flex w-full flex-col overflow-x-hidden">
@@ -205,11 +207,11 @@ function App() {
             <Header />
 
             <main className="flex-1 flex justify-center py-10 px-4 md:px-10 lg:px-40 overflow-hidden">
-              <div className="max-w-[1400px] w-full flex flex-col gap-8 form-container h-full">
+              <div className="max-w-350 w-full flex flex-col gap-8 form-container h-full">
                 {/* Hero Section */}
                 <div className="flex flex-col gap-3 text-center shrink-0">
-                  <h1 className="text-text-primary text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
-                    GKK Internship Application
+                  <h1 className="text-text-primary text-2xl sm:text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">
+                    GKK Internship Application - {activeBatch}
                   </h1>
                   <p className="text-text-secondary text-lg font-normal leading-normal">
                     Join our team of innovators. Complete the form below to apply. Our mascot watches for quality!
@@ -220,7 +222,7 @@ function App() {
                 <div className="relative w-full flex-1">
 
                   <div
-                    className="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10 w-full pb-20"
+                    className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 relative z-10 w-full pb-20"
                     onInput={() => {
                       setIsTyping(true);
                       if ((window as any).typingTimeout) clearTimeout((window as any).typingTimeout);
@@ -229,7 +231,7 @@ function App() {
                   >
                     {/* Row 1 - Top */}
                     <div className="md:col-span-8 w-full flex"><IdentityCard onFocus={handleFormFocus} onBlur={handleFormBlur} /></div>
-                    <div className="md:col-span-4 w-full flex"><QuickInfoCards /></div>
+                    <div className="md:col-span-4 w-full flex min-h-57.5"><QuickInfoCards /></div>
 
                     {/* Row 2 - Center Mascot */}
                     <div className="md:col-span-4 w-full flex"><DocumentUploadCard /></div>

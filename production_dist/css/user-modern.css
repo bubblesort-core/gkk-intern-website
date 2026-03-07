@@ -2798,3 +2798,285 @@ button:hover,
 a.btn:hover {
     border-radius: 0 !important;
 }
+
+/* ============================================
+   COMPREHENSIVE RESPONSIVE FIXES
+   ============================================ */
+
+/* --- Recordings section search header --- */
+@media (max-width: 768px) {
+    .recordings-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .recordings-header .search-box-wrap {
+        width: 100% !important;
+    }
+
+    #recordings > div:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+
+    #recordings .search-box-wrap {
+        width: 100% !important;
+    }
+
+    #recordings h2 {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* --- Overview welcome hero buttons --- */
+@media (max-width: 480px) {
+    .welcome-hero > div > div[style*="display: flex"][style*="gap: 1rem"] {
+        flex-direction: column;
+    }
+
+    .welcome-hero > div > div[style*="display: flex"][style*="gap: 1rem"] .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .welcome-hero h1 {
+        font-size: 1.3rem !important;
+    }
+}
+
+/* --- Stats grid modern --- */
+@media (max-width: 600px) {
+    .stats-grid-modern {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+
+    .stat-card-modern {
+        padding: 1rem !important;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem !important;
+    }
+
+    .stat-icon-wrapper {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1rem !important;
+    }
+
+    .stat-value-modern {
+        font-size: 1.25rem !important;
+    }
+
+    .stat-label-modern {
+        font-size: 0.75rem !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .stats-grid-modern {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* --- Overview split grid --- */
+@media (max-width: 768px) {
+    .overview-split-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    .overview-column {
+        min-width: 0;
+    }
+}
+
+/* --- Project tabs bar --- */
+@media (max-width: 480px) {
+    .projects-tab-bar {
+        flex-direction: row !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .projects-tab {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+    }
+
+    /* Project workspace grid */
+    .ws-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+
+    /* Submission form */
+    .submission-form-container form .form-group {
+        margin-bottom: 0.75rem;
+    }
+
+    /* Project cards grid */
+    .projects-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Custom project form inputs */
+    #customProjectsTab input,
+    #customProjectsTab textarea {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+    }
+}
+
+/* --- Meetings section --- */
+@media (max-width: 768px) {
+    #meetings > div:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+
+    .meeting-card {
+        padding: 1rem !important;
+    }
+
+    .meeting-card > div {
+        flex-wrap: wrap;
+    }
+}
+
+/* --- Team members grid --- */
+@media (max-width: 600px) {
+    .tw-members-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .team-layout-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .tw-leader-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px !important;
+    }
+
+    .tw-project-card {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+}
+
+/* --- Referrals section --- */
+@media (max-width: 480px) {
+    #referrals .glass-card {
+        padding: 1rem !important;
+    }
+}
+
+/* --- Rewards section --- */
+@media (max-width: 480px) {
+    #rewardsContainer .glass-card {
+        padding: 1.25rem !important;
+    }
+}
+
+/* --- Payment section --- */
+@media (max-width: 600px) {
+    #payment .glass-card {
+        padding: 1.5rem 1rem !important;
+        margin: 1rem auto !important;
+    }
+
+    #payment h2 {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* --- Leaderboard section --- */
+@media (max-width: 480px) {
+    #leaderboardList .leaderboard-row {
+        grid-template-columns: 36px 1fr 60px !important;
+        gap: 0.5rem;
+    }
+}
+
+/* --- Resources grid --- */
+@media (max-width: 600px) {
+    .resources-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
+/* --- Mobile App section --- */
+@media (max-width: 768px) {
+    #mobileapp .app-features-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #mobileapp .app-download-hero {
+        padding: 2rem 1.25rem !important;
+    }
+
+    #mobileapp .app-download-btn-main {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* --- Locked banner --- */
+@media (max-width: 480px) {
+    #lockedBanner {
+        padding: 1rem !important;
+        gap: 0.75rem !important;
+    }
+
+    #lockedBanner > div:first-child {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1rem !important;
+    }
+
+    #lockedBanner h3 {
+        font-size: 0.95rem !important;
+    }
+
+    #lockedBanner p {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* --- General overflow prevention --- */
+@media (max-width: 768px) {
+    .content-container {
+        overflow-x: hidden;
+    }
+
+    .section-content {
+        overflow-x: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Prevent horizontal scroll on any flex layout */
+    [style*="display: flex"] {
+        min-width: 0;
+    }
+
+    /* Make all images responsive */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Fix any wide inline tables/grids */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

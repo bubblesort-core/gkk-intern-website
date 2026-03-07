@@ -224,6 +224,15 @@
                             <option value="">🕒 Any Time</option>
                             <!-- Populated by JS -->
                         </select>
+
+                        <div style="width:1px; height:20px; background:var(--c-border); margin:0 4px;"></div>
+
+                        <!-- Batch Filter -->
+                        <select id="batchFilter" class="form-select" onchange="renderApplications()"
+                            style="border:none; background:transparent; font-size:0.85rem; padding:4px; width:120px; color:var(--c-text-primary); font-weight:600;">
+                            <option value="">📦 All Batches</option>
+                            <!-- Populated dynamically -->
+                        </select>
                     </div>
 
                     <div class="filter-tabs">
@@ -365,8 +374,26 @@
                 }
 
                 allApplications = apps || [];
+
+                // Populate Batch Filter options uniquely
+                populateBatchFilter();
+
                 renderApplications();
             } catch (error) { console.error(error); }
+        }
+
+        function populateBatchFilter() {
+            const select = document.getElementById('batchFilter');
+            const batches = new Set(allApplications.map(a => a.batch_number).filter(b => !!b));
+
+            // Re-render options preserving the default "All Batches"
+            const currentFilter = select.value;
+            select.innerHTML = '<option value="">📦 All Batches</option>';
+
+            [...batches].sort().forEach(batch => {
+                select.innerHTML += `<option value="${batch}">${batch}</option>`;
+            });
+            select.value = currentFilter;
         }
 
         function populateTimeSlots() {
@@ -428,6 +455,12 @@
             }
 
             let filtered = allApplications;
+
+            // Batch Filter
+            const batchVal = document.getElementById('batchFilter').value;
+            if (batchVal) {
+                filtered = filtered.filter(a => a.batch_number === batchVal);
+            }
 
             // Status Filter
             if (currentFilter !== 'all') filtered = filtered.filter(a => a.status === currentFilter);
@@ -526,6 +559,9 @@
                     default: statusBadge = '<span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>';
                 }
 
+                const batchBadge = app.batch_number ?
+                    `<span class="badge" style="background:rgba(59,130,246,0.1); color:#60a5fa; font-size:0.7rem; margin-top:4px; margin-bottom:4px; padding:2px 8px; border:1px solid rgba(59,130,246,0.3);"><i class="fas fa-layer-group"></i> ${app.batch_number}</span>` : '';
+
                 let dateDisplay = new Date(app.created_at).toLocaleDateString();
                 let timeDisplay = '';
                 if (dateMode === 'preferred_interview_date') {
@@ -559,6 +595,7 @@
                     <td onclick="viewApplication('${app.id}')">
                         <span class="badge badge-${getStatusBadge(app.status)}">${app.status}</span>
                         <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                           ${batchBadge}
                            ${accountLabel}
                         </div>
                     </td>
@@ -1181,8 +1218,8 @@
 
         // Init Logic
         async function init() {
+            if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-            if (!session) return window.location.href = 'login.html';
 
             // Show Skeleton immediately
             const tbody = document.getElementById('applicationsTable');

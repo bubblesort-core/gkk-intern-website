@@ -7,6 +7,7 @@
 /dashboard/js/*     /js/:splat     301
 /dashboard/apply/*  /dashboard/apply/index.html  200
 /Dashboard/*        /dashboard/:splat        301
+/dashboard/assets/*  /dashboard/assets/:splat  200
 /dashboard/*        /dashboard/index.html        200
 /community-chat/*   /community-chat/index.html   200
 /*                  /index.html                  200

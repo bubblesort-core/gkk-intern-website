@@ -11,7 +11,7 @@ interface MascotProps {
 }
 
 const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = false }) => {
-    const { formData, updateFormData, cvFile, resetForm } = useFormContext();
+    const { formData, updateFormData, cvFile, resetForm, activeBatch } = useFormContext();
     const emotion = formData.mascot_emotion || 'neutral';
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,8 +27,9 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
         const hasInterests = !!(formData.interests && formData.interests.length > 0);
         const hasDiscovery = !!formData.discovery_source;
         const hasCollege = !!formData.college?.trim();
+        const isEmailVerified = !!formData.is_email_verified;
 
-        return hasIdentity && hasPhone && hasWhatsApp && hasAge && hasSex && hasSchedule && hasInterests && hasDiscovery && hasCollege;
+        return hasIdentity && hasPhone && hasWhatsApp && hasAge && hasSex && hasSchedule && hasInterests && hasDiscovery && hasCollege && isEmailVerified;
     }, [formData]);
 
     // Get missing fields for tooltip/angry message
@@ -44,6 +45,7 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
         if (!formData.interview_date || !formData.interview_time) missing.push("Interview Schedule");
         if (!formData.interests || formData.interests.length === 0) missing.push("Interests");
         if (!formData.discovery_source) missing.push("Discovery Source");
+        if (!formData.is_email_verified) missing.push("Email Verification");
         return missing;
     }, [formData]);
 
@@ -106,37 +108,50 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
             return;
         }
 
+        if (!formData.is_email_verified) {
+            updateFormData({ mascot_emotion: 'angry' });
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Email Not Verified',
+                text: 'Please verify your email address in the Identity section before submitting.',
+                confirmButtonColor: '#f59e0b',
+                background: '#0f172a',
+                color: '#f8fafc'
+            });
+            return;
+        }
+
         // Confirmation Dialog
         const result = await Swal.fire({
             title: 'Confirm Details',
             html: `
-                <div class="text-left bg-[#1e293b] p-4 rounded-lg flex flex-col gap-3 text-sm">
-                    <div class="flex flex-col gap-1 border-b border-[#334155] pb-2">
-                        <span class="text-[#94a3b8] text-xs uppercase tracking-wider">Identity</span>
+                <div class="text-left bg-background-card p-4 rounded-lg flex flex-col gap-3 text-sm">
+                    <div class="flex flex-col gap-1 border-b border-border pb-2">
+                        <span class="text-text-secondary text-xs uppercase tracking-wider">Identity</span>
                         <div class="flex justify-between items-center">
-                            <span class="text-[#f8fafc] font-medium">${formData.full_name || '-'}</span>
+                            <span class="text-text-primary font-medium">${formData.full_name || '-'}</span>
                         </div>
                         <span class="text-[#10b981]">${formData.email || '-'}</span>
                     </div>
 
-                    <div class="flex flex-col gap-1 border-b border-[#334155] pb-2">
-                        <span class="text-[#94a3b8] text-xs uppercase tracking-wider">Contact</span>
+                    <div class="flex flex-col gap-1 border-b border-border pb-2">
+                        <span class="text-text-secondary text-xs uppercase tracking-wider">Contact</span>
                         <div class="flex justify-between">
-                            <span class="text-[#94a3b8]">Phone:</span>
-                            <span class="text-[#f8fafc] font-medium">+91 ${formData.phone || '-'}</span>
+                            <span class="text-text-secondary">Phone:</span>
+                            <span class="text-text-primary font-medium">+91 ${formData.phone || '-'}</span>
                         </div>
                     </div>
 
                      <div class="flex flex-col gap-1">
-                        <span class="text-[#94a3b8] text-xs uppercase tracking-wider">Education</span>
-                         <span class="text-[#f8fafc]">${formData.college || formData.age + ' yo, ' + formData.sex || '-'}</span>
+                        <span class="text-text-secondary text-xs uppercase tracking-wider">Education</span>
+                         <span class="text-text-primary">${formData.college || formData.age + ' yo, ' + formData.sex || '-'}</span>
                     </div>
 
-                    <div class="flex flex-col gap-1 border-t border-[#334155] pt-2 mt-1">
-                        <span class="text-[#94a3b8] text-xs uppercase tracking-wider">Interview Preference</span>
+                    <div class="flex flex-col gap-1 border-t border-border pt-2 mt-1">
+                        <span class="text-text-secondary text-xs uppercase tracking-wider">Interview Preference</span>
                         <div class="flex justify-between">
-                             <span class="text-[#f8fafc]"><span class="text-[#10b981]">📅</span> ${formData.interview_date || '-'}</span>
-                             <span class="text-[#f8fafc]"><span class="text-[#10b981]">⏰</span> ${formData.interview_time || '-'}</span>
+                             <span class="text-text-primary"><span class="text-[#10b981]">📅</span> ${formData.interview_date || '-'}</span>
+                             <span class="text-text-primary"><span class="text-[#10b981]">⏰</span> ${formData.interview_time || '-'}</span>
                         </div>
                     </div>
                 </div>
@@ -167,7 +182,7 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
 
         try {
             const submissionPromise = (async () => {
-                const recordId = await submitFormData({ ...formData, cv_url: undefined });
+                const recordId = await submitFormData({ ...formData, batch_number: activeBatch, cv_url: undefined });
                 if (cvFile) {
                     const cvUrl = await uploadFileWithId(cvFile, recordId);
                     await updateCvUrl(recordId, cvUrl);
@@ -244,86 +259,154 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
     const boxGlow = isAngry ? 'ring-2 ring-red-500 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'border-border focus-within:ring-2 focus-within:border-primary/50';
 
     return (
-        <div className={`flex flex-col items-center justify-center gap-4 mascot-tile h-full min-h-[350px] transition-all duration-500 w-full bento-card glass-hub border rounded-xl shadow-sm p-8 ${boxGlow}`}>
-            <div className={`relative w-40 h-40 mascot-container flex flex-col items-center justify-center transition-transform duration-300 ${isAngry ? 'animate-shake' : ''}`}>
-                {/* Cloud SVG Background */}
-                <div className="absolute inset-x-0 top-0 bottom-6 flex items-center justify-center -z-10">
-                    <svg
-                        className={`w-full h-full transition-colors duration-500 ${cloudColor}`}
-                        fill="currentColor"
-                        viewBox="0 0 200 130"
-                    >
-                        <path d="M50,40 C50,18 72,0 95,0 C115,0 132,12 140,30 C150,15 170,15 180,35 C195,55 190,85 170,105 C185,115 175,140 150,140 L40,140 C15,140 0,120 0,95 C0,75 10,60 25,55 C20,45 25,30 40,25 C42,25 45,25 47,25 C48,15 50,40 50,40 Z" transform="translate(5, -10)" />
-                    </svg>
-                </div>
+        <div className={`flex flex-col items-center justify-center gap-4 mascot-tile h-full min-h-87.5 transition-all duration-500 w-full bento-card glass-hub border rounded-xl shadow-sm p-8 ${boxGlow}`}>
+            <div className={`relative w-44 h-44 mascot-container flex items-center justify-center transition-transform duration-300 ${isAngry ? 'animate-shake' : 'animate-cloudy-float'}`}>
+                {/* Aura glow */}
+                {!isAngry && (
+                    <div className="absolute inset-2 rounded-full bg-primary/20 blur-2xl animate-cloudy-glow -z-20" />
+                )}
+
+                {/* Sparkles */}
+                {!isAngry && (
+                    <>
+                        <span className="absolute -top-1 left-3 w-1.5 h-1.5 bg-white/80 rounded-full animate-cloudy-twinkle" />
+                        <span className="absolute top-4 -right-1 w-1 h-1 bg-primary/80 rounded-full animate-cloudy-twinkle [animation-delay:0.8s]" />
+                        <span className="absolute bottom-6 -left-1 w-1.5 h-1.5 bg-white/70 rounded-full animate-cloudy-twinkle [animation-delay:1.4s]" />
+                        <span className="absolute bottom-10 -right-2 w-1 h-1 bg-primary/60 rounded-full animate-cloudy-twinkle [animation-delay:2s]" />
+                    </>
+                )}
+
+                {/* Cloud SVG Body – rounder, cuter shape */}
+                <svg
+                    className={`absolute inset-0 w-full h-full transition-colors duration-500 ${cloudColor}`}
+                    fill="currentColor"
+                    viewBox="0 0 220 160"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    {/* Soft highlight layer */}
+                    <defs>
+                        <radialGradient id="cloudHighlight" cx="40%" cy="30%" r="50%">
+                            <stop offset="0%" stopColor="white" stopOpacity="0.12" />
+                            <stop offset="100%" stopColor="white" stopOpacity="0" />
+                        </radialGradient>
+                    </defs>
+                    {/* Main cloud body */}
+                    <path d="
+                        M60,130
+                        Q10,130 10,95
+                        Q10,68 35,58
+                        Q28,35 55,25
+                        Q72,18 90,25
+                        Q100,5 125,5
+                        Q155,5 165,30
+                        Q185,20 200,45
+                        Q215,70 195,95
+                        Q210,130 170,130
+                        Z
+                    " />
+                    {/* Highlight overlay */}
+                    <path d="
+                        M60,130
+                        Q10,130 10,95
+                        Q10,68 35,58
+                        Q28,35 55,25
+                        Q72,18 90,25
+                        Q100,5 125,5
+                        Q155,5 165,30
+                        Q185,20 200,45
+                        Q215,70 195,95
+                        Q210,130 170,130
+                        Z
+                    " fill="url(#cloudHighlight)" />
+                </svg>
+
+                {/* === Face elements – absolutely positioned relative to h-44 w-44 container === */}
 
                 {/* Eyes Container */}
-                <div className={`relative flex gap-6 z-10 transition-transform duration-300 ${emotion === 'curious' ? 'rotate-[15deg]' : ''}`} style={{ marginTop: '-40px' }}>
+                <div className={`absolute z-10 flex gap-5 transition-transform duration-300 ${emotion === 'curious' ? 'rotate-12' : ''}`}
+                    style={{ top: '38%', left: '50%', transform: `translateX(-50%) translateY(-50%)${emotion === 'curious' ? ' rotate(12deg)' : ''}` }}>
                     {/* Left Eye */}
-                    <div className={`bg-background-light rounded-full border-2 ${isAngry ? 'border-red-900' : 'border-border'} flex items-center justify-center overflow-hidden shadow-sm transition-all duration-300 ${emotion === 'curious' ? 'w-12 h-14' : 'w-10 h-12'} ${isAngry ? 'rotate-12' : ''}`}>
+                    <div className={`bg-background-light rounded-full border-2 ${isAngry ? 'border-red-900' : 'border-border'} flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 ${emotion === 'curious' ? 'w-11 h-13' : 'w-10 h-12'} ${isAngry ? 'rotate-12' : 'animate-cloudy-blink'}`}>
                         {!eyesClosed ? (
                             isExcited ? (
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#10b981" xmlns="http://www.w3.org/2000/svg" className="animate-pulse">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="#10b981" xmlns="http://www.w3.org/2000/svg" className="animate-pulse">
                                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                                 </svg>
                             ) : isAngry ? (
-                                <div className="w-8 h-1.5 bg-red-900 transform -rotate-45 rounded-full" />
+                                <div className="w-7 h-1.5 bg-red-900 transform -rotate-45 rounded-full" />
                             ) : (
                                 <div className="w-full h-full relative">
                                     <div
-                                        className="absolute w-5 h-5 bg-primary rounded-full top-3 left-2 transition-transform duration-200"
-                                        style={{ transform: `translate(${currentEyePosition.x}px, ${currentEyePosition.y}px)` }}
-                                    />
+                                        className="absolute w-5 h-5 rounded-full transition-transform duration-200 bg-linear-to-br from-emerald-300 to-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                                        style={{
+                                            top: '50%', left: '50%',
+                                            marginTop: '-10px', marginLeft: '-10px',
+                                            transform: `translate(${currentEyePosition.x}px, ${currentEyePosition.y}px)`
+                                        }}
+                                    >
+                                        <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-white/90 rounded-full" />
+                                        <div className="absolute bottom-1 right-1 w-1 h-1 bg-white/60 rounded-full" />
+                                    </div>
                                 </div>
                             )
                         ) : (
-                            <div className="w-8 h-1 bg-primary rounded-full" />
+                            <div className="w-7 h-0.5 bg-primary rounded-full" />
                         )}
                     </div>
 
                     {/* Right Eye */}
-                    <div className={`bg-background-light rounded-full border-2 ${isAngry ? 'border-red-900' : 'border-border'} flex items-center justify-center overflow-hidden shadow-sm transition-all duration-300 ${emotion === 'curious' ? 'w-8 h-10 mt-2' : 'w-10 h-12'} ${isAngry ? '-rotate-12' : ''}`}>
+                    <div className={`bg-background-light rounded-full border-2 ${isAngry ? 'border-red-900' : 'border-border'} flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 ${emotion === 'curious' ? 'w-8 h-10 mt-1' : 'w-10 h-12'} ${isAngry ? '-rotate-12' : 'animate-cloudy-blink [animation-delay:0.25s]'}`}>
                         {!eyesClosed ? (
                             isExcited ? (
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#10b981" xmlns="http://www.w3.org/2000/svg" className="animate-pulse" style={{ animationDelay: '0.2s' }}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="#10b981" xmlns="http://www.w3.org/2000/svg" className="animate-pulse" style={{ animationDelay: '0.2s' }}>
                                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                                 </svg>
                             ) : isAngry ? (
-                                <div className="w-8 h-1.5 bg-red-900 transform rotate-45 rounded-full" />
+                                <div className="w-7 h-1.5 bg-red-900 transform rotate-45 rounded-full" />
                             ) : (
                                 <div className="w-full h-full relative">
                                     <div
-                                        className="absolute w-5 h-5 bg-primary rounded-full top-3 left-2 transition-transform duration-200"
-                                        style={{ transform: `translate(${currentEyePosition.x}px, ${currentEyePosition.y}px)` }}
-                                    />
+                                        className="absolute w-5 h-5 rounded-full transition-transform duration-200 bg-linear-to-br from-emerald-300 to-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                                        style={{
+                                            top: '50%', left: '50%',
+                                            marginTop: '-10px', marginLeft: '-10px',
+                                            transform: `translate(${currentEyePosition.x}px, ${currentEyePosition.y}px)`
+                                        }}
+                                    >
+                                        <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-white/90 rounded-full" />
+                                        <div className="absolute bottom-1 right-1 w-1 h-1 bg-white/60 rounded-full" />
+                                    </div>
                                 </div>
                             )
                         ) : (
-                            <div className="w-8 h-1 bg-primary rounded-full" />
+                            <div className="w-7 h-0.5 bg-primary rounded-full" />
                         )}
                     </div>
                 </div>
 
-                <div className={`absolute bottom-20 flex gap-12 z-10 transition-opacity duration-300 ${blushOpacity}`}>
-                    <div className="w-4 h-2 bg-pink-400 rounded-full blur-[2px]" />
-                    <div className="w-4 h-2 bg-pink-400 rounded-full blur-[2px]" />
+                {/* Blush cheeks – centered below eyes */}
+                <div className={`absolute z-10 flex transition-opacity duration-300 ${blushOpacity}`}
+                    style={{ top: '60%', left: '50%', transform: 'translateX(-50%)', gap: '40px' }}>
+                    <div className="w-5 h-2.5 bg-pink-400 rounded-full blur-[3px] animate-cloudy-blush" />
+                    <div className="w-5 h-2.5 bg-pink-400 rounded-full blur-[3px] animate-cloudy-blush [animation-delay:0.35s]" />
                 </div>
 
-                {/* Mouth / Smile */}
-                <div className={`absolute bottom-18 left-1/2 -translate-x-1/2 z-10 transition-all duration-300 transform ${isAngry ? 'scale-100 opacity-100' : smileScale}`}>
+                {/* Mouth / Smile – centered below blush */}
+                <div className={`absolute z-10 transition-all duration-300 transform ${isAngry ? 'scale-100 opacity-100' : smileScale}`}
+                    style={{ top: '66%', left: '50%', transform: `translateX(-50%) ${isAngry ? '' : (isSmiling && !eyesClosed ? 'scale(1)' : 'scale(0.5)')}` }}>
                     {emotion === 'excited' ? (
-                        <div className="w-4 h-4 bg-[#0f172a] rounded-full" /> /* Open mouth */
+                        <div className="w-5 h-5 bg-background-light rounded-full border border-background-light/50" />
                     ) : isAngry ? (
-                        <div className="w-6 h-2 bg-red-900 rounded-lg transform -translate-y-1" /> /* Gritting teeth / straight flat */
+                        <div className="w-7 h-2 bg-red-900 rounded-lg" />
                     ) : (
-                        <svg width="20" height="10" viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2 2C2 2 6 10 12 10C18 10 22 2 22 2" stroke="#0f172a" strokeWidth="3" strokeLinecap="round" />
+                        <svg width="22" height="12" viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 2C2 2 6 10 12 10C18 10 22 2 22 2" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" />
                         </svg>
                     )}
                 </div>
             </div>
 
-            <div className="text-center flex flex-col items-center justify-center z-10 mt-2">
+            <div className="text-center flex flex-col items-center justify-center z-10 mt-2 animate-cloudy-nameBob">
                 <h2 className={`text-2xl font-black tracking-tight ${isAngry ? 'text-red-500' : 'text-text-primary'} leading-tight transition-colors`}>
                     Cloudy
                 </h2>
@@ -363,7 +446,7 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
                     className={`font-bold py-3.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 w-full text-base ${isFormValid && !isSubmitting
                         ? "bg-primary hover:bg-primary-hover text-text-primary shadow-primary/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:scale-[1.02] active:scale-[0.98]"
                         : isAngry ? "bg-red-500 hover:bg-red-600 text-white animate-shake shadow-red-500/20"
-                            : "bg-surface text-text-muted hover:bg-surface/80 border border-border"
+                            : "bg-background-card text-text-muted hover:bg-background-card/80 border border-border"
                         }`}
                 >
                     {isSubmitting ? 'Submitting...' : isAngry ? 'Fix Errors' : 'Submit Application'}

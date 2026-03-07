@@ -1,0 +1,9 @@
+﻿Dashboard/supabase/migrations/cleanup_admin_profile.sql:6:WHERE email = 'noreplay.gkk26@gmail.com' 
+Dashboard/supabase/migrations/cleanup_everything.sql:6:WHERE email IN ('noreplay.gkk26@gmail.com', 'noreplay.gkk26@gmail.com');
+Dashboard/supabase/migrations/cleanup_everything.sql:12:WHERE email IN ('noreplay.gkk26@gmail.com', 'noreplay.gkk26@gmail.com');
+Dashboard/supabase/migrations/cleanup_everything.sql:18:WHERE auth_email IN ('noreplay.gkk26@gmail.com', 'noreplay.gkk26@gmail.com')
+Dashboard/supabase/migrations/cleanup_everything.sql:19:   OR username IN ('noreplay.gkk26@gmail.com', 'noreplay.gkk26@gmail.com');
+Dashboard/supabase/migrations/fix_admin_email_typo.sql:3:SET username = 'noreplay.gkk26@gmail.com'
+Dashboard/supabase/migrations/link_admin_username_email.sql:7:-- Set auth_email to 'noreplay.gkk26@gmail.com' (for Supabase Auth)
+Dashboard/supabase/migrations/link_admin_username_email.sql:11:    auth_email = 'noreplay.gkk26@gmail.com'
+Dashboard/supabase/migrations/link_admin_username_email.sql:13:    username = 'noreplay.gkk26@gmail.com' 

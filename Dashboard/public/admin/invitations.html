@@ -177,8 +177,8 @@
         });
 
         async function init() {
+            if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-            if (!session) return window.location.href = 'login.html';
 
             // Show Skeleton
             const list = document.getElementById('invitationsList');

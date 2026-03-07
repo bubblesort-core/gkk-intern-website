@@ -16,6 +16,7 @@
         { name: 'Teams', icon: 'fas fa-users', link: 'teams.html' },
         { name: 'Projects', icon: 'fas fa-project-diagram', link: 'projects.html' },
         { name: 'Submissions', icon: 'fas fa-cloud-upload-alt', link: 'submissions.html' },
+        { name: 'Report Links', icon: 'fas fa-file-pdf', link: 'report-links.html' },
         { name: 'Rewards', icon: 'fas fa-gift', link: 'rewards.html' },
         { name: 'QR Codes', icon: 'fas fa-qrcode', link: 'qr-codes.html' },
 

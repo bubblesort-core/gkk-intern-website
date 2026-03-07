@@ -11,9 +11,12 @@ import 'package:internmobileapp/screens/projects_screen.dart';
 import 'package:internmobileapp/screens/teams_screen.dart';
 import 'package:internmobileapp/screens/announcements_screen.dart';
 import 'package:internmobileapp/screens/meetings_screen.dart';
+import 'package:internmobileapp/screens/recordings_screen.dart';
 
+import 'package:internmobileapp/screens/leaderboard_screen.dart';
 import 'package:internmobileapp/screens/resources_screen.dart';
 import 'package:internmobileapp/screens/rewards_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:internmobileapp/services/update_service.dart';
 import 'package:internmobileapp/screens/update_modal.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -28,6 +31,7 @@ class DashboardShell extends StatefulWidget {
 class _DashboardShellState extends State<DashboardShell> {
   int _currentIndex = 0;
   Map<String, dynamic>? _profile;
+  bool _isLoading = true;
   final _notifService = NotificationService();
 
   final List<_NavItem> _navItems = [
@@ -35,8 +39,10 @@ class _DashboardShellState extends State<DashboardShell> {
     _NavItem('Profile', Icons.person_rounded, null),
     _NavItem('Projects', Icons.layers_rounded, null),
     _NavItem('Team', Icons.group_rounded, null),
+    _NavItem('Leaderboard', Icons.leaderboard_rounded, 'leaderboard'),
     _NavItem('Updates', Icons.campaign_rounded, 'announcements'),
     _NavItem('Sessions', Icons.videocam_rounded, 'sessions'),
+    _NavItem('Recordings', Icons.play_circle_outline_rounded, 'recordings'),
 
     _NavItem('Resources', Icons.menu_book_rounded, 'resources'),
     _NavItem('Rewards', Icons.card_giftcard_rounded, null),
@@ -54,8 +60,10 @@ class _DashboardShellState extends State<DashboardShell> {
       const ProfileScreen(),
       const ProjectsScreen(),
       const TeamsScreen(),
+      const LeaderboardScreen(),
       const AnnouncementsScreen(),
       const MeetingsScreen(),
+      const RecordingsScreen(),
 
       const ResourcesScreen(),
       const RewardsScreen(),
@@ -89,7 +97,12 @@ class _DashboardShellState extends State<DashboardShell> {
 
   Future<void> _loadProfile() async {
     final p = await SupabaseService.getCurrentProfile();
-    if (mounted) setState(() => _profile = p);
+    if (mounted) {
+      setState(() {
+        _profile = p;
+        _isLoading = false;
+      });
+    }
   }
 
   /// Build an icon with an optional red badge dot
@@ -283,6 +296,21 @@ class _DashboardShellState extends State<DashboardShell> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppTheme.bgBody,
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primary)),
+      );
+    }
+
+    // Check if user is locked out
+    final isLocked =
+        _profile?['status'] != 'active' && _profile?['role'] == 'intern';
+
+    if (isLocked) {
+      return _buildLockedScreen();
+    }
+
     final name = _profile?['full_name'] ?? 'Intern';
     final email = SupabaseService.currentUser?.email ?? '';
     final avatarUrl = _profile?['avatar_url'];
@@ -672,6 +700,106 @@ class _DashboardShellState extends State<DashboardShell> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildLockedScreen() {
+    return Scaffold(
+      backgroundColor: AppTheme.bgBody,
+      appBar: AppBar(
+        backgroundColor: AppTheme.bgCard,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Account Locked',
+          style: TextStyle(color: AppTheme.textMain),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
+            onPressed: () async {
+              await NotificationService().clearToken();
+              await SupabaseService.signOut();
+            },
+          ),
+        ],
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: AppTheme.bgCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.border),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.lock_outline_rounded,
+                  size: 64,
+                  color: AppTheme.primary,
+                ).animate().scale(delay: 200.ms).fadeIn(),
+                const SizedBox(height: 24),
+                const Text(
+                  'Access Restricted',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textMain,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Your account is not yet active. Please complete the payment of your training fees on the dashboard to unlock your workspace.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppTheme.textMuted,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final url = Uri.parse(
+                      'https://gkk-intern.com/user/dashboard/payment',
+                    );
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.payment_rounded, color: Colors.white),
+                  label: const Text('Pay Training Fees'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primary,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 24,
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ).animate().slideY(begin: 0.2, end: 0).fadeIn(delay: 400.ms),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

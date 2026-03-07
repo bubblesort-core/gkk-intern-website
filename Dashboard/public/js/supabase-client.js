@@ -5,6 +5,7 @@
 // Check if already initialized to prevent double-loading errors
 if (typeof window.supabaseClient === 'undefined') {
     // Use Proxy URLs to bypass ISP blocks
+    window.SUPABASE_DIRECT_URL = 'https://hjpsyxqakzrhvzegehtm.supabase.co';
     window.SUPABASE_URL = window.location.origin + '/supabase-main';
     window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqcHN5eHFha3pyaHZ6ZWdlaHRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NTI5NjMsImV4cCI6MjA4NDMyODk2M30.nfBtyd_doPQBkBfzHYtQ2q0yl1vf5y0QZPRrkHCOwAU';
 
@@ -24,9 +25,35 @@ if (typeof window.supabaseClient === 'undefined') {
         },
         global: {
             fetch: async (url, options) => {
-                const response = await fetch(url, options);
+                const fetchUrl = url.toString().replace(window.SUPABASE_DIRECT_URL, window.SUPABASE_URL);
+                const response = await fetch(fetchUrl, options);
                 if (response.status === 429) {
-                    console.error('⚠️ SUPABASE RATE LIMIT EXCEEDED (429):', url);
+                    console.error('⚠️ SUPABASE RATE LIMIT EXCEEDED (429):', fetchUrl);
+                }
+                // Detect auth failures (invalid/expired token) and handle gracefully
+                if ((response.status === 401 || response.status === 403) && isAdminPath) {
+                    // Check if this is an auth-related error (not just RLS deny)
+                    try {
+                        const cloned = response.clone();
+                        const body = await cloned.json();
+                        const msg = (body.message || body.error_description || body.msg || '').toLowerCase();
+                        if (msg.includes('invalid') || msg.includes('expired') || msg.includes('token') || msg.includes('jwt') || msg.includes('not authenticated')) {
+                            console.error('🔒 Admin auth token invalid/expired. Attempting recovery...');
+                            // Try to refresh the session first
+                            const { error: refreshError } = await window.supabaseClient?.auth?.refreshSession() || { error: true };
+                            if (refreshError) {
+                                // Refresh failed — session is dead, redirect to login
+                                if (!window._adminAuthRedirecting) {
+                                    window._adminAuthRedirecting = true;
+                                    localStorage.removeItem('admin_session');
+                                    alert('Your session has expired or another admin signed in. Please log in again.');
+                                    window.location.replace('login.html');
+                                }
+                            }
+                        }
+                    } catch (parseErr) {
+                        // Response wasn't JSON, ignore
+                    }
                 }
                 return response;
             }
@@ -38,7 +65,25 @@ if (typeof window.supabaseClient === 'undefined') {
         clientOptions.auth.storageKey = 'gkk-admin-auth';
     }
 
-    window.supabaseClient = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, clientOptions);
+    // Add direct realtime URL to bypass proxy issues
+    // Note: In v2, this is derived from the service URL, so we initialize with Direct URL
+    window.supabaseClient = createClient(window.SUPABASE_DIRECT_URL, window.SUPABASE_ANON_KEY, clientOptions);
+
+    // Listen for auth state changes to handle session invalidation
+    if (isAdminPath) {
+        window.supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+                // Session was invalidated (e.g., another admin signed in and rotated the token)
+                if (!window._adminAuthRedirecting && !window.location.pathname.includes('login.html')) {
+                    console.warn('🔒 Auth session lost. Event:', event);
+                    window._adminAuthRedirecting = true;
+                    localStorage.removeItem('admin_session');
+                    alert('Your session has ended. Please log in again.');
+                    window.location.replace('login.html');
+                }
+            }
+        });
+    }
 
     // Helper to proxy storage URLs
     window.getProxiedUrl = (url) => {
@@ -138,9 +183,10 @@ async function signOut() {
     localStorage.removeItem('admin_session');
     sessionStorage.removeItem('admin_identity'); // Reset identity check
 
-    // Also clear Supabase auth if needed (for intern users)
+    // Sign out locally only — do NOT invalidate the server-side session
+    // so other admins sharing the same credential stay logged in
     try {
-        await supabaseClient.auth.signOut();
+        await supabaseClient.auth.signOut({ scope: 'local' });
     } catch (e) {
         // Ignore errors
     }
@@ -179,6 +225,41 @@ function getAdminSession() {
 
 function clearAdminSession() {
     localStorage.removeItem('admin_session');
+}
+
+/**
+ * Ensures the admin has a valid Supabase Auth session.
+ * Call this at the start of admin page init() functions.
+ * If the session is invalid, attempts refresh. If refresh fails, redirects to login.
+ * Returns true if session is valid, false if redirecting.
+ */
+async function ensureAdminAuth() {
+    const adminSession = getAdminSession();
+    if (!adminSession) {
+        window.location.href = 'login.html';
+        return false;
+    }
+
+    try {
+        // Check if Supabase auth session is still valid
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error || !session) {
+            // Try to refresh
+            const { data: refreshData, error: refreshError } = await supabaseClient.auth.refreshSession();
+            if (refreshError || !refreshData?.session) {
+                console.error('🔒 Admin auth session expired and refresh failed');
+                localStorage.removeItem('admin_session');
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+        return true;
+    } catch (e) {
+        console.error('🔒 Auth check failed:', e);
+        localStorage.removeItem('admin_session');
+        window.location.href = 'login.html';
+        return false;
+    }
 }
 
 // Force reload on back button (handle bfcache)

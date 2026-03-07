@@ -1,4 +1,4 @@
-﻿import React from 'react';
+﻿import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import UseAnimations from 'react-useanimations';
@@ -29,6 +29,10 @@ const sidebarLinks = [
 
 export default function Sidebar() {
     const navigate = useNavigate();
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const toggleMobile = useCallback(() => setMobileOpen(prev => !prev), []);
+    const closeMobile = useCallback(() => setMobileOpen(false), []);
 
     const handleClick = (e, link) => {
         if (link.download) {
@@ -67,43 +71,59 @@ export default function Sidebar() {
     };
 
     return (
-        <aside className="sidebar">
-            {/* Logo */}
-            <div className="sidebar-logo">
-                <img src="/assets/gkk-intern-logo.png" alt="GKK Interns" />
-            </div>
+        <>
+            {/* Mobile hamburger toggle */}
+            <button
+                className={`sidebar-mobile-toggle ${mobileOpen ? 'open' : ''}`}
+                onClick={toggleMobile}
+                aria-label="Toggle sidebar"
+            >
+                <span />
+                <span />
+                <span />
+            </button>
 
-            {/* Navigation */}
-            <nav className="sidebar-nav">
-                {sidebarLinks.map((link, index) => {
-                    if (link.divider) {
-                        return <div key={`div-${index}`} className="sidebar-divider" />;
-                    }
+            {/* Overlay for mobile */}
+            {mobileOpen && <div className="sidebar-overlay" onClick={closeMobile} />}
 
-                    return (
-                        <a
-                            key={link.label}
-                            href={link.href}
-                            className="sidebar-link"
-                            onClick={(e) => handleClick(e, link)}
-                            title={link.label}
-                            {...(link.download ? { download: 'GKK_Interns_Company_Brochure.pdf', target: '_blank', rel: 'noopener noreferrer' } : {})}
-                        >
-                            <div className="sidebar-icon">
-                                <UseAnimations
-                                    animation={link.animation}
-                                    size={28}
-                                    strokeColor="currentColor"
-                                    autoplay={true}
-                                    loop={true}
-                                    speed={0.5}
-                                />
-                            </div>
-                            <span className="sidebar-link-label">{link.label}</span>
-                        </a>
-                    );
-                })}
-            </nav>
-        </aside>
+            <aside className={`sidebar ${mobileOpen ? 'sidebar-mobile-open' : ''}`}>
+                {/* Logo */}
+                <div className="sidebar-logo">
+                    <img src="/assets/gkk-intern-logo.png" alt="GKK Interns" />
+                </div>
+
+                {/* Navigation */}
+                <nav className="sidebar-nav">
+                    {sidebarLinks.map((link, index) => {
+                        if (link.divider) {
+                            return <div key={`div-${index}`} className="sidebar-divider" />;
+                        }
+
+                        return (
+                            <a
+                                key={link.label}
+                                href={link.href}
+                                className="sidebar-link"
+                                onClick={(e) => { handleClick(e, link); closeMobile(); }}
+                                title={link.label}
+                                {...(link.download ? { download: 'GKK_Interns_Company_Brochure.pdf', target: '_blank', rel: 'noopener noreferrer' } : {})}
+                            >
+                                <div className="sidebar-icon">
+                                    <UseAnimations
+                                        animation={link.animation}
+                                        size={28}
+                                        strokeColor="currentColor"
+                                        autoplay={true}
+                                        loop={true}
+                                        speed={0.5}
+                                    />
+                                </div>
+                                <span className="sidebar-link-label">{link.label}</span>
+                            </a>
+                        );
+                    })}
+                </nav>
+            </aside>
+        </>
     );
 }

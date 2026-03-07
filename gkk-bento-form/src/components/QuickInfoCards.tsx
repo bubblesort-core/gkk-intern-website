@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useFormContext } from '@/context/FormContext';
 interface QuickInfoCardProps {
     icon: string;
@@ -12,12 +12,24 @@ interface QuickInfoCardProps {
 const QuickInfoCard: React.FC<QuickInfoCardProps> = ({ icon, label, placeholder, type = "text", fieldName, options }) => {
     const { formData, updateFormData } = useFormContext();
     const [isHovered, setIsHovered] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
+    const [isClicked, setIsClicked] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
 
     const value = formData[fieldName] || '';
     const isSaved = value.trim() !== '';
-    const isFlipped = isHovered || isFocused;
+    const isFlipped = isHovered || isClicked;
     const [shakeError, setShakeError] = useState(false);
+
+    // Handle outside clicks to unflip the card
+    useEffect(() => {
+        const handleOutsideClick = (e: MouseEvent) => {
+            if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+                setIsClicked(false);
+            }
+        };
+        document.addEventListener('click', handleOutsideClick);
+        return () => document.removeEventListener('click', handleOutsideClick);
+    }, []);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && value.trim()) {
@@ -26,12 +38,13 @@ const QuickInfoCard: React.FC<QuickInfoCardProps> = ({ icon, label, placeholder,
     };
 
     const handleClick = () => {
-        setIsFocused(true);
+        setIsClicked(true);
     };
 
     return (
         <div
-            className="flex flex-col items-center justify-center p-4 bg-background-card/50 border border-border rounded-xl shadow-sm cursor-pointer transition-all duration-300 relative overflow-hidden h-full hover:bg-primary/10 perspective-1000 hover:scale-[1.02] hover:shadow-md focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)] glass-hub"
+            ref={cardRef}
+            className="flex flex-col items-center justify-center p-3 sm:p-4 bg-background-card/50 border border-border rounded-xl shadow-sm cursor-pointer transition-all duration-300 relative overflow-hidden min-h-25 h-full hover:bg-primary/10 perspective-1000 hover:scale-[1.02] hover:shadow-md focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)] glass-hub"
             onClick={handleClick}
             onMouseEnter={() => {
                 setIsHovered(true);
@@ -39,15 +52,7 @@ const QuickInfoCard: React.FC<QuickInfoCardProps> = ({ icon, label, placeholder,
             }}
             onMouseLeave={() => {
                 setIsHovered(false);
-                updateFormData({ mascot_emotion: 'neutral' });
-            }}
-            onFocus={() => {
-                setIsFocused(true);
-                updateFormData({ mascot_emotion: 'curious' });
-            }}
-            onBlur={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget)) {
-                    setIsFocused(false);
+                if (!isClicked) {
                     updateFormData({ mascot_emotion: 'neutral' });
                 }
             }}
@@ -88,19 +93,27 @@ const QuickInfoCard: React.FC<QuickInfoCardProps> = ({ icon, label, placeholder,
                     }}
                 >
                     {options ? (
-                        <select
-                            value={value}
-                            onChange={(e) => {
-                                updateFormData({ [fieldName]: e.target.value });
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-full text-center text-sm py-2 px-2 rounded-lg border border-[#475569] bg-background-card text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary appearance-none cursor-pointer animate-fadeInFast"
-                        >
-                            <option value="" disabled>{placeholder}</option>
-                            {options.map(opt => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                        </select>
+                        <div className="flex flex-col gap-1.5 w-full px-1">
+                            {options.map(opt => {
+                                const isSelected = value === opt;
+                                return (
+                                    <button
+                                        key={opt}
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateFormData({ [fieldName]: isSelected ? '' : opt });
+                                        }}
+                                        className={`w-full py-1.5 px-2 rounded-lg text-xs font-bold transition-all duration-200 border ${isSelected
+                                            ? 'bg-primary/20 border-primary text-primary shadow-sm'
+                                            : 'border-[#475569] bg-background-card text-text-secondary hover:border-primary/50 hover:text-primary'
+                                            }`}
+                                    >
+                                        {opt}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     ) : (
                         <div className="relative w-full flex items-center">
                             {(fieldName === 'phone' || fieldName === 'whatsapp_number') && (
@@ -139,7 +152,7 @@ const QuickInfoCard: React.FC<QuickInfoCardProps> = ({ icon, label, placeholder,
                         </div>
                     )}
                     <span className={`absolute bottom-2 left-1/2 -translate-x-1/2 w-full text-center text-[10px] ${shakeError ? 'text-red-500 font-bold animate-shake' : 'text-text-muted'}`}>
-                        {options ? "Select an option" : (
+                        {options ? "Tap to select" : (
                             (fieldName === 'phone' || fieldName === 'whatsapp_number') && value.length < 10
                                 ? `${10 - value.length} digits left`
                                 : "Press Enter to save"
@@ -173,11 +186,11 @@ const QuickInfoCards: React.FC = () => {
                     </button>
                 )}
             </div>
-            <div className="grid grid-cols-2 gap-4 flex-1">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 flex-1">
                 <QuickInfoCard icon="phone" label="Phone" placeholder="+91 9876543210" type="tel" fieldName="phone" />
                 <QuickInfoCard icon="chat" label="WhatsApp" placeholder="+91 9876543210" type="tel" fieldName="whatsapp_number" />
                 <QuickInfoCard icon="cake" label="Age" placeholder="25" type="number" fieldName="age" />
-                <QuickInfoCard icon="diversity_3" label="Sex" placeholder="Select" fieldName="sex" options={["Male", "Female", "Other"]} />
+                <QuickInfoCard icon="diversity_3" label="Gender" placeholder="Select" fieldName="sex" options={["Male", "Female", "Other"]} />
             </div>
             <p className="text-xs text-center text-text-secondary italic mt-2">
                 Hover or click on any card to add details

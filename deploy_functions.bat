@@ -1,4 +1,4 @@
-@echo off
+A@echo off
 setlocal
 echo Deploying Supabase Edge Functions...
 

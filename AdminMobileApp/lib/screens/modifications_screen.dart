@@ -90,7 +90,7 @@ class _ModificationsScreenState extends State<ModificationsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                profile?['full_name'] ?? 'System Wide',
+                                profile?['full_name'] ?? 'All Interns',
                                 style: const TextStyle(
                                   color: AppTheme.textMain,
                                   fontWeight: FontWeight.w600,
@@ -98,7 +98,7 @@ class _ModificationsScreenState extends State<ModificationsScreen> {
                                 ),
                               ),
                               Text(
-                                'Page: ${lock['page_identifier'] ?? 'All'}',
+                                'Locked: ${lock['page_identifier'] ?? 'All'}',
                                 style: const TextStyle(
                                   color: AppTheme.primary,
                                   fontSize: 12,
@@ -201,14 +201,14 @@ class _CreateLockDialogState extends State<_CreateLockDialog> {
   Map<String, dynamic>? _selectedUser;
   List<Map<String, dynamic>> _searchResults = [];
 
-  final List<String> _pages = [
-    'all',
-    'dashboard',
-    'profile',
-    'projects',
-    'teams',
-    'submissions',
-    'attendance',
+  final List<Map<String, String>> _pages = [
+    {'value': 'all', 'label': 'Entire Dashboard (Full Lockout)'},
+    {'value': '/dashboard', 'label': 'Main Dashboard'},
+    {'value': '/tasks', 'label': 'Task Board'},
+    {'value': '/submissions', 'label': 'Submissions Page'},
+    {'value': '/community', 'label': 'Community Chat'},
+    {'value': '/leaderboard', 'label': 'Leaderboard'},
+    {'value': '/profile', 'label': 'Profile Settings'},
   ];
 
   Future<void> _searchUsers(String query) async {
@@ -341,8 +341,11 @@ class _CreateLockDialogState extends State<_CreateLockDialog> {
               items: _pages
                   .map(
                     (p) => DropdownMenuItem(
-                      value: p,
-                      child: Text(p.toUpperCase()),
+                      value: p['value'],
+                      child: Text(
+                        p['label']!,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ),
                   )
                   .toList(),
