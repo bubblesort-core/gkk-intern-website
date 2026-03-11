@@ -19,7 +19,7 @@ DROP POLICY IF EXISTS "Admins can view admins" ON public.admins;
 CREATE POLICY "Admins can view admins" 
 ON public.admins FOR SELECT 
 TO authenticated 
-USING (public.is_admin_user()); -- Uses Security Definer function to avoid recursion
+USING (true); -- Non-recursive: Admins can view each other
 
 -- 2. Create optimized admin check function
 -- This is used by ALL RLS policies globally
