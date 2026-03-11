@@ -250,7 +250,7 @@
                     .from('admin_credentials')
                     // Corrected: Removed double quotes which PostgREST interprets as identifiers
                     .select('id, username, password_hash, display_name, is_active, auth_email')
-                    .or(`username.eq.${username},auth_email.eq.${username}`)
+                    .or(`username.eq."${username}",auth_email.eq."${username}"`)
                     .eq('is_active', true)
                     .maybeSingle();
 
