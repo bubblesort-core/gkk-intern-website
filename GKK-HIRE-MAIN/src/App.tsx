@@ -4,6 +4,7 @@ import AboutSection from './components/AboutSection';
 import CallToAction from './components/CallToAction';
 import Footer from './components/Footer';
 import SkeletonLoader from './components/SkeletonLoader';
+import WorkshopModal from './components/WorkshopModal';
 
 // Lazy load heavy sections
 const ServicesPage = lazy(() => import('./components/ServicesPage'));
@@ -31,6 +32,7 @@ export default function App() {
             ref={containerRef}
             className="h-screen w-full overflow-y-auto overflow-x-hidden bg-[#E5E5E5] scroll-smooth"
         >
+            <WorkshopModal />
             <section className="min-h-screen w-full relative">
                 <GKKPage
                     onNavigate={scrollToSection}

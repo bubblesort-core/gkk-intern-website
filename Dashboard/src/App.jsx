@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import HeroSection from './components/HeroSection';
 import FeaturesSection from './components/FeaturesSection';
+import LiveWorkshopsSection from './components/LiveWorkshopsSection';
 
 import FeesSection from './components/FeesSection';
 import Footer from './components/Footer';
@@ -36,7 +37,7 @@ function LandingPage() {
             <div className="main-content">
                 <HeroSection />
                 <FeaturesSection />
-
+                <LiveWorkshopsSection />
                 <FeesSection />
                 <Footer />
             </div>

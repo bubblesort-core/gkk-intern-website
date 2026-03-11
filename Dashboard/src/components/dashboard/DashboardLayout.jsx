@@ -123,7 +123,7 @@ const SECTION_TITLES = {
 const LOCKED_SECTIONS = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards', 'leaderboard', 'referrals', 'mobileapp'];
 
 export default function DashboardLayout() {
-    const { currentProfile, currentTeam, isLocked, loading, signOut, getProxiedUrl, supabase } = useDashboard();
+    const { currentUser, currentProfile, currentTeam, isLocked, loading, signOut, getProxiedUrl, supabase } = useDashboard();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [notifications, setNotifications] = useState({});
     const [refreshing, setRefreshing] = useState(false);
@@ -356,6 +356,7 @@ export default function DashboardLayout() {
                             const isActive = activePath === item.path || (activePath === '' && item.path === '');
                             const isLockedItem = isLocked && LOCKED_SECTIONS.includes(item.path);
                             const hasNotif = notifications[item.path];
+
 
                             return (
                                 <button

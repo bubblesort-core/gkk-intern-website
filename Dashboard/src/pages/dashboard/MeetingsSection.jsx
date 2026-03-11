@@ -14,6 +14,7 @@ export default function MeetingsSection() {
     const playerRef = useRef(null);
     const [playerMeetingId, setPlayerMeetingId] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [playerError, setPlayerError] = useState(null); // {meetingId, videoId, joinUrl}
 
     const isEligible = useCallback((m) => {
         if (!m) return false;
@@ -100,10 +101,11 @@ export default function MeetingsSection() {
         }
     };
 
-    const startVideo = (videoUrl, meetingId) => {
+    const startVideo = (videoUrl, meetingId, joinUrl) => {
         if (!videoUrl) return;
         const match = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
         if (!match) return;
+        setPlayerError(null);
         setPlayerMeetingId(meetingId);
 
         // Load YouTube IFrame API if needed
@@ -111,23 +113,29 @@ export default function MeetingsSection() {
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
             document.head.appendChild(tag);
-            window.onYouTubeIframeAPIReady = () => initPlayer(match[1], meetingId);
+            window.onYouTubeIframeAPIReady = () => initPlayer(match[1], meetingId, joinUrl || videoUrl);
         } else {
-            initPlayer(match[1], meetingId);
+            initPlayer(match[1], meetingId, joinUrl || videoUrl);
         }
     };
 
-    const initPlayer = (videoId, meetingId) => {
+    const initPlayer = (videoId, meetingId, joinUrl) => {
         const container = document.getElementById(`yt-player-${meetingId}`);
         if (!container) return;
         if (playerRef.current) playerRef.current.destroy();
 
         playerRef.current = new window.YT.Player(`yt-player-${meetingId}`, {
             height: '100%', width: '100%', videoId,
-            playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, disablekb: 1 },
+            playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, disablekb: 1, origin: window.location.origin },
             events: {
                 onStateChange: (e) => {
                     setIsPlaying(e.data === window.YT.PlayerState.PLAYING);
+                },
+                onError: (e) => {
+                    // Error codes 101 and 150 mean embedding is disabled by the video owner
+                    if (e.data === 101 || e.data === 150 || e.data === 2) {
+                        setPlayerError({ meetingId, videoId, joinUrl: joinUrl || `https://www.youtube.com/watch?v=${videoId}` });
+                    }
                 }
             }
         });
@@ -196,7 +204,37 @@ export default function MeetingsSection() {
                     <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '1rem', marginBottom: '2rem' }}>
                         {/* Video Area */}
                         <div className="dash-card" style={{ padding: 0, overflow: 'hidden' }}>
-                            {playerMeetingId === m.id ? (
+                            {playerError && playerError.meetingId === m.id ? (
+                                /* Fallback: when embedding is disabled by video owner */
+                                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: 'linear-gradient(145deg, #0f172a, #1e293b)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', border: '2px solid rgba(239,68,68,0.2)' }}>
+                                            <i className="fab fa-youtube" style={{ fontSize: '2rem', color: '#ef4444' }} />
+                                        </div>
+                                        <h3 style={{ color: '#f1f5f9', margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Live Stream Available</h3>
+                                        <p style={{ color: '#94a3b8', margin: '0 0 1.25rem', fontSize: '0.9rem', maxWidth: 320 }}>
+                                            This live stream needs to be watched directly on YouTube.
+                                        </p>
+                                        <a href={playerError.joinUrl} target="_blank" rel="noopener noreferrer"
+                                            style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: 8,
+                                                background: '#ef4444', color: 'white', padding: '0.7rem 1.5rem',
+                                                borderRadius: 10, fontWeight: 600, fontSize: '0.95rem',
+                                                textDecoration: 'none', transition: 'transform 0.2s, box-shadow 0.2s',
+                                                boxShadow: '0 4px 15px rgba(239,68,68,0.3)'
+                                            }}
+                                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(239,68,68,0.4)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(239,68,68,0.3)'; }}
+                                        >
+                                            <i className="fab fa-youtube" /> Watch on YouTube <i className="fas fa-external-link-alt" style={{ fontSize: '0.75rem' }} />
+                                        </a>
+                                    </div>
+                                    {/* Live badge */}
+                                    <div style={{ position: 'absolute', top: '1rem', left: '1rem', background: 'rgba(239,68,68,0.85)', color: 'white', padding: '4px 10px', borderRadius: 4, fontWeight: 'bold', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 6, zIndex: 15 }}>
+                                        <i className="fas fa-circle" style={{ fontSize: '0.5rem', animation: 'pulse 1.5s infinite' }} /> LIVE
+                                    </div>
+                                </div>
+                            ) : playerMeetingId === m.id ? (
                                 <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000' }}
                                     onContextMenu={e => e.preventDefault()}>
                                     <div id={`yt-player-${m.id}`} style={{ width: '100%', height: '100%', pointerEvents: 'none' }} />
@@ -229,7 +267,7 @@ export default function MeetingsSection() {
                                 </div>
                             ) : (
                                 <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                    onClick={() => startVideo(m.video_url, m.id)}>
+                                    onClick={() => startVideo(m.video_url, m.id, m.join_url)}>
                                     <div style={{ textAlign: 'center', color: 'white' }}>
                                         <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', margin: '0 auto 1rem', boxShadow: '0 0 0 6px rgba(99,102,241,0.15), 0 0 30px rgba(99,102,241,0.3)' }}>
                                             <i className="fas fa-play" style={{ marginLeft: 3 }} />

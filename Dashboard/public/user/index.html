@@ -1099,8 +1099,7 @@
                         </div>
 
                         <!-- Main Content Split -->
-                        <div class="overview-split-grid"
-                            style="display: grid; gap: 2rem;">
+                        <div class="overview-split-grid" style="display: grid; gap: 2rem;">
 
                             <!-- Left: Current Focus -->
                             <div class="overview-column">
@@ -1539,8 +1538,10 @@
 
                 <!-- MOBILE APP DOWNLOAD SECTION -->
                 <section id="mobileapp" class="section-content">
-                    <h3 style="margin-bottom: 0.5rem;"><i class="fas fa-mobile-alt" style="color: #6366f1; margin-right: 8px;"></i>Mobile App</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Get the GKK Interns app for the best experience on your phone.</p>
+                    <h3 style="margin-bottom: 0.5rem;"><i class="fas fa-mobile-alt"
+                            style="color: #6366f1; margin-right: 8px;"></i>Mobile App</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Get the GKK Interns app for the best
+                        experience on your phone.</p>
 
                     <div class="app-download-section" id="appDownloadSection">
                         <div class="app-download-hero">
@@ -1549,7 +1550,8 @@
                             </div>
                             <h2>GKK Interns Mobile App</h2>
                             <p class="app-desc">
-                                Stay connected with real-time notifications, track your projects, attend meetings, and access all dashboard features right from your phone.
+                                Stay connected with real-time notifications, track your projects, attend meetings, and
+                                access all dashboard features right from your phone.
                             </p>
                             <a href="https://github.com/noreplaygkk26-png/gkk-app-releases/releases/download/v1.3.0/app-release.apk"
                                 class="app-download-btn-main" id="appDownloadLink">
@@ -1564,21 +1566,24 @@
 
                         <div class="app-features-grid">
                             <div class="app-feature-card">
-                                <div class="app-feature-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                                <div class="app-feature-icon"
+                                    style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
                                     <i class="fas fa-bell"></i>
                                 </div>
                                 <h4>Push Notifications</h4>
                                 <p>Get instant alerts for meetings, announcements &amp; deadlines</p>
                             </div>
                             <div class="app-feature-card">
-                                <div class="app-feature-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                                <div class="app-feature-icon"
+                                    style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
                                     <i class="fas fa-project-diagram"></i>
                                 </div>
                                 <h4>Project Tracking</h4>
                                 <p>View and manage your assigned projects on the go</p>
                             </div>
                             <div class="app-feature-card">
-                                <div class="app-feature-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                                <div class="app-feature-icon"
+                                    style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
                                     <i class="fas fa-comments"></i>
                                 </div>
                                 <h4>Team Chat</h4>
@@ -5418,11 +5423,29 @@
                     'rel': 0,
                     'modestbranding': 1,
                     'playsinline': 1,
-                    'disablekb': 1
+                    'disablekb': 1,
+                    'origin': window.location.origin
                 },
                 events: {
                     'onReady': onPlayerReady,
-                    'onStateChange': (e) => onPlayerStateChange(e, meetingId)
+                    'onStateChange': (e) => onPlayerStateChange(e, meetingId),
+                    'onError': (e) => {
+                        if (e.data === 101 || e.data === 150 || e.data === 2) {
+                            const watchUrl = url || `https://www.youtube.com/watch?v=${videoId}`;
+                            container.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg, #0f172a, #1e293b);">
+                                <div style="text-align:center;padding:2rem;">
+                                    <div style="width:80px;height:80px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;border:2px solid rgba(239,68,68,0.2);">
+                                        <i class="fab fa-youtube" style="font-size:2rem;color:#ef4444;"></i>
+                                    </div>
+                                    <h3 style="color:#f1f5f9;margin:0 0 0.5rem;font-size:1.1rem;">Live Stream Available</h3>
+                                    <p style="color:#94a3b8;margin:0 0 1.25rem;font-size:0.9rem;">This live stream needs to be watched directly on YouTube.</p>
+                                    <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:#ef4444;color:white;padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;font-size:0.95rem;text-decoration:none;box-shadow:0 4px 15px rgba(239,68,68,0.3);">
+                                        <i class="fab fa-youtube"></i> Watch on YouTube <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i>
+                                    </a>
+                                </div>
+                            </div>`;
+                        }
+                    }
                 }
             });
         }

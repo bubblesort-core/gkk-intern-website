@@ -191,11 +191,20 @@ const SubmitSection: React.FC = () => {
             // Run submission and minimum delay in parallel
             const submissionPromise = (async () => {
                 // Confirm the held slot (convert hold -> confirmed booking)
+                // Pass booking details so confirmSlot can re-acquire if hold expired
                 if (formData.slot_hold_id) {
-                    const confirmResult = await confirmSlot(formData.slot_hold_id);
+                    const confirmResult = await confirmSlot(
+                        formData.slot_hold_id,
+                        formData.interview_date,
+                        formData.interview_time,
+                        formData.email,
+                        undefined // maxPerSlot — confirmSlot will default to 1
+                    );
                     if (!confirmResult.success) {
                         throw new Error(confirmResult.error || 'Your slot hold has expired. Please select the time slot again.');
                     }
+                    // Clean up sessionStorage hold ID after successful confirm
+                    sessionStorage.removeItem('gkk_slot_hold_id');
                 }
 
                 const recordId = await submitFormData({

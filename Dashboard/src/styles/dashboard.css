@@ -661,6 +661,50 @@
     gap: 1.5rem;
 }
 
+/* ═══ Workshop Cards ═══ */
+.dash-workshop-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4)) !important;
+}
+
+.dash-workshop-card:hover {
+    transform: translateY(-4px) scale(1.01) !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 0 15px rgba(99, 102, 241, 0.1) !important;
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.6)) !important;
+}
+
+.dash-workshop-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 70%);
+    pointer-events: none;
+}
+
+.dash-live-pulse {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+.dash-live-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1px solid #ef4444;
+    border-radius: 50%;
+    animation: dashPulseRed 2s infinite;
+    opacity: 0;
+}
+
 /* ═══ Resources Grid ═══ */
 .dash-resources-grid {
     display: grid;

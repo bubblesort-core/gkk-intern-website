@@ -30,6 +30,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         mute: false,
         showFullscreenButton: true,
         loop: false,
+        playsInline: true,
+        strictRelatedVideos: true,
+        enableCaption: true,
+        origin: 'https://www.youtube.com',
       ),
     );
 

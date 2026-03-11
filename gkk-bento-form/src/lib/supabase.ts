@@ -187,27 +187,60 @@ export async function getFormSettings(): Promise<{ data: FormSettings | null, er
     }
 }
 
-// Fetch active slot counts for a specific date (counts both 'held' and 'confirmed', excludes expired holds)
+// Fetch active slot counts for a specific date
+// Counts from TWO sources:
+//   1. Active holds/confirmed entries in `slot_bookings` (temporary reservations)
+//   2. Submitted applications in `applications` table (permanent bookings)
+// This ensures slots stay booked even after hold entries expire/get cleaned up.
 // Returns a map of time -> count (e.g. { "6:00 PM": 2, "6:15 PM": 1 })
 export async function getBookedSlots(bookingDate: string): Promise<Record<string, number>> {
     try {
-        const { data, error } = await supabase
+        const now = new Date().toISOString();
+
+        // Clean up ALL expired holds for this date (prevents ghost entries from accumulating)
+        await supabase
             .from('slot_bookings')
-            .select('booking_time, status, held_until')
+            .delete()
+            .eq('booking_date', bookingDate)
+            .eq('status', 'held')
+            .lt('held_until', now);
+
+        // Source 1: Active holds and confirmed entries in slot_bookings
+        const { data: slotData, error: slotError } = await supabase
+            .from('slot_bookings')
+            .select('booking_time')
             .eq('booking_date', bookingDate);
 
-        if (error) {
-            console.error('Error fetching booked slots:', error);
-            return {};
+        if (slotError) {
+            console.error('Error fetching slot_bookings:', slotError);
         }
 
-        const now = Date.now();
+        // Source 2: Submitted applications (the real source of truth for permanent bookings)
+        const { data: appData, error: appError } = await supabase
+            .from('applications')
+            .select('preferred_interview_time')
+            .eq('preferred_interview_date', bookingDate);
+
+        if (appError) {
+            console.error('Error fetching applications:', appError);
+        }
+
+        // Merge counts from both sources
         const counts: Record<string, number> = {};
-        (data || []).forEach((row: { booking_time: string; status: string; held_until: string | null }) => {
-            // Skip expired holds
-            if (row.status === 'held' && row.held_until && new Date(row.held_until).getTime() < now) return;
+
+        // Count from applications (permanent bookings — always take priority)
+        (appData || []).forEach((row: { preferred_interview_time: string }) => {
+            if (row.preferred_interview_time) {
+                counts[row.preferred_interview_time] = (counts[row.preferred_interview_time] || 0) + 1;
+            }
+        });
+
+        // Count active holds from slot_bookings (but ONLY 'held' status — confirmed entries should
+        // already be reflected in the applications table since confirmSlot runs before submitFormData)
+        (slotData || []).forEach((row: { booking_time: string }) => {
             counts[row.booking_time] = (counts[row.booking_time] || 0) + 1;
         });
+
         return counts;
     } catch (err) {
         console.error('Error fetching booked slots:', err);
@@ -216,7 +249,7 @@ export async function getBookedSlots(bookingDate: string): Promise<Record<string
 }
 
 // Hold a slot temporarily (5-minute TTL, like movie seat selection)
-// Returns the hold ID if successful
+// Returns the hold ID and held_until timestamp for client-side timer sync
 const HOLD_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 export async function holdSlot(
@@ -224,23 +257,33 @@ export async function holdSlot(
     bookingTime: string,
     email: string,
     maxPerSlot: number
-): Promise<{ success: boolean; holdId?: string; error?: string }> {
+): Promise<{ success: boolean; holdId?: string; heldUntil?: string; error?: string }> {
     try {
         const now = new Date().toISOString();
 
-        // Clean up expired holds for this slot first
+        // Clean up ALL expired holds for this entire DATE (not just this time slot)
+        // This prevents ghost entries from accumulating across all slots
         await supabase
             .from('slot_bookings')
             .delete()
             .eq('booking_date', bookingDate)
-            .eq('booking_time', bookingTime)
             .eq('status', 'held')
             .lt('held_until', now);
 
-        // Count active bookings (confirmed + non-expired holds)
+        // Also clean up any existing holds by this same email on this date
+        // (prevents duplicate holds if user switches slots without proper release)
+        await supabase
+            .from('slot_bookings')
+            .delete()
+            .eq('booking_date', bookingDate)
+            .eq('applicant_email', email)
+            .eq('status', 'held');
+
+        // Count active bookings for this specific slot from BOTH sources
+        // Source 1: slot_bookings (active holds)
         const { data: existing, error: countError } = await supabase
             .from('slot_bookings')
-            .select('id, status, held_until')
+            .select('id')
             .eq('booking_date', bookingDate)
             .eq('booking_time', bookingTime);
 
@@ -248,13 +291,14 @@ export async function holdSlot(
             return { success: false, error: countError.message };
         }
 
-        const nowTime = Date.now();
-        // Filter to active only (confirmed + non-expired holds)
-        const activeCount = (existing || []).filter((row: { status: string; held_until: string | null }) => {
-            if (row.status === 'confirmed') return true;
-            if (row.status === 'held' && row.held_until && new Date(row.held_until).getTime() >= nowTime) return true;
-            return false;
-        }).length;
+        // Source 2: applications table (submitted/permanent bookings)
+        const { data: appExisting } = await supabase
+            .from('applications')
+            .select('id')
+            .eq('preferred_interview_date', bookingDate)
+            .eq('preferred_interview_time', bookingTime);
+
+        const activeCount = (existing || []).length + (appExisting || []).length;
 
         if (activeCount >= maxPerSlot) {
             return { success: false, error: 'This time slot is already full. Please select a different time.' };
@@ -271,33 +315,44 @@ export async function holdSlot(
                 status: 'held',
                 held_until: heldUntil
             }])
-            .select('id')
+            .select('id, held_until')
             .single();
 
         if (insertError) {
             return { success: false, error: insertError.message };
         }
 
-        return { success: true, holdId: inserted?.id };
+        return { success: true, holdId: inserted?.id, heldUntil: inserted?.held_until };
     } catch (err) {
         return { success: false, error: err instanceof Error ? err.message : 'Unknown error holding slot' };
     }
 }
 
 // Confirm a held slot (converts hold -> confirmed, removes TTL)
-export async function confirmSlot(holdId: string): Promise<{ success: boolean; error?: string }> {
+// If the hold expired, attempts to re-acquire the slot directly as confirmed
+export async function confirmSlot(
+    holdId: string,
+    bookingDate?: string,
+    bookingTime?: string,
+    email?: string,
+    maxPerSlot?: number
+): Promise<{ success: boolean; error?: string }> {
     try {
         const nowTime = Date.now();
 
         // Verify the hold still exists and hasn't expired
         const { data: hold, error: fetchError } = await supabase
             .from('slot_bookings')
-            .select('id, status, held_until')
+            .select('id, status, held_until, booking_date, booking_time, applicant_email')
             .eq('id', holdId)
             .single();
 
         if (fetchError || !hold) {
-            return { success: false, error: 'Hold not found. It may have expired. Please try again.' };
+            // Hold not found — try to re-acquire directly as confirmed
+            if (bookingDate && bookingTime && email && maxPerSlot) {
+                return await directConfirm(bookingDate, bookingTime, email, maxPerSlot);
+            }
+            return { success: false, error: 'Hold not found. It may have expired. Please select the time slot again.' };
         }
 
         if (hold.status === 'confirmed') {
@@ -305,9 +360,15 @@ export async function confirmSlot(holdId: string): Promise<{ success: boolean; e
         }
 
         if (hold.held_until && new Date(hold.held_until).getTime() < nowTime) {
-            // Hold expired — delete it
+            // Hold expired — delete it and try to re-acquire
             await supabase.from('slot_bookings').delete().eq('id', holdId);
-            return { success: false, error: 'Your hold has expired. Please select the time slot again.' };
+
+            // Attempt to re-acquire directly as confirmed
+            const reDate = bookingDate || hold.booking_date;
+            const reTime = bookingTime || hold.booking_time;
+            const reEmail = email || hold.applicant_email;
+            const reMax = maxPerSlot || 1;
+            return await directConfirm(reDate, reTime, reEmail, reMax);
         }
 
         // Upgrade to confirmed
@@ -318,6 +379,65 @@ export async function confirmSlot(holdId: string): Promise<{ success: boolean; e
 
         if (updateError) {
             return { success: false, error: updateError.message };
+        }
+
+        return { success: true };
+    } catch (err) {
+        return { success: false, error: err instanceof Error ? err.message : 'Unknown error confirming slot' };
+    }
+}
+
+// Direct confirm: insert a confirmed booking if capacity allows (used as fallback when hold expires)
+async function directConfirm(
+    bookingDate: string,
+    bookingTime: string,
+    email: string,
+    maxPerSlot: number
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        // Clean up expired holds first
+        const now = new Date().toISOString();
+        await supabase
+            .from('slot_bookings')
+            .delete()
+            .eq('booking_date', bookingDate)
+            .eq('status', 'held')
+            .lt('held_until', now);
+
+        // Check capacity from BOTH sources
+        // Source 1: slot_bookings
+        const { data: existing } = await supabase
+            .from('slot_bookings')
+            .select('id')
+            .eq('booking_date', bookingDate)
+            .eq('booking_time', bookingTime);
+
+        // Source 2: applications
+        const { data: appExisting } = await supabase
+            .from('applications')
+            .select('id')
+            .eq('preferred_interview_date', bookingDate)
+            .eq('preferred_interview_time', bookingTime);
+
+        const totalCount = (existing || []).length + (appExisting || []).length;
+
+        if (totalCount >= maxPerSlot) {
+            return { success: false, error: 'This slot was taken while your hold expired. Please select a different time.' };
+        }
+
+        // Insert directly as confirmed
+        const { error: insertError } = await supabase
+            .from('slot_bookings')
+            .insert([{
+                booking_date: bookingDate,
+                booking_time: bookingTime,
+                applicant_email: email,
+                status: 'confirmed',
+                held_until: null
+            }]);
+
+        if (insertError) {
+            return { success: false, error: insertError.message };
         }
 
         return { success: true };

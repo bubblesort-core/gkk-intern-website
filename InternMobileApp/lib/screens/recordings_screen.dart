@@ -89,10 +89,11 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
   String? _getVideoId(String? url) {
     if (url == null) return null;
     final RegExp regExp = RegExp(
-      r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^&?]+)',
+      r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|shorts\/|watch\?v=|watch\?.+&v=))([^&?#\/\s]+)',
+      caseSensitive: false,
     );
     final match = regExp.firstMatch(url);
-    return match?.group(1);
+    return match?.group(1)?.trim();
   }
 
   Future<void> _openRecording(Map<String, dynamic> recording) async {

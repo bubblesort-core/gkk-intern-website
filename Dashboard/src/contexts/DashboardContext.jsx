@@ -16,8 +16,7 @@ export function DashboardProvider({ children }) {
     const [currentProfile, setCurrentProfile] = useState(null);
     const [currentTeam, setCurrentTeam] = useState(null);
     const [currentProjects, setCurrentProjects] = useState([]);
-    const [isLocked, setIsLocked] = useState(true);
-    const [loading, setLoading] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
     const pollingRef = useRef(null);
 
     // Helper: get proxied URL for Supabase storage
@@ -130,6 +129,26 @@ export function DashboardProvider({ children }) {
                 if (cancelled) return;
                 setCurrentUser(user);
 
+                const { data: adminData } = await supabase
+                    .from('admins')
+                    .select('*')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (adminData) {
+                    setIsAdmin(true);
+                    setCurrentProfile({
+                        ...adminData,
+                        role: 'admin',
+                        status: 'active'
+                    });
+                    setIsLocked(false);
+                    setLoading(false);
+                    return;
+                }
+
+                if (cancelled) return;
+
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('*')
@@ -137,6 +156,21 @@ export function DashboardProvider({ children }) {
                     .single();
 
                 if (!profile) {
+                    // One last check for legacy admin session or newly promoted admin
+                    const { data: legacyProfile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', user.id)
+                        .maybeSingle();
+                    
+                    if (legacyProfile?.role === 'admin') {
+                        setIsAdmin(true);
+                        setCurrentProfile({ ...user, role: 'admin', status: 'active' });
+                        setIsLocked(false);
+                        setLoading(false);
+                        return;
+                    }
+
                     await supabase.auth.signOut({ scope: 'local' });
                     navigate('/user/login');
                     return;
@@ -209,6 +243,7 @@ export function DashboardProvider({ children }) {
         currentTeam, setCurrentTeam,
         currentProjects, setCurrentProjects,
         isLocked, setIsLocked,
+        isAdmin, setIsAdmin,
         loading,
         signOut,
         getProxiedUrl,

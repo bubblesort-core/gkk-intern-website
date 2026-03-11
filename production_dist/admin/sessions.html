@@ -1302,11 +1302,29 @@
                     'rel': 0,
                     'modestbranding': 1,
                     'playsinline': 1,
-                    'disablekb': 1
+                    'disablekb': 1,
+                    'origin': window.location.origin
                 },
                 events: {
                     'onReady': () => { isAdminLiveReady = true; },
-                    'onStateChange': onAdminLiveStateChange
+                    'onStateChange': onAdminLiveStateChange,
+                    'onError': (e) => {
+                        if (e.data === 101 || e.data === 150 || e.data === 2) {
+                            const watchUrl = url || `https://www.youtube.com/watch?v=${videoId}`;
+                            container.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg, #0f172a, #1e293b);">
+                                <div style="text-align:center;padding:2rem;">
+                                    <div style="width:80px;height:80px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;border:2px solid rgba(239,68,68,0.2);">
+                                        <i class="fab fa-youtube" style="font-size:2rem;color:#ef4444;"></i>
+                                    </div>
+                                    <h3 style="color:#f1f5f9;margin:0 0 0.5rem;font-size:1.1rem;">Live Stream Available</h3>
+                                    <p style="color:#94a3b8;margin:0 0 1.25rem;font-size:0.9rem;">This live stream needs to be watched directly on YouTube.</p>
+                                    <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background:#ef4444;border:none;display:inline-flex;align-items:center;gap:8px;">
+                                        <i class="fab fa-youtube"></i> Watch on YouTube <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i>
+                                    </a>
+                                </div>
+                            </div>`;
+                        }
+                    }
                 }
             });
         }

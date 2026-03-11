@@ -31,16 +31,22 @@ export default function LoginPage() {
                     return;
                 }
 
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('status, role')
+                const { data: adminData } = await supabase
+                    .from('admins')
+                    .select('id')
                     .eq('id', session.user.id)
                     .maybeSingle();
 
-                if (profile && profile.status !== 'suspended') {
-                    if (profile.role === 'admin') {
-                        window.location.replace('/admin/index.html');
-                    } else {
+                if (adminData) {
+                    window.location.replace('/admin/index.html');
+                } else {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('status')
+                        .eq('id', session.user.id)
+                        .maybeSingle();
+
+                    if (profile && profile.status !== 'suspended') {
                         window.location.replace('/dashboard/user/dashboard');
                     }
                 }
@@ -154,19 +160,28 @@ export default function LoginPage() {
                 throw error;
             }
 
+            // 1. Check if user is an admin
+            const { data: adminData } = await supabase
+                .from('admins')
+                .select('id')
+                .eq('id', data.user.id)
+                .maybeSingle();
+
+            if (adminData) {
+                window.location.href = '/admin/index.html';
+                return;
+            }
+
+            // 2. Otherwise check profiles
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role, status')
+                .select('status')
                 .eq('id', data.user.id)
                 .single();
 
             if (profile) {
                 if (profile.status === 'suspended') throw new Error("Your account has been suspended. Please contact support.");
-                if (profile.role === 'admin') {
-                    window.location.href = '/admin/index.html';
-                } else {
-                    window.location.href = '/dashboard/user/dashboard';
-                }
+                window.location.href = '/dashboard/user/dashboard';
             } else {
                 window.location.href = '/dashboard/user/dashboard';
             }

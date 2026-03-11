@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useFormContext } from '@/context/FormContext';
 import { getFormSettings, getBookedSlots, holdSlot, releaseSlot, releaseSlotKeepalive } from '@/lib/supabase';
+import Swal from 'sweetalert2';
 
 const TimeCard: React.FC = () => {
     const { formData, updateFormData } = useFormContext();
@@ -15,6 +16,8 @@ const TimeCard: React.FC = () => {
     const holdTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const [holdCountdown, setHoldCountdown] = useState<number>(0); // seconds remaining
     const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [isHoldingInProgress, setIsHoldingInProgress] = useState(false); // prevent double-click
+    const prevDateRef = useRef<string | undefined>(formData.interview_date);
 
     // Clean up orphaned holds from previous reloads
     useEffect(() => {
@@ -59,6 +62,25 @@ const TimeCard: React.FC = () => {
         if (!formData.interview_date) return;
         const counts = await getBookedSlots(formData.interview_date);
         setBookedCounts(counts);
+    }, [formData.interview_date]);
+
+    // Release hold when date changes (prevents ghost entries from old date)
+    useEffect(() => {
+        const prevDate = prevDateRef.current;
+        prevDateRef.current = formData.interview_date;
+
+        // If date actually changed and we had a hold, release it
+        if (prevDate && prevDate !== formData.interview_date && holdIdRef.current) {
+            releaseSlot(holdIdRef.current);
+            sessionStorage.removeItem('gkk_slot_hold_id');
+            holdIdRef.current = null;
+            setHoldingSlot(null);
+            setHoldCountdown(0);
+            if (holdTimerRef.current) {
+                clearInterval(holdTimerRef.current);
+                holdTimerRef.current = null;
+            }
+        }
     }, [formData.interview_date]);
 
     // Fetch booked slots + start polling when date changes
@@ -132,8 +154,14 @@ const TimeCard: React.FC = () => {
         };
     }, []);
 
-    const startHoldTimer = () => {
-        setHoldCountdown(300); // 5 minutes = 300 seconds
+    const startHoldTimer = (heldUntil?: string) => {
+        // Sync countdown with server timestamp if available, otherwise default to 300s
+        let secondsRemaining = 300;
+        if (heldUntil) {
+            const expiryMs = new Date(heldUntil).getTime() - Date.now();
+            secondsRemaining = Math.max(0, Math.floor(expiryMs / 1000));
+        }
+        setHoldCountdown(secondsRemaining);
         if (holdTimerRef.current) clearInterval(holdTimerRef.current);
         holdTimerRef.current = setInterval(() => {
             setHoldCountdown(prev => {
@@ -161,6 +189,9 @@ const TimeCard: React.FC = () => {
     const handleTimeSelect = async (time: string) => {
         const formatted = formatTime12(time);
         const bookedCount = bookedCounts[formatted] || 0;
+
+        // Prevent double-click while a hold request is in-flight
+        if (isHoldingInProgress) return;
 
         // Don't allow selecting a full slot
         if (bookedCount >= maxPerSlot) return;
@@ -195,6 +226,7 @@ const TimeCard: React.FC = () => {
         }
 
         // Attempt to hold the new slot
+        setIsHoldingInProgress(true);
         setHoldingSlot(formatted);
         const result = await holdSlot(
             formData.interview_date!,
@@ -203,17 +235,30 @@ const TimeCard: React.FC = () => {
             maxPerSlot
         );
 
+        setIsHoldingInProgress(false);
+
         if (result.success && result.holdId) {
             holdIdRef.current = result.holdId;
             sessionStorage.setItem('gkk_slot_hold_id', result.holdId);
             updateFormData({ interview_time: formatted, slot_hold_id: result.holdId });
-            startHoldTimer();
+            startHoldTimer(result.heldUntil); // Sync with server timestamp
             refreshBookedSlots();
         } else {
             setHoldingSlot(null);
             // Slot was taken — refresh to show updated state
             refreshBookedSlots();
-            // Could show error to user here
+
+            // Show clear error feedback to the user
+            Swal.fire({
+                icon: 'warning',
+                title: 'Slot Unavailable',
+                text: result.error || 'This slot was just taken. Please choose a different time.',
+                confirmButtonColor: '#f59e0b',
+                background: '#0f172a',
+                color: '#f8fafc',
+                timer: 4000,
+                timerProgressBar: true,
+            });
         }
     };
 
@@ -313,7 +358,7 @@ const TimeCard: React.FC = () => {
                                 const bookedCount = bookedCounts[formatted] || 0;
                                 const isFull = bookedCount >= maxPerSlot;
                                 const remaining = maxPerSlot - bookedCount;
-                                const isHolding = holdingSlot === formatted && !holdIdRef.current;
+                                const isHolding = (holdingSlot === formatted && !holdIdRef.current) || (isHoldingInProgress && holdingSlot === formatted);
 
                                 return (
                                     <button

@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
 
@@ -19,6 +19,7 @@
         { name: 'Report Links', icon: 'fas fa-file-pdf', link: 'report-links.html' },
         { name: 'Rewards', icon: 'fas fa-gift', link: 'rewards.html' },
         { name: 'QR Codes', icon: 'fas fa-qrcode', link: 'qr-codes.html' },
+        { name: 'Workshops', icon: 'fas fa-calendar-star', link: 'workshops.html' },
 
         { label: 'Communication', isLabel: true },
         { name: 'Invitations', icon: 'fas fa-envelope', link: 'invitations.html' },
