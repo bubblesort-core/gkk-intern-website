@@ -10,7 +10,7 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     // Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -18,7 +18,7 @@ serve(async (req) => {
 
     try {
         const { user_id, application_id, email, phone, full_name, amount } = await req.json()
-        const orderAmount = amount ? amount : 20383;
+        const orderAmount = amount ? amount : 50929; // ₹509.29 in paise
 
         const orderData = {
             amount: orderAmount,
@@ -60,7 +60,7 @@ serve(async (req) => {
             user_id,
             application_id,
             razorpay_order_id: order.id,
-            amount: 1.00,
+            amount: 509.29,
             status: 'pending',
             currency: 'INR'
         })
@@ -87,7 +87,7 @@ serve(async (req) => {
 
     } catch (error) {
         console.error('Function Error:', error);
-        return new Response(JSON.stringify({ error: error.message }), {
+        return new Response(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })

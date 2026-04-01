@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -89,8 +89,13 @@
                     </button>
                     <h1 class="page-title">Dashboard</h1>
                 </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                <div class="header-actions" style="display:flex; align-items:center; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.03); padding:4px 12px; border-radius:8px; border:1px solid var(--c-border);">
+                        <i class="fas fa-calculator" style="font-size:0.8rem; color:var(--c-text-muted);"></i>
+                        <input type="number" id="feeCutPercent" class="form-input" value="2" step="0.1" min="0" max="100" style="border:none; background:transparent; width:45px; padding:4px; font-size:0.85rem; color:var(--c-text-primary); font-weight:600; text-align:center;" oninput="loadStats()">
+                        <span style="font-size:0.75rem; color:var(--c-text-muted); font-weight:500;">% Cut</span>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()" title="Refresh Data">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
@@ -141,8 +146,8 @@
                     <div class="stat-card">
                         <div class="stat-content">
                             <div class="stat-value" id="statPayments">₹0</div>
-                            <div class="stat-label">Total Revenue</div>
-                            <div class="stat-trend text-warning">
+                            <div class="stat-label">Total Collected (Gross)</div>
+                            <div class="stat-trend text-warning" id="statRevenueBreakdown">
                                 <i class="fas fa-wallet"></i> Enrollment Fees
                             </div>
                         </div>
@@ -318,19 +323,29 @@
         async function loadStats() {
             try {
                 const { count: pending } = await supabaseClient.from('applications').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-                document.getElementById('statPending').textContent = pending || 0;
+                if (document.getElementById('statPending')) document.getElementById('statPending').textContent = pending || 0;
 
                 const { count: teams } = await supabaseClient.from('teams').select('*', { count: 'exact', head: true });
-                document.getElementById('statTeams').textContent = teams || 0;
+                if (document.getElementById('statTeams')) document.getElementById('statTeams').textContent = teams || 0;
 
                 const { data: allProfiles, error: profError } = await supabaseClient.rpc('get_all_profile_emails');
                 const active = allProfiles ? allProfiles.filter(p => p.status === 'active').length : 0;
-                document.getElementById('statActive').textContent = active;
+                if (document.getElementById('statActive')) document.getElementById('statActive').textContent = active;
 
                 const { data: payments } = await supabaseClient.from('payments').select('id, amount, status, user_id, customer_email').in('status', ['completed', 'captured']);
-                const total = payments?.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0) || 0;
-                const netTotal = total * 0.98; // Deduct 2% gateway fee
-                document.getElementById('statPayments').textContent = '₹' + netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const grossTotal = payments?.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0) || 0;
+                const cutPercent = parseFloat(document.getElementById('feeCutPercent')?.value || 0);
+                const feeAmount = grossTotal * (cutPercent / 100);
+                const netTotal = grossTotal - feeAmount;
+                if (document.getElementById('statPayments')) {
+                    document.getElementById('statPayments').textContent = '₹' + grossTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+                if (document.getElementById('statRevenueBreakdown')) {
+                    document.getElementById('statRevenueBreakdown').innerHTML = `<span style="display:flex; flex-direction:column; gap:2px; font-size:0.75rem;">
+                        <span style="color:#f87171;"><i class="fas fa-minus-circle"></i> Fee (${cutPercent}%): ₹${feeAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span style="color:#34d399;"><i class="fas fa-check-circle"></i> Net: ₹${netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </span>`;
+                }
             } catch (err) { console.error('Stats Error:', err); }
         }
 
@@ -469,11 +484,11 @@
                     </td>
                     <td style="padding: 1rem;">
                         ${s.isPaid
-                        ? `<span style="color:#10b981; font-weight:600; font-family:'JetBrains Mono', monospace; display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.05); padding:4px 8px; border-radius:4px;"><i class="fas fa-check"></i> ₹${(s.paymentAmount * 0.98).toFixed(2)}</span>`
+                        ? `<span style="color:#10b981; font-weight:600; font-family:'JetBrains Mono', monospace; display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.05); padding:4px 8px; border-radius:4px;"><i class="fas fa-check"></i> ₹${s.paymentAmount.toFixed(2)}</span>`
                         : `<span style="color:#ef4444; font-weight:500; font-family:'JetBrains Mono', monospace; display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.05); padding:4px 8px; border-radius:4px;"><i class="fas fa-times"></i> Unpaid</span>`}
                     </td>
                     <td style="padding: 1rem;">
-                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='applications.html?search=${encodeURIComponent(s.email)}'" title="View Details" style="background:var(--c-bg-card); border:1px solid var(--c-border);">
+                        <button class="btn btn-secondary btn-sm" onclick="spaNavigate('applications.html?search=${encodeURIComponent(s.email)}')" title="View Details" style="background:var(--c-bg-card); border:1px solid var(--c-border);">
                             <i class="fas fa-eye"></i>
                         </button>
                     </td>

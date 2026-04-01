@@ -13,7 +13,7 @@ const corsHeaders = (origin: string | null) => ({
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 });
 
-serve(async (req) => {
+serve(async (req: Request) => {
     const origin = req.headers.get('origin');
 
     // Handle CORS
@@ -50,7 +50,7 @@ serve(async (req) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                amount: 100, // 1 INR in paise
+                amount: 50929, // ₹509.29 in paise
                 currency: 'INR',
                 receipt: `rcpt_${Date.now()}_${userId.slice(0, 5)}`,
                 notes: {
@@ -73,7 +73,7 @@ serve(async (req) => {
             .from('payments')
             .insert({
                 user_id: userId,
-                amount: 1.00,
+                amount: 509.29,
                 status: 'pending',
                 currency: 'INR',
                 razorpay_order_id: order.id,
@@ -92,7 +92,7 @@ serve(async (req) => {
         return new Response(
             JSON.stringify({
                 orderId: order.id,
-                amount: 1,
+                amount: 509.29,
                 currency: 'INR',
                 key: RAZORPAY_KEY_ID,
                 // Backward compatibility if needed, or update frontend to use Razorpay Checkout
@@ -107,7 +107,7 @@ serve(async (req) => {
 
     } catch (error) {
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
             { status: 400, headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' } }
         )
     }

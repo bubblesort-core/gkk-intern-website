@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -841,7 +841,7 @@
                                 <div class="form-group" style="flex:1;"><label class="form-label">Audience</label>
                                     <select id="fTarget" class="form-input" onchange="onTargetChange()">
                                         <option value="all">All Interns</option>
-                                        <option value="batch">Specific Batch</option>
+                                        <option value="batch">Specific Phase</option>
                                         <option value="team">Specific Team</option>
                                         <option value="intern">Specific Interns</option>
                                     </select>
@@ -944,7 +944,7 @@
                                 <div class="form-group" style="flex:1;"><label class="form-label">Audience</label>
                                     <select id="rTarget" class="form-input" onchange="onRecTargetChange()">
                                         <option value="all">All Interns</option>
-                                        <option value="batch">Specific Batch</option>
+                                        <option value="batch">Specific Phase</option>
                                         <option value="team">Specific Team</option>
                                         <option value="intern">Specific Interns</option>
                                     </select>
@@ -969,7 +969,7 @@
                                     <button class="pill" onclick="filterRecordings('target_all',this)"><i
                                             class="fas fa-users" style="margin-right:4px;"></i>All Interns</button>
                                     <button class="pill" onclick="filterRecordings('batch',this)"><i
-                                            class="fas fa-layer-group" style="margin-right:4px;"></i>Batch</button>
+                                            class="fas fa-layer-group" style="margin-right:4px;"></i>Phase</button>
                                     <button class="pill" onclick="filterRecordings('team',this)"><i
                                             class="fas fa-user-friends" style="margin-right:4px;"></i>Team</button>
                                     <button class="pill" onclick="filterRecordings('intern',this)"><i
@@ -1007,6 +1007,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <script>
@@ -1028,7 +1029,7 @@
             s.classList.toggle('open');
             o.style.display = s.classList.contains('open') ? 'block' : 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
         // === Init ===
         async function init() {
@@ -1049,19 +1050,19 @@
         function setMode(mode) {
             document.getElementById('btnModeInstant').className = `btn btn-sm ${mode === 'instant' ? 'btn-primary' : 'btn-secondary'}`;
             document.getElementById('btnModeSchedule').className = `btn btn-sm ${mode === 'schedule' ? 'btn-primary' : 'btn-secondary'}`;
-            document.getElementById('instantFields').style.display = mode === 'instant' ? 'block' : 'none';
-            document.getElementById('scheduleFields').style.display = mode === 'schedule' ? 'block' : 'none';
+            if (document.getElementById('instantFields')) document.getElementById('instantFields').style.display = mode === 'instant' ? 'block' : 'none';
+            if (document.getElementById('scheduleFields')) document.getElementById('scheduleFields').style.display = mode === 'schedule' ? 'block' : 'none';
         }
 
         function setDefaultScheduleTime() {
             const d = new Date(); d.setHours(d.getHours() + 1); d.setMinutes(0);
-            document.getElementById('fStartTime').value = d.toISOString().slice(0, 16);
+            if (document.getElementById('fStartTime')) document.getElementById('fStartTime').value = d.toISOString().slice(0, 16);
         }
 
         // === Platform Change ===
         function onPlatformChange() {
-            const p = document.getElementById('fPlatform').value;
-            document.getElementById('fLinkLabel').textContent = p === 'youtube' ? 'YouTube URL' : 'Google Meet Link';
+            const p = (document.getElementById('fPlatform')?.value || '');
+            if (document.getElementById('fLinkLabel')) document.getElementById('fLinkLabel').textContent = p === 'youtube' ? 'YouTube URL' : 'Google Meet Link';
             document.getElementById('fLink').placeholder = p === 'youtube' ? 'https://youtube.com/...' : 'https://meet.google.com/...';
         }
 
@@ -1083,7 +1084,7 @@
         }
 
         function onTargetChange() {
-            const t = document.getElementById('fTarget').value;
+            const t = (document.getElementById('fTarget')?.value || '');
             const wrap = document.getElementById('targetInputWrap');
             const dd = document.getElementById('targetDropdown');
             const btn = document.getElementById('openInternSidebar');
@@ -1092,36 +1093,36 @@
             dd.style.display = 'none'; btn.style.display = 'none'; chips.innerHTML = ''; selectedInterns.clear(); updateInternCount();
             if (t === 'all') { wrap.style.display = 'none'; return; }
             wrap.style.display = 'block';
-            if (t === 'batch') { lbl.textContent = 'Select Batch'; dd.style.display = 'block'; dd.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); }
+            if (t === 'batch') { lbl.textContent = 'Select Phase'; dd.style.display = 'block'; dd.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); }
             else if (t === 'team') { lbl.textContent = 'Select Team'; dd.style.display = 'block'; dd.innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join(''); }
             else if (t === 'intern') { lbl.textContent = 'Select Interns'; btn.style.display = 'block'; }
         }
 
         function onRecTargetChange() {
-            const t = document.getElementById('rTarget').value;
+            const t = (document.getElementById('rTarget')?.value || '');
             const wrap = document.getElementById('recTargetWrap');
             const dd = document.getElementById('recTargetDropdown');
             const lbl = document.getElementById('recTargetLabel');
             dd.style.display = 'none';
             if (t === 'all') { wrap.style.display = 'none'; return; }
             wrap.style.display = 'block'; dd.style.display = 'block';
-            if (t === 'batch') { lbl.textContent = 'Select Batch'; dd.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); }
+            if (t === 'batch') { lbl.textContent = 'Select Phase'; dd.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); }
             else if (t === 'team') { lbl.textContent = 'Select Team'; dd.innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join(''); }
         }
 
         // === Intern Sidebar ===
         function toggleInternSidebar() { document.getElementById('internSidebar').classList.toggle('open'); }
         function renderInternList() {
-            const q = (document.getElementById('internSearch').value || '').toLowerCase();
+            const q = ((document.getElementById('internSearch')?.value || '') || '').toLowerCase();
             const list = document.getElementById('internList');
             const filtered = allInterns.filter(i => (i.full_name || '').toLowerCase().includes(q) || (i.email || '').toLowerCase().includes(q));
             list.innerHTML = filtered.map(i => `<label style="display:flex;align-items:center;padding:8px;border-bottom:1px solid var(--c-border);cursor:pointer;gap:10px;"><input type="checkbox" ${selectedInterns.has(i.id) ? 'checked' : ''} onchange="toggleIntern('${i.id}')"><div><div style="font-weight:600;color:var(--c-text-primary);font-size:0.9rem;">${i.full_name || 'No Name'}</div><div style="font-size:0.75rem;color:var(--c-text-muted);">${i.email}</div></div></label>`).join('');
         }
         function toggleIntern(id) { selectedInterns.has(id) ? selectedInterns.delete(id) : selectedInterns.add(id); updateInternCount(); renderInternList(); }
-        function updateInternCount() { document.getElementById('internCount').textContent = selectedInterns.size; }
+        function updateInternCount() { if (document.getElementById('internCount')) document.getElementById('internCount').textContent = selectedInterns.size; }
         function confirmInterns() { toggleInternSidebar(); renderChips(); }
         function renderChips() {
-            document.getElementById('selectedChips').innerHTML = Array.from(selectedInterns).map(id => {
+            if (document.getElementById('selectedChips')) document.getElementById('selectedChips').innerHTML = Array.from(selectedInterns).map(id => {
                 const u = allInterns.find(i => i.id === id);
                 return `<div class="badge badge-primary" style="display:flex;align-items:center;gap:4px;padding:4px 8px;">${u ? u.full_name || u.email : id} <i class="fas fa-times" style="cursor:pointer;font-size:0.7rem;" onclick="removeChip('${id}')"></i></div>`;
             }).join('');
@@ -1154,9 +1155,9 @@
         function renderStats() {
             const live = allSessions.filter(s => s.status === 'live').length;
             const upcoming = allSessions.filter(s => s.status === 'scheduled').length;
-            document.getElementById('statTotal').textContent = allSessions.length;
-            document.getElementById('statLive').textContent = live;
-            document.getElementById('statUpcoming').textContent = upcoming;
+            if (document.getElementById('statTotal')) document.getElementById('statTotal').textContent = allSessions.length;
+            if (document.getElementById('statLive')) document.getElementById('statLive').textContent = live;
+            if (document.getElementById('statUpcoming')) document.getElementById('statUpcoming').textContent = upcoming;
         }
 
         function renderSessionsTable() {
@@ -1210,8 +1211,8 @@
             if (!live) { banner.style.display = 'none'; currentLiveSessionId = null; return; }
             currentLiveSessionId = live.id;
             banner.style.display = 'block';
-            document.getElementById('liveTopic').textContent = live.title;
-            document.getElementById('liveSessionTitle').textContent = live.title;
+            if (document.getElementById('liveTopic')) document.getElementById('liveTopic').textContent = live.title;
+            if (document.getElementById('liveSessionTitle')) document.getElementById('liveSessionTitle').textContent = live.title;
 
             const vc = document.getElementById('liveVideoContainer');
             if (live.platform === 'google_meet') {
@@ -1388,9 +1389,9 @@
 
         // === CREATE SESSION ===
         async function createSession(mode) {
-            const title = document.getElementById('fTitle').value.trim();
-            const platform = document.getElementById('fPlatform').value;
-            const link = document.getElementById('fLink').value.trim();
+            const title = (document.getElementById('fTitle')?.value || '').trim();
+            const platform = (document.getElementById('fPlatform')?.value || '');
+            const link = (document.getElementById('fLink')?.value || '').trim();
             if (!title || !link) return Swal.fire('Error', 'Title and link are required', 'error');
 
             let videoUrl = null, joinUrl = null;
@@ -1408,8 +1409,8 @@
             const row = {
                 title, platform, video_url: videoUrl, join_url: joinUrl,
                 status: mode === 'live' ? 'live' : 'scheduled',
-                scheduled_start: mode === 'live' ? now : new Date(document.getElementById('fStartTime').value).toISOString(),
-                scheduled_end: mode === 'schedule' && document.getElementById('fEndTime').value ? new Date(document.getElementById('fEndTime').value).toISOString() : null,
+                scheduled_start: mode === 'live' ? now : new Date((document.getElementById('fStartTime')?.value || '')).toISOString(),
+                scheduled_end: mode === 'schedule' && (document.getElementById('fEndTime')?.value || '') ? new Date((document.getElementById('fEndTime')?.value || '')).toISOString() : null,
                 actual_start: mode === 'live' ? now : null,
                 target_type: target.type, target_ids: target.ids,
                 room_name: 'gkk-' + Date.now()
@@ -1420,8 +1421,8 @@
                 const { error } = await supabaseClient.from('sessions').insert([row]);
                 if (error) throw error;
                 Swal.fire({ icon: 'success', title: mode === 'live' ? 'Session is Live!' : 'Scheduled!', timer: 1500, showConfirmButton: false });
-                document.getElementById('fTitle').value = '';
-                document.getElementById('fLink').value = '';
+                if (document.getElementById('fTitle')) document.getElementById('fTitle').value = '';
+                if (document.getElementById('fLink')) document.getElementById('fLink').value = '';
                 loadSessions();
             } catch (e) { console.error(e); Swal.fire('Error', 'Failed to create session', 'error'); }
         }
@@ -1450,7 +1451,7 @@
                 title: 'Edit Session', background: 'var(--c-bg-card)', color: 'var(--c-text-primary)',
                 html: `<div style="text-align:left;"><label class="form-label">Title</label><input id="swal-t" class="form-input" value="${s.title}" style="margin-bottom:12px;"><label class="form-label">Link</label><input id="swal-l" class="form-input" value="${s.join_url || s.video_url || ''}" style="margin-bottom:12px;"><label class="form-label">Description</label><textarea id="swal-d" class="form-input" rows="2" style="resize:vertical;">${s.description || ''}</textarea></div>`,
                 showCancelButton: true, confirmButtonText: 'Save',
-                preConfirm: () => ({ title: document.getElementById('swal-t').value, link: document.getElementById('swal-l').value, desc: document.getElementById('swal-d').value })
+                preConfirm: () => ({ title: (document.getElementById('swal-t')?.value || ''), link: (document.getElementById('swal-l')?.value || ''), desc: (document.getElementById('swal-d')?.value || '') })
             });
             if (!value) return;
             const upd = { title: value.title, description: value.desc };
@@ -1502,7 +1503,7 @@
             const { data, error } = await supabaseClient.from('recordings').select('*').order('created_at', { ascending: false }).limit(100);
             if (error) { console.error(error); return; }
             allRecordings = data || [];
-            document.getElementById('statRecordings').textContent = allRecordings.length;
+            if (document.getElementById('statRecordings')) document.getElementById('statRecordings').textContent = allRecordings.length;
             renderRecordings();
         }
 
@@ -1510,8 +1511,8 @@
             if (!r.target_type || r.target_type === 'all') return { text: 'All Interns', cls: 'badge-primary', icon: 'fa-users' };
             const ids = r.target_ids || [];
             if (r.target_type === 'batch') {
-                const names = ids.map(id => { const b = batches.find(x => x.id === id); return b ? b.name : 'Batch'; }).join(', ');
-                return { text: names || 'Batch', cls: 'badge-warning', icon: 'fa-layer-group' };
+                const names = ids.map(id => { const b = batches.find(x => x.id === id); return b ? b.name : 'Phase'; }).join(', ');
+                return { text: names || 'Phase', cls: 'badge-warning', icon: 'fa-layer-group' };
             }
             if (r.target_type === 'team') {
                 const names = ids.map(id => { const t = teams.find(x => x.id === id); return t ? t.name : 'Team'; }).join(', ');
@@ -1570,22 +1571,22 @@
 
         // === ADD RECORDING ===
         async function addRecording() {
-            const title = document.getElementById('rTitle').value.trim();
-            const url = document.getElementById('rUrl').value.trim();
+            const title = (document.getElementById('rTitle')?.value || '').trim();
+            const url = (document.getElementById('rUrl')?.value || '').trim();
             if (!title || !url) return Swal.fire('Error', 'Title and URL required', 'error');
             const vid = extractVideoId(url);
             const target = getTargetData('r');
-            const sessionId = document.getElementById('rSession').value || null;
+            const sessionId = (document.getElementById('rSession')?.value || '') || null;
             const row = {
                 title, youtube_url: url, youtube_video_id: vid,
                 thumbnail_url: vid ? `https://img.youtube.com/vi/${vid}/maxresdefault.jpg` : null,
-                duration_label: document.getElementById('rDuration').value.trim() || null,
+                duration_label: (document.getElementById('rDuration')?.value || '').trim() || null,
                 target_type: target.type, target_ids: target.ids,
                 session_id: sessionId
             };
             const { error } = await supabaseClient.from('recordings').insert([row]);
             if (error) { console.error(error); return Swal.fire('Error', 'Failed to save', 'error'); }
-            document.getElementById('rTitle').value = ''; document.getElementById('rUrl').value = ''; document.getElementById('rDuration').value = '';
+            if (document.getElementById('rTitle')) document.getElementById('rTitle').value = ''; if (document.getElementById('rUrl')) document.getElementById('rUrl').value = ''; if (document.getElementById('rDuration')) document.getElementById('rDuration').value = '';
             Swal.fire({ icon: 'success', title: 'Recording Saved!', timer: 1200, showConfirmButton: false });
             loadRecordings();
         }
@@ -1595,7 +1596,7 @@
             const r = allRecordings.find(x => x.id === id);
             if (!r) return;
 
-            // Build batch/team options
+            // Build phase/team options
             const batchOpts = batches.map(b => `<option value="${b.id}" ${(r.target_type === 'batch' && (r.target_ids || []).includes(b.id)) ? 'selected' : ''}>${b.name}</option>`).join('');
             const teamOpts = teams.map(t => `<option value="${t.id}" ${(r.target_type === 'team' && (r.target_ids || []).includes(t.id)) ? 'selected' : ''}>${t.name}</option>`).join('');
 
@@ -1615,14 +1616,14 @@
                             <input id="swal-rd" class="form-input" value="${r.duration_label || ''}">
                         </div>
                         <div style="flex:1;"><label class="form-label">Audience</label>
-                            <select id="swal-rtarget" class="form-input" onchange="document.getElementById('swal-rbatch-wrap').style.display=this.value==='batch'?'block':'none'; document.getElementById('swal-rteam-wrap').style.display=this.value==='team'?'block':'none';">
+                            <select id="swal-rtarget" class="form-input" onchange="if (document.getElementById('swal-rbatch-wrap')) document.getElementById('swal-rbatch-wrap').style.display =this.value==='batch'?'block':'none'; if (document.getElementById('swal-rteam-wrap')) document.getElementById('swal-rteam-wrap').style.display =this.value==='team'?'block':'none';">
                                 <option value="all" ${r.target_type === 'all' || !r.target_type ? 'selected' : ''}>All Interns</option>
-                                <option value="batch" ${r.target_type === 'batch' ? 'selected' : ''}>Specific Batch</option>
+                                <option value="batch" ${r.target_type === 'batch' ? 'selected' : ''}>Specific Phase</option>
                                 <option value="team" ${r.target_type === 'team' ? 'selected' : ''}>Specific Team</option>
                             </select>
                         </div>
                     </div>
-                    <div id="swal-rbatch-wrap" style="display:${showBatch};margin-top:12px;"><label class="form-label">Select Batch</label>
+                    <div id="swal-rbatch-wrap" style="display:${showBatch};margin-top:12px;"><label class="form-label">Select Phase</label>
                         <select id="swal-rbatch" class="form-input">${batchOpts}</select>
                     </div>
                     <div id="swal-rteam-wrap" style="display:${showTeam};margin-top:12px;"><label class="form-label">Select Team</label>
@@ -1631,14 +1632,14 @@
                 </div>`,
                 showCancelButton: true, confirmButtonText: 'Save Changes',
                 preConfirm: () => {
-                    const tType = document.getElementById('swal-rtarget').value;
+                    const tType = (document.getElementById('swal-rtarget')?.value || '');
                     let tIds = [];
-                    if (tType === 'batch') { const v = document.getElementById('swal-rbatch').value; if (v) tIds = [v]; }
-                    else if (tType === 'team') { const v = document.getElementById('swal-rteam').value; if (v) tIds = [v]; }
+                    if (tType === 'batch') { const v = (document.getElementById('swal-rbatch')?.value || ''); if (v) tIds = [v]; }
+                    else if (tType === 'team') { const v = (document.getElementById('swal-rteam')?.value || ''); if (v) tIds = [v]; }
                     return {
-                        t: document.getElementById('swal-rt').value,
-                        u: document.getElementById('swal-ru').value,
-                        d: document.getElementById('swal-rd').value,
+                        t: (document.getElementById('swal-rt')?.value || ''),
+                        u: (document.getElementById('swal-ru')?.value || ''),
+                        d: (document.getElementById('swal-rd')?.value || ''),
                         targetType: tType, targetIds: tIds
                     };
                 }
@@ -1696,15 +1697,15 @@
             titleEl.textContent = title || 'Session Recording';
 
             // Show loading initially
-            document.getElementById('recLoadingOverlay').style.display = 'flex';
-            document.getElementById('recBigPlayBtn').style.display = 'none';
+            if (document.getElementById('recLoadingOverlay')) document.getElementById('recLoadingOverlay').style.display = 'flex';
+            if (document.getElementById('recBigPlayBtn')) document.getElementById('recBigPlayBtn').style.display = 'none';
             document.getElementById('recPlayerOverlay').classList.add('paused');
-            document.getElementById('recPlayPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
-            document.getElementById('recProgressFill').style.width = '0%';
+            if (document.getElementById('recPlayPauseBtn')) document.getElementById('recPlayPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+            if (document.getElementById('recProgressFill')) document.getElementById('recProgressFill').style.width = '0%';
             document.getElementById('recCurrentTime').innerText = '0:00';
             document.getElementById('recTotalTime').innerText = '0:00';
             recCurrentSpeed = 1;
-            document.getElementById('recSpeedBtn').textContent = '1x';
+            if (document.getElementById('recSpeedBtn')) document.getElementById('recSpeedBtn').textContent = '1x';
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -1756,7 +1757,7 @@
 
         function onRecPlayerReady(event) {
             isRecPlayerReady = true;
-            document.getElementById('recLoadingOverlay').style.display = 'none';
+            if (document.getElementById('recLoadingOverlay')) document.getElementById('recLoadingOverlay').style.display = 'none';
 
             const totalDuration = recPlayer.getDuration();
             document.getElementById('recTotalTime').innerText = formatRecTime(totalDuration);
@@ -1841,7 +1842,7 @@
             const newTime = pos * duration;
 
             recPlayer.seekTo(newTime, true);
-            document.getElementById('recProgressFill').style.width = (pos * 100) + '%';
+            if (document.getElementById('recProgressFill')) document.getElementById('recProgressFill').style.width = (pos * 100) + '%';
         }
 
         function cycleRecSpeed() {
@@ -1849,7 +1850,7 @@
             const idx = REC_SPEEDS.indexOf(recCurrentSpeed);
             recCurrentSpeed = REC_SPEEDS[(idx + 1) % REC_SPEEDS.length];
             recPlayer.setPlaybackRate(recCurrentSpeed);
-            document.getElementById('recSpeedBtn').textContent = recCurrentSpeed + 'x';
+            if (document.getElementById('recSpeedBtn')) document.getElementById('recSpeedBtn').textContent = recCurrentSpeed + 'x';
         }
 
         function startRecProgressTracking() {
@@ -1864,7 +1865,7 @@
                 const current = recPlayer.getCurrentTime();
                 const progressPct = (current / duration) * 100;
 
-                document.getElementById('recProgressFill').style.width = progressPct + '%';
+                if (document.getElementById('recProgressFill')) document.getElementById('recProgressFill').style.width = progressPct + '%';
                 document.getElementById('recCurrentTime').innerText = formatRecTime(current);
                 document.getElementById('recTotalTime').innerText = formatRecTime(duration);
 

@@ -151,7 +151,9 @@ export default defineConfig({
     resolve: {
         dialects: ['web', 'ios', 'android', 'native'],
         alias: {
+            'animejs': resolve(__dirname, './GKK-HIRE-MAIN/node_modules/animejs'),
             'react-native': 'react-native-web',
+            'react-native-web': resolve(__dirname, './GKK-HIRE-MAIN/node_modules/react-native-web'),
             'react': resolve(__dirname, './node_modules/react'),
             'react-dom': resolve(__dirname, './node_modules/react-dom'),
             'react/jsx-runtime': resolve(__dirname, './node_modules/react/jsx-runtime'),

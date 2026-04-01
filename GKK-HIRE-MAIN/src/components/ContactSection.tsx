@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import SectionCanvas from './SectionCanvas';
 
 const ContactSection = () => {
     const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const ContactSection = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQ-t9LhhThzJOrTh8KxynTlzmgz6hTUiOB8RdTWrKCc0q1m5S_Hq4mRubtSvK8o85IYQ/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9RK4LFMYblIWeQGdQDJpvepjC4FJ22UqkwmQusFxxJF3qSMQDB8JEV1rSJP6GALc/exec";
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
@@ -40,6 +41,16 @@ const ContactSection = () => {
 
             setSubmitStatus('success');
             setFormData({ name: '', email: '', subject: '', message: '' });
+            
+            // Phase 16: Confetti effect for contact submission
+            const confetti = (await import('canvas-confetti')).default;
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#3b82f6', '#10b981', '#ffffff']
+            });
+
         } catch (error) {
             console.error("Error submitting form:", error);
             setSubmitStatus('error');
@@ -77,7 +88,8 @@ const ContactSection = () => {
     };
 
     return (
-        <section className="min-h-screen bg-[#F5F5F3] text-black py-16 md:py-24 px-4 md:px-12 relative overflow-hidden flex items-center justify-center">
+        <section className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] py-16 md:py-24 px-4 md:px-12 relative overflow-hidden flex items-center justify-center">
+            <SectionCanvas dotColor="rgba(240,239,233,0.06)" />
             <div className="max-w-[1400px] w-full mx-auto relative z-10">
 
                 {/* Header */}
@@ -87,7 +99,7 @@ const ContactSection = () => {
                         whileInView="visible"
                         viewport={{ once: false, amount: 0.5 }}
                         variants={flipInX}
-                        className="text-3xl md:text-7xl font-light tracking-tight mb-4 md:mb-6 text-[#1a1a1a]"
+                        className="text-3xl md:text-7xl font-light tracking-tight mb-4 md:mb-6 text-[var(--text-primary)]"
                     >
                         Get in Touch with GKK
                     </motion.h1>
@@ -155,7 +167,7 @@ const ContactSection = () => {
                             <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 mb-4">
                                 Location
                             </h3>
-                            <p className="text-xl font-medium text-[#1a1a1a]">Bengaluru, India</p>
+                            <p className="text-xl font-medium text-[#1a1a1a]">India</p>
                         </motion.div>
 
                         {/* Support Note */}
@@ -176,109 +188,134 @@ const ContactSection = () => {
                     </div>
 
                     {/* Contact Form - Right Column */}
-                    <div className="lg:col-span-8">
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8 }}
-                            className="bg-white p-8 md:p-12 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-neutral-100"
-                        >
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
-                                            Full Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="E.g. Julian Vost"
-                                            className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
-                                            Email Address
-                                        </label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            required
-                                            placeholder="email@institution.com"
-                                            className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
-                                        Subject
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="subject"
-                                        value={formData.subject}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Nature of your inquiry"
-                                        className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
-                                        Message
-                                    </label>
-                                    <textarea
-                                        rows={6}
-                                        name="message"
-                                        value={formData.message}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Describe your inquiry in detail..."
-                                        className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent resize-none placeholder:text-neutral-400"
-                                    ></textarea>
-                                </div>
-
-                                <div className="flex flex-col md:flex-row items-center justify-between pt-8 gap-4">
-                                    {submitStatus === 'success' && (
-                                        <motion.p
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="text-green-600 text-sm font-medium"
+                    <div className="lg:col-span-8 overflow-hidden">
+                        <AnimatePresence mode="wait">
+                            {submitStatus === 'success' ? (
+                                <motion.div
+                                    key="success-view"
+                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 1.1 }}
+                                    className="bg-white p-12 md:p-20 shadow-[0_4px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col items-center justify-center text-center min-h-[500px]"
+                                >
+                                    <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-8 border border-green-100">
+                                        <motion.svg 
+                                            width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                                            initial={{ pathLength: 0 }}
+                                            animate={{ pathLength: 1 }}
+                                            transition={{ duration: 0.8, ease: "easeInOut" }}
                                         >
-                                            Message sent successfully! We'll be in touch soon.
-                                        </motion.p>
-                                    )}
-                                    {submitStatus === 'error' && (
-                                        <motion.p
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="text-red-600 text-sm font-medium"
-                                        >
-                                            Something went wrong. Please try again or email us directly.
-                                        </motion.p>
-                                    )}
-
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className={`ml-auto bg-black text-white px-12 py-5 text-[10px] font-black tracking-[0.25em] uppercase flex items-center gap-4 hover:bg-neutral-800 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </motion.svg>
+                                    </div>
+                                    <h2 className="text-3xl font-bold text-black mb-4 tracking-tight">Message Sent Successfully!</h2>
+                                    <p className="text-neutral-500 max-w-md leading-relaxed mb-8">
+                                        Thank you for reaching out to GKK. We've received your inquiry and our team will get back to you across your email shortly.
+                                    </p>
+                                    <button 
+                                        onClick={() => setSubmitStatus('idle')}
+                                        className="text-[10px] font-black tracking-[0.2em] uppercase bg-black text-white px-8 py-4 hover:bg-neutral-800 transition-colors"
                                     >
-                                        {isSubmitting ? 'Sending...' : 'Send Message'}
-                                        <span>→</span>
-                                    </motion.button>
-                                </div>
-                            </form>
-                        </motion.div>
+                                        Send Another Message
+                                    </button>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="form-view"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.8 }}
+                                    className="bg-white p-8 md:p-12 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-neutral-100"
+                                >
+                                    <form onSubmit={handleSubmit} className="space-y-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                                    Full Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="name"
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    required
+                                                    placeholder="E.g. Julian Vost"
+                                                    className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                                    Email Address
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    required
+                                                    placeholder="email@institution.com"
+                                                    className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                                Subject
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="subject"
+                                                value={formData.subject}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="Nature of your inquiry"
+                                                className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                                Message
+                                            </label>
+                                            <textarea
+                                                rows={6}
+                                                name="message"
+                                                value={formData.message}
+                                                onChange={handleChange}
+                                                required
+                                                placeholder="Describe your inquiry in detail..."
+                                                className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent resize-none placeholder:text-neutral-400"
+                                            ></textarea>
+                                        </div>
+
+                                        <div className="flex flex-col md:flex-row items-center justify-between pt-8 gap-4">
+                                            {submitStatus === 'error' && (
+                                                <motion.p
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    className="text-red-600 text-sm font-medium"
+                                                >
+                                                    Something went wrong. Please try again or email us directly.
+                                                </motion.p>
+                                            )}
+
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                type="submit"
+                                                disabled={isSubmitting}
+                                                className={`ml-auto bg-black text-white px-12 py-5 text-[10px] font-black tracking-[0.25em] uppercase flex items-center gap-4 hover:bg-neutral-800 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            >
+                                                {isSubmitting ? 'Sending...' : 'Send Message'}
+                                                <span>→</span>
+                                            </motion.button>
+                                        </div>
+                                    </form>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                 </div>

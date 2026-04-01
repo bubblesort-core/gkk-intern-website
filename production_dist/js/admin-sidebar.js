@@ -10,9 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { label: 'Management', isLabel: true },
         { name: 'Applications', icon: 'fas fa-file-alt', link: 'applications.html' },
         { name: 'Active Interns', icon: 'fas fa-user-check', link: 'active-interns.html' },
-        { name: 'Batches', icon: 'fas fa-layer-group', link: 'batches.html' },
+        { name: 'Phases', icon: 'fas fa-layer-group', link: 'batches.html' },
         { name: 'Modifications', icon: 'fas fa-tools', link: 'modifications.html' },
         { name: 'Availability', icon: 'fas fa-calendar-check', link: 'availability.html' },
+        { name: 'Booked Dates', icon: 'fas fa-calendar-day', link: 'booked-dates.html' },
         { name: 'Teams', icon: 'fas fa-users', link: 'teams.html' },
         { name: 'Projects', icon: 'fas fa-project-diagram', link: 'projects.html' },
         { name: 'Submissions', icon: 'fas fa-cloud-upload-alt', link: 'submissions.html' },
@@ -22,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Workshops', icon: 'fas fa-calendar-star', link: 'workshops.html' },
 
         { label: 'Communication', isLabel: true },
-        { name: 'Invitations', icon: 'fas fa-envelope', link: 'invitations.html' },
+        { name: 'Invitations', icon: 'fas fa-envelope', link: 'invitations.html', hidden: true },
         { name: 'Announcements', icon: 'fas fa-bullhorn', link: 'announcements.html' },
         { name: 'Resources', icon: 'fas fa-book', link: 'resources.html' },
         { name: 'Sessions & Recordings', icon: 'fas fa-video', link: 'sessions.html' },
@@ -44,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Build HTML
     let navHtml = '';
     navItems.forEach(item => {
+        if (item.hidden) return;
         if (item.isLabel) {
             navHtml += `<div class="nav-group-label" style="margin-top: 24px;">${item.label}</div>`;
         } else {

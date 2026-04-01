@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
+import SectionCanvas from './SectionCanvas';
 
 const portfolioItems = [
     {
@@ -42,7 +43,8 @@ export default function Portfolio({ scrollContainerRef }: { scrollContainerRef?:
     const x = useTransform(scrollYProgress, [0, 1], ["0%", "-75%"]);
 
     return (
-        <section ref={targetRef} id="portfolio" className="relative h-[300vh] bg-neutral-900 text-white">
+        <section ref={targetRef} id="portfolio" className="relative h-[300vh] bg-[var(--bg-surface)] text-white">
+            <SectionCanvas dotColor="rgba(240,239,233,0.06)" />
             <div className="sticky top-0 flex h-screen items-center overflow-hidden">
                 {/* Section Header Fixed */}
                 <div className="absolute top-12 left-8 md:top-20 md:left-20 z-20 mix-blend-difference">
@@ -58,8 +60,8 @@ export default function Portfolio({ scrollContainerRef }: { scrollContainerRef?:
 
                 <motion.div style={{ x }} className="flex gap-4 md:gap-20 pl-4 md:pl-[40vw]">
                     {portfolioItems.map((item) => (
-                        <div key={item.id} className="group relative h-[50vh] w-[90vw] md:h-[70vh] md:w-[45vw] flex-shrink-0 overflow-hidden bg-neutral-800 grayscale hover:grayscale-0 transition-all duration-700 ease-out">
-                            <div className="absolute inset-0 z-10 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
+                        <div key={item.id} className="group relative h-[50vh] w-[90vw] md:h-[70vh] md:w-[45vw] flex-shrink-0 overflow-hidden bg-[var(--bg-surface)] grayscale hover:grayscale-0 transition-all duration-700 ease-out">
+                            <div className="absolute inset-0 z-10 bg-[var(--bg-primary)]/20 group-hover:bg-transparent transition-colors duration-500" />
 
                             <img
                                 src={item.image}
@@ -88,7 +90,7 @@ export default function Portfolio({ scrollContainerRef }: { scrollContainerRef?:
                 <div className="absolute bottom-12 right-12 z-20 mix-blend-difference">
                     <div className="flex items-center gap-4">
                         <span className="text-sm font-bold tracking-widest uppercase text-white">Scroll to Explore</span>
-                        <div className="h-[1px] w-12 bg-white"></div>
+                        <div className="h-[1px] w-12 bg-[var(--bg-primary)]"></div>
                     </div>
                 </div>
             </div>

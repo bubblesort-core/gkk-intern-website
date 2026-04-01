@@ -47,7 +47,7 @@ export default function LoginPage() {
                         .maybeSingle();
 
                     if (profile && profile.status !== 'suspended') {
-                        window.location.replace('/dashboard/user/dashboard');
+                        window.location.replace('/dashboard/home');
                     }
                 }
             }
@@ -98,6 +98,23 @@ export default function LoginPage() {
     // Forgot password
     const handleForgotPassword = (e) => {
         e.preventDefault();
+
+        // Rate limiting check
+        const lastSent = localStorage.getItem('gkk_forgot_password_last_sent');
+        const COOLDOWN = 60000; // 60 seconds
+        if (lastSent && Date.now() - parseInt(lastSent) < COOLDOWN) {
+            const timeLeft = Math.ceil((COOLDOWN - (Date.now() - parseInt(lastSent))) / 1000);
+            Swal.fire({
+                icon: 'info',
+                title: 'Please Wait',
+                text: `You can request another reset link in ${timeLeft} seconds.`,
+                confirmButtonColor: '#6366f1',
+                background: '#1e293b',
+                color: '#f1f5f9',
+            });
+            return;
+        }
+
         Swal.fire({
             title: 'Reset Password',
             text: 'Enter your email to receive instructions',
@@ -111,11 +128,19 @@ export default function LoginPage() {
             color: '#f1f5f9',
             preConfirm: async (inputEmail) => {
                 try {
-                    const { error } = await supabase.auth.resetPasswordForEmail(inputEmail, {
+                    const { error } = await supabase.auth.resetPasswordForEmail(inputEmail.trim(), {
                         redirectTo: `${window.location.origin}/user/update-password.html`,
                     });
-                    if (error) throw error;
-                    return true;
+                    
+                    if (error) {
+                        if (error.message.includes('Failed to reach hook') || error.message.includes('5.000000 seconds')) {
+                            return { email: inputEmail.trim(), timeout: true };
+                        }
+                        throw error;
+                    }
+
+                    localStorage.setItem('gkk_forgot_password_last_sent', Date.now().toString());
+                    return { email: inputEmail.trim(), success: true };
                 } catch (error) {
                     Swal.showValidationMessage(`Request failed: ${error.message}`);
                 }
@@ -123,12 +148,25 @@ export default function LoginPage() {
             allowOutsideClick: () => !Swal.isLoading(),
         }).then((result) => {
             if (result.isConfirmed) {
+                const userEmail = result.value.email || email; // Adjust based on return object
+                const isTimeout = result.value.timeout;
+
                 Swal.fire({
-                    title: 'Success',
-                    text: 'Check your email for the reset link',
-                    icon: 'success',
+                    title: isTimeout ? 'Request in Progress' : 'Request Sent',
+                    html: `
+                        <p style="margin-bottom: 1rem;">${isTimeout 
+                            ? 'The request is taking longer than expected, but your code is likely on its way.' 
+                            : 'Check your email for the reset instructions.'}</p>
+                        <p style="font-size: 0.85rem; color: #94a3b8;">Redirecting you to the update page...</p>
+                    `,
+                    icon: isTimeout ? 'info' : 'success',
+                    timer: isTimeout ? 4000 : 2000,
+                    showConfirmButton: false,
                     background: '#1e293b',
                     color: '#f1f5f9',
+                }).then(() => {
+                    const encodedEmail = encodeURIComponent(userEmail || '');
+                    window.location.href = `/user/update-password.html?email=${encodedEmail}`;
                 });
             }
         });
@@ -181,9 +219,9 @@ export default function LoginPage() {
 
             if (profile) {
                 if (profile.status === 'suspended') throw new Error("Your account has been suspended. Please contact support.");
-                window.location.href = '/dashboard/user/dashboard';
+                window.location.href = '/dashboard/home';
             } else {
-                window.location.href = '/dashboard/user/dashboard';
+                window.location.href = '/dashboard/home';
             }
         } catch (error) {
             Swal.fire({ icon: 'error', title: 'Login Failed', text: error.message, confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f1f5f9' });

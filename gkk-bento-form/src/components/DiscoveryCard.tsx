@@ -71,7 +71,7 @@ const AdditionalInfoCard: React.FC = () => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub border border-border p-6 lg:p-7 rounded-xl shadow-sm flex flex-col gap-4 lg:gap-5 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+            className="w-full h-full apply-card glass-hub border border-border p-6 lg:p-7 rounded-xl shadow-sm flex flex-col gap-4 lg:gap-5 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
             onFocus={() => updateFormData({ mascot_emotion: 'neutral' })}
             tabIndex={0}
         >

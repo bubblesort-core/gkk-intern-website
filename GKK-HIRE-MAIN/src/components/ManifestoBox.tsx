@@ -10,10 +10,10 @@ export default function ManifestoBox() {
             className="relative p-8 md:p-12"
         >
             {/* Offset border frame */}
-            <div className="absolute top-4 left-4 right-0 bottom-0 border-l-2 border-b-2 border-black"></div>
+            <div className="absolute top-4 left-4 right-0 bottom-0 border-l-2 border-b-2 border-[var(--border)]"></div>
 
             {/* Content */}
-            <div className="relative bg-white p-8 md:p-12">
+            <div className="relative bg-[var(--bg-surface)] p-8 md:p-12">
                 <motion.h3
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -34,10 +34,10 @@ export default function ManifestoBox() {
                     <p className="font-inter">
                         We reject the ordinary. We dismantle convention. We build from the fragments of what was, creating what will be.
                     </p>
-                    <p className="font-cormorant italic text-black/70">
+                    <p className="font-cormorant italic text-[var(--text-muted)]">
                         This is not an internship. This is an awakening.
                     </p>
-                    <p className="font-inter">
+                    <p className="font-inter text-[var(--text-muted)]">
                         Join us in the collapse. Rise in the reconstruction.
                     </p>
                 </motion.div>
@@ -48,7 +48,7 @@ export default function ManifestoBox() {
                     whileInView={{ scaleX: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.6, duration: 0.8 }}
-                    className="mt-8 h-[2px] w-24 bg-black origin-left"
+                    className="mt-8 h-[2px] w-24 bg-[var(--accent)] origin-left"
                 />
             </div>
         </motion.div>

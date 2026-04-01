@@ -129,7 +129,7 @@ const DocumentUploadCard: React.FC = () => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub border border-border p-4 md:p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)] flex flex-col gap-4"
+            className="w-full h-full apply-card glass-hub border border-border p-6 lg:p-7 rounded-xl shadow-sm flex flex-col gap-4 lg:gap-5 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
             tabIndex={0}
             onFocus={() => updateFormData({ mascot_emotion: 'thinking' })}
             onMouseEnter={() => updateFormData({ mascot_emotion: 'thinking' })}

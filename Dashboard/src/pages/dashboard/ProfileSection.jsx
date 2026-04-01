@@ -14,9 +14,8 @@ export default function ProfileSection() {
     const name = currentProfile?.full_name || currentProfile?.email?.split('@')[0] || 'Intern';
     const initial = name[0]?.toUpperCase() || 'I';
     const isPaid = !isLocked;
-    const xp = currentProfile?.xp || 0;
-    const level = calculateLevel(xp);
     const streak = currentProfile?.current_streak || 0;
+    const level = calculateLevel(streak);
     const title = currentProfile?.title || 'Intern';
     const phone = currentProfile?.phone || 'Not set';
     const college = currentProfile?.college || 'Not set';
@@ -129,8 +128,10 @@ export default function ProfileSection() {
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div className="dash-card" style={{ textAlign: 'center', padding: '1.25rem' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--dash-accent)' }}>{xp}</div>
-                    <div style={{ color: 'var(--dash-text-muted)', fontSize: '0.85rem' }}>Total XP</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f97316' }}>
+                        <i className="fas fa-fire" style={{ fontSize: '1.5rem' }} /> {streak}
+                    </div>
+                    <div style={{ color: 'var(--dash-text-muted)', fontSize: '0.85rem' }}>Day Streak</div>
                 </div>
                 <div className="dash-card" style={{ textAlign: 'center', padding: '1.25rem' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 700, color: '#8b5cf6' }}>{level}</div>
@@ -142,12 +143,6 @@ export default function ProfileSection() {
                         {batchName === 'Not assigned' ? 'None' : batchName.replace('BATCH ', '')}
                     </div>
                     <div style={{ color: 'var(--dash-text-muted)', fontSize: '0.85rem' }}>Batch</div>
-                </div>
-                <div className="dash-card" style={{ textAlign: 'center', padding: '1.25rem' }}>
-                    <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f97316' }}>
-                        <i className="fas fa-fire" style={{ fontSize: '1.5rem' }} /> {streak}
-                    </div>
-                    <div style={{ color: 'var(--dash-text-muted)', fontSize: '0.85rem' }}>Day Streak</div>
                 </div>
                 <div className="dash-card" style={{ textAlign: 'center', padding: '1.25rem' }}>
                     <div style={{ fontSize: '2rem', fontWeight: 700, color: isPaid ? '#10b981' : '#f59e0b' }}>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -393,7 +393,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Target Tech Stack (Type and press Enter)</label>
-                        <div class="tag-container" onclick="document.getElementById('p-tech-input').focus()">
+                        <div class="tag-container" onclick="if (document.getElementById('p-tech-input')) document.getElementById('p-tech-input').focus()">
                             <div id="tech-tags-list" style="display:contents;"></div>
                             <input type="text" id="p-tech-input" class="tag-input" placeholder="Add tech...">
                         </div>
@@ -430,6 +430,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <!-- Removed broken admin-smart-features.js dependency for core logic -->
@@ -449,7 +450,7 @@
         }
 
         // Close sidebar when clicking overlay
-        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
             toggleSidebar(); // Close it
         });
 
@@ -555,7 +556,7 @@
             if (data) {
                 const opts = '<option value="">-- Unassigned --</option>' +
                     data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-                document.getElementById('p-team').innerHTML = opts;
+                if (document.getElementById('p-team')) document.getElementById('p-team').innerHTML = opts;
             }
         }
 
@@ -610,7 +611,7 @@
                                 <button class="btn btn-secondary btn-sm" onclick="openEditModal('${p.id}')" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-secondary btn-sm" onclick="window.location.href='submissions.html?project=${p.id}'" title="Review Submissions" style="color: var(--c-primary);">
+                                <button class="btn btn-secondary btn-sm" onclick="spaNavigate('submissions.html?project=' + p.id)" title="Review Submissions" style="color: var(--c-primary);">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 <button class="btn btn-secondary btn-sm" onclick="deleteProject('${p.id}')" title="Delete" style="color: var(--c-error);">
@@ -742,9 +743,9 @@
         function openCreateModal() {
             // Reset form
             document.getElementById('projectForm').reset();
-            document.getElementById('modalTitle').textContent = 'Create New Project';
-            document.getElementById('submitBtnText').textContent = 'Create Project';
-            document.getElementById('edit-project-id').value = ''; // Clear ID
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Create New Project';
+            if (document.getElementById('submitBtnText')) document.getElementById('submitBtnText').textContent = 'Create Project';
+            if (document.getElementById('edit-project-id')) document.getElementById('edit-project-id').value = ''; // Clear ID
             techStack = []; // clear tags
             renderTags();
             // Status is now managed only via Submissions page
@@ -755,26 +756,26 @@
             const p = allProjects.find(x => x.id === id);
             if (!p) return;
 
-            document.getElementById('modalTitle').textContent = 'Edit Project';
-            document.getElementById('submitBtnText').textContent = 'Save Changes';
-            document.getElementById('edit-project-id').value = p.id;
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Edit Project';
+            if (document.getElementById('submitBtnText')) document.getElementById('submitBtnText').textContent = 'Save Changes';
+            if (document.getElementById('edit-project-id')) document.getElementById('edit-project-id').value = p.id;
 
-            document.getElementById('p-title').value = p.title;
-            document.getElementById('p-description').value = p.description || '';
+            if (document.getElementById('p-title')) document.getElementById('p-title').value = p.title;
+            if (document.getElementById('p-description')) document.getElementById('p-description').value = p.description || '';
             // Handle date format YYYY-MM-DD
             if (p.deadline) {
-                document.getElementById('p-deadline').value = new Date(p.deadline).toISOString().split('T')[0];
+                if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = new Date(p.deadline).toISOString().split('T')[0];
             } else {
-                document.getElementById('p-deadline').value = '';
+                if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = '';
             }
-            document.getElementById('p-priority').value = p.priority || 'medium';
-            document.getElementById('p-team').value = p.assigned_team_id || '';
+            if (document.getElementById('p-priority')) document.getElementById('p-priority').value = p.priority || 'medium';
+            if (document.getElementById('p-team')) document.getElementById('p-team').value = p.assigned_team_id || '';
 
             // Resources: Array of objects -> String (one per line)
             if (p.resources && Array.isArray(p.resources)) {
-                document.getElementById('p-resources').value = p.resources.map(r => r.url).join('\n');
+                if (document.getElementById('p-resources')) document.getElementById('p-resources').value = p.resources.map(r => r.url).join('\n');
             } else {
-                document.getElementById('p-resources').value = '';
+                if (document.getElementById('p-resources')) document.getElementById('p-resources').value = '';
             }
 
             techStack = p.tech_stack || [];
@@ -790,13 +791,13 @@
         }
 
         async function submitProject() {
-            const id = document.getElementById('edit-project-id').value; // hidden field
-            const title = document.getElementById('p-title').value;
-            const desc = document.getElementById('p-description').value;
-            const deadline = document.getElementById('p-deadline').value;
-            const priority = document.getElementById('p-priority').value;
-            const teamId = document.getElementById('p-team').value || null;
-            const resourcesStr = document.getElementById('p-resources').value;
+            const id = (document.getElementById('edit-project-id')?.value || ''); // hidden field
+            const title = (document.getElementById('p-title')?.value || '');
+            const desc = (document.getElementById('p-description')?.value || '');
+            const deadline = (document.getElementById('p-deadline')?.value || '');
+            const priority = (document.getElementById('p-priority')?.value || '');
+            const teamId = (document.getElementById('p-team')?.value || '') || null;
+            const resourcesStr = (document.getElementById('p-resources')?.value || '');
 
             // Form Validation
             if (!title || !desc) {
@@ -957,8 +958,8 @@
             document.querySelectorAll('.view-switcher .btn').forEach(b => b.classList.remove('active'));
             document.querySelector(`button[onclick="switchView('${view}')"]`).classList.add('active');
 
-            document.getElementById('view-grid').style.display = (view === 'grid') ? 'grid' : 'none';
-            document.getElementById('view-kanban').style.display = (view === 'kanban') ? 'flex' : 'none';
+            if (document.getElementById('view-grid')) document.getElementById('view-grid').style.display = (view === 'grid') ? 'grid' : 'none';
+            if (document.getElementById('view-kanban')) document.getElementById('view-kanban').style.display = (view === 'kanban') ? 'flex' : 'none';
         }
 
         // Drag and Drop

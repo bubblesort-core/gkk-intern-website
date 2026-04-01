@@ -157,7 +157,7 @@ export default function SignupPage() {
                 if (error) throw error;
                 const result = data?.[0];
                 if (result?.valid) {
-                    setReferralStatus({ show: true, type: 'success', message: 'Valid! You will get 50XP after completing registration' });
+                    setReferralStatus({ show: true, type: 'success', message: 'Valid! You will unlock special rewards after completing registration' });
                     setValidReferralCode(referralCode.trim());
                     setValidReferralId(result.referrer_id);
                 } else {

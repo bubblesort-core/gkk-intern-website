@@ -62,7 +62,7 @@ const TransitionOverlay: React.FC<TransitionOverlayProps> = ({ isVisible, type, 
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    className="fixed inset-0 z-[99999] bg-slate-900 flex flex-col items-center justify-center top-0 left-0 w-screen h-screen"
+                    className="fixed inset-0 z-[99999] bg-[var(--bg-primary)] flex flex-col items-center justify-center top-0 left-0 w-screen h-screen"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

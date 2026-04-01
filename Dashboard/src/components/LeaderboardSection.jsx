@@ -12,10 +12,11 @@ export default function LeaderboardSection() {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('full_name, xp, current_streak, avatar_url')
+                    .select('full_name, level, current_streak, avatar_url')
                     .not('full_name', 'ilike', '%Test%')
                     .neq('full_name', 'GKK Admin')
-                    .order('xp', { ascending: false })
+                    .order('level', { ascending: false })
+                    .order('current_streak', { ascending: false })
                     .limit(10);
 
                 if (error) throw error;
@@ -38,16 +39,9 @@ export default function LeaderboardSection() {
         return `#${index + 1}`;
     };
 
-    const calculateLevel = (xp) => {
-        let level = 1;
-        let xpNeeded = 100;
-        let totalXp = 0;
-        while (totalXp + xpNeeded <= (xp || 0)) {
-            totalXp += xpNeeded;
-            level++;
-            xpNeeded = level * 100;
-        }
-        return level;
+    const calculateLevel = (streak) => {
+        if (!streak || streak <= 0) return 1;
+        return 1 + Math.floor(streak / 5);
     };
 
     return (
@@ -75,7 +69,7 @@ export default function LeaderboardSection() {
                     </div>
                     <h2>Top Performing Interns</h2>
                     <p style={{ color: 'var(--text-body)' }}>
-                        See who's leading the pack with the most XP and longest streaks.
+                        See who's leading the pack with the most consistent streaks and levels.
                     </p>
                 </div>
 
@@ -122,12 +116,12 @@ export default function LeaderboardSection() {
                                             {leader.full_name || 'Anonymous'}
                                         </div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                            Level {calculateLevel(leader.xp)} • 🔥 {leader.current_streak || 0} day streak
+                                            Level {leader.level || calculateLevel(leader.current_streak)}
                                         </div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontWeight: 700, color: 'var(--primary)' }}>
-                                            {(leader.xp || 0).toLocaleString()} XP
+                                            {leader.current_streak || 0} Days
                                         </div>
                                     </div>
                                 </div>

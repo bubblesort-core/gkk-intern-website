@@ -105,15 +105,19 @@ echo /supabase-main/*  https://hjpsyxqakzrhvzegehtm.supabase.co/:splat  200!
 echo /supabase-chat/*  https://mwnpwuxrbaousgwgoyco.supabase.co/:splat  200!
 echo /storage-main/*   https://hjpsyxqakzrhvzegehtm.supabase.co/storage/v1/object/public/:splat  200!
 echo /storage-chat/*   https://mwnpwuxrbaousgwgoyco.supabase.co/storage/v1/object/public/:splat  200!
-echo /dashboard/admin/*  /admin/:splat  301
-echo /dashboard/css/*    /css/:splat    301
-echo /dashboard/js/*     /js/:splat     301
-echo /dashboard/apply/*  /dashboard/apply/index.html  200
-echo /Dashboard/*        /dashboard/:splat        301
-echo /dashboard/assets/*  /dashboard/assets/:splat  200
-echo /dashboard/*        /dashboard/index.html        200
-echo /community-chat/*   /community-chat/index.html   200
-echo /*                  /index.html                  200
+echo /user/login.html      /dashboard/user/login     301
+echo /user/signup.html     /dashboard/user/signup    301
+echo /user/index.html      /dashboard/user/dashboard 301
+echo /user/rewards.html    /dashboard/user/dashboard/rewards 301
+echo /dashboard/admin/*    /admin/:splat  301
+echo /dashboard/css/*      /css/:splat    301
+echo /dashboard/js/*       /js/:splat     301
+echo /dashboard/apply/*    /dashboard/apply/index.html  200
+echo /Dashboard/*          /dashboard/:splat        301
+echo /dashboard/assets/*   /dashboard/assets/:splat  200
+echo /dashboard/*          /dashboard/index.html        200
+echo /community-chat/*     /community-chat/index.html   200
+echo /*                    /index.html                  200
 ) > "production_dist\_redirects"
 
 echo ==========================================

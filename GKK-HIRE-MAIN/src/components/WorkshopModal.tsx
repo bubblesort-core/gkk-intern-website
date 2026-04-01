@@ -98,7 +98,8 @@ const WorkshopModal: React.FC = () => {
                         style={{
                             position: 'absolute',
                             inset: 0,
-                            backgroundColor: 'rgba(2, 6, 23, 0.9)',
+                            backgroundColor: 'var(--bg-primary)',
+                            opacity: 0.9,
                             backdropFilter: 'blur(12px)'
                         }}
                     />
@@ -119,7 +120,7 @@ const WorkshopModal: React.FC = () => {
                             width: '100%',
                             maxWidth: isMobile ? '100%' : '600px',
                             maxHeight: '90vh',
-                            backgroundColor: '#0f172a',
+                            backgroundColor: 'var(--bg-surface)',
                             borderRadius: isMobile ? '24px' : '32px',
                             overflow: 'auto',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -150,7 +151,7 @@ const WorkshopModal: React.FC = () => {
                             <div style={{
                                 position: 'absolute',
                                 inset: 0,
-                                background: 'linear-gradient(to bottom, transparent, rgba(15, 23, 42, 1))'
+                                background: 'linear-gradient(to bottom, transparent, var(--bg-surface))'
                             }} />
                             
                             {/* LIVE Badge */}
@@ -190,7 +191,7 @@ const WorkshopModal: React.FC = () => {
                                 <h2 style={{
                                     fontSize: isMobile ? '24px' : '32px',
                                     fontWeight: 800,
-                                    color: '#fff',
+                                    color: 'var(--text-primary)',
                                     margin: '0 0 8px 0',
                                     lineHeight: 1.2,
                                     fontFamily: "'Outfit', sans-serif"
@@ -213,7 +214,7 @@ const WorkshopModal: React.FC = () => {
 
                                 <p style={{
                                     fontSize: isMobile ? '14px' : '15px',
-                                    color: '#94a3b8',
+                                    color: 'var(--text-muted)',
                                     lineHeight: '1.6',
                                     margin: `0 auto ${ (workshop.session_date || workshop.session_time) ? '24px' : '32px'} auto`,
                                     maxWidth: '480px',

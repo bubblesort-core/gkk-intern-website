@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
+import SectionCanvas from './SectionCanvas';
 
 const AchievementSection = () => {
     const stats = [
@@ -8,7 +9,7 @@ const AchievementSection = () => {
         { label: 'SATISFACTION RATE', value: '92%' },
     ];
 
-    const fadeIn = {
+    const fadeIn: Variants = {
         hidden: { opacity: 0, y: 30 },
         visible: {
             opacity: 1,
@@ -18,7 +19,8 @@ const AchievementSection = () => {
     };
 
     return (
-        <section className="min-h-screen bg-[#F5F5F3] text-black py-16 md:py-24 px-4 md:px-12 relative">
+        <section className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] py-16 md:py-24 px-4 md:px-12 relative">
+            <SectionCanvas dotColor="rgba(240,239,233,0.06)" />
             <div className="max-w-[1400px] mx-auto">
 
                 {/* Header */}
@@ -33,11 +35,11 @@ const AchievementSection = () => {
                         <br />
                         GKK
                         <br />
-                        <span className="text-neutral-300">INTERNS?</span>
+                        <span className="text-[var(--text-muted)]">INTERNS?</span>
                     </motion.h1>
 
                     <div className="flex flex-col md:flex-row justify-between items-end gap-8">
-                        <p className="max-w-xl text-sm md:text-base text-neutral-500 font-medium leading-relaxed">
+                        <p className="max-w-xl text-sm md:text-base text-[var(--text-muted)] font-medium leading-relaxed">
                             GKK helps aspiring developers build real-world coding skills through hands-on projects, mentorship from experienced engineers, and a structured curriculum focused on modern tech stacks.
                         </p>
                     </div>
@@ -51,13 +53,13 @@ const AchievementSection = () => {
                     variants={{
                         visible: { transition: { staggerChildren: 0.1 } }
                     }}
-                    className="grid grid-cols-2 md:grid-cols-4 border-y border-black mb-16 md:mb-32"
+                    className="grid grid-cols-2 md:grid-cols-4 border-y border-[var(--border)] mb-16 md:mb-32"
                 >
                     {stats.map((stat, index) => (
                         <motion.div
                             key={index}
                             variants={fadeIn}
-                            className={`py-8 md:py-12 px-4 md:px-6 ${index !== 3 ? 'md:border-r border-black' : ''} ${index % 2 === 0 ? 'border-r md:border-r-0 border-black' : ''}`}
+                            className={`py-8 md:py-12 px-4 md:px-6 ${index !== 3 ? 'md:border-r border-[var(--border)]' : ''} ${index % 2 === 0 ? 'border-r md:border-r-0 border-[var(--border)]' : ''}`}
                         >
                             <h3 className="text-3xl md:text-5xl font-black tracking-tighter mb-2">{stat.value}</h3>
                             <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400">{stat.label}</p>
@@ -73,7 +75,7 @@ const AchievementSection = () => {
                         transition={{ duration: 0.8 }}
                         className="md:col-span-5"
                     >
-                        <div className="aspect-[4/3] bg-neutral-800 relative overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
+                        <div className="aspect-[4/3] bg-[var(--bg-surface)] relative overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
                             <img
                                 src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2000&auto=format&fit=crop"
                                 alt="Modern Tech Stack"
@@ -101,7 +103,7 @@ const AchievementSection = () => {
                         <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-8">
                             Industry-Grade Tools
                         </h2>
-                        <p className="text-neutral-600 text-sm md:text-lg leading-relaxed max-w-xl mb-8">
+                        <p className="text-[var(--text-muted)] text-sm md:text-lg leading-relaxed max-w-xl mb-8">
                             Work with the same tools and technologies used by top tech companies. From React and TypeScript to Docker, AWS, and CI/CD pipelines - learn by building production-ready applications.
                         </p>
                         <div className="space-y-2">
@@ -131,10 +133,10 @@ const AchievementSection = () => {
                         <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-8">
                             Code Review Culture
                         </h2>
-                        <p className="text-neutral-600 text-sm md:text-lg leading-relaxed max-w-xl mb-12">
+                        <p className="text-[var(--text-muted)] text-sm md:text-lg leading-relaxed max-w-xl mb-12">
                             Learn from experienced developers through detailed code reviews, pair programming sessions, and weekly tech talks. Your code gets reviewed just like at top tech companies.
                         </p>
-                        <div className="flex items-end gap-16 border-t border-neutral-300 pt-8">
+                        <div className="flex items-end gap-16 border-t border-[var(--border)] pt-8">
                             <div>
                                 <h4 className="text-3xl font-black mb-1">75+</h4>
                                 <span className="text-[9px] font-bold tracking-widest uppercase text-neutral-400">Code Reviews</span>
@@ -151,7 +153,7 @@ const AchievementSection = () => {
                         transition={{ duration: 0.8 }}
                         className="md:col-span-7 order-1 md:order-2"
                     >
-                        <div className="aspect-video md:aspect-[21/9] bg-neutral-900 overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
+                        <div className="aspect-video md:aspect-[21/9] bg-[var(--bg-surface)] overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
                             <img
                                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2664&auto=format&fit=crop"
                                 alt="Team Collaboration"
@@ -191,7 +193,7 @@ const AchievementSection = () => {
                         <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight mb-8">
                             Ship Real Products
                         </h2>
-                        <p className="text-neutral-600 text-sm md:text-lg leading-relaxed max-w-xl mb-8">
+                        <p className="text-[var(--text-muted)] text-sm md:text-lg leading-relaxed max-w-xl mb-8">
                             No toy projects here. Work on actual products used by real users. Contribute to codebases with thousands of lines, write tests, deploy to production, and see your code make an impact.
                         </p>
                         <button className="text-[10px] font-bold tracking-[0.25em] uppercase text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-2">

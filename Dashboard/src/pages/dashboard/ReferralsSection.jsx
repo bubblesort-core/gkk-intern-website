@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { ReferralsSkeleton } from '../../components/dashboard/DashboardSkeletons';
 
 export default function ReferralsSection() {
-    const { currentUser, currentProfile, isLocked, supabase, awardXP } = useDashboard();
+    const { currentUser, currentProfile, isLocked, supabase } = useDashboard();
     const [referralCode, setReferralCode] = useState('');
     const [referralCount, setReferralCount] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -49,8 +49,7 @@ export default function ReferralsSection() {
             const { data, error } = await supabase.rpc('claim_referral', { code_used: code.trim() });
             if (error) throw error;
             if (data?.success) {
-                await awardXP(50, 'Referral code redeemed! +50 XP');
-                Swal.fire({ icon: 'success', title: 'Referral Claimed!', text: 'You earned 50 XP!', background: '#1e293b', color: '#f1f5f9' });
+                Swal.fire({ icon: 'success', title: 'Referral Claimed!', text: 'You have successfully redeemed the code!', background: '#1e293b', color: '#f1f5f9' });
             } else {
                 Swal.fire({ icon: 'error', title: 'Invalid Code', text: data?.message || 'Could not redeem this code.', background: '#1e293b', color: '#f1f5f9' });
             }
@@ -89,7 +88,6 @@ export default function ReferralsSection() {
         );
     }
 
-    const xpEarned = referralCount * 100;
     const badgeProgress = Math.min(referralCount / 10, 1);
 
     return (
@@ -100,7 +98,7 @@ export default function ReferralsSection() {
                     <i className="fas fa-share-nodes" />
                 </div>
                 <h3 style={{ color: '#f1f5f9', fontSize: '1.25rem', marginBottom: 4 }}>Your Referral Code</h3>
-                <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.25rem' }}>Share this code with friends and earn XP!</p>
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.25rem' }}>Share this code with friends and unlock badges!</p>
 
                 <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
@@ -141,10 +139,10 @@ export default function ReferralsSection() {
                 </div>
                 <div className="dash-stat-card">
                     <div className="dash-stat-icon" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
-                        <i className="fas fa-star" />
+                        <i className="fas fa-certificate" />
                     </div>
-                    <div className="dash-stat-value">{xpEarned}</div>
-                    <div className="dash-stat-label">XP Earned</div>
+                    <div className="dash-stat-value">{referralCount >= 5 ? 'Active' : 'Pending'}</div>
+                    <div className="dash-stat-label">Referral Status</div>
                 </div>
                 <div className="dash-stat-card">
                     <div className="dash-stat-icon" style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>

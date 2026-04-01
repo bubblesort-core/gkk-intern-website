@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -435,7 +435,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Value/Worth (Optional)</label>
-                        <input type="text" id="rewardValue" class="form-input" placeholder="e.g., ₹500 or $10">
+                        <input type="text" id="rewardValue" class="form-input" placeholder="e.g., ?500 or $10">
                     </div>
                 </form>
             </div>
@@ -515,6 +515,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <script>
@@ -533,7 +534,7 @@
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         }
 
-        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
         // --- Initialization ---
         async function init() {
@@ -745,10 +746,10 @@
         }
 
         function updateStats() {
-            document.getElementById('statTotal').textContent = allRewards.length;
-            document.getElementById('statActive').textContent = allRewards.filter(r => r.is_active !== false).length;
-            document.getElementById('statAssigned').textContent = assignedRewards.length;
-            document.getElementById('statRedeemed').textContent = assignedRewards.filter(a => a.redeemed).length;
+            if (document.getElementById('statTotal')) document.getElementById('statTotal').textContent = allRewards.length;
+            if (document.getElementById('statActive')) document.getElementById('statActive').textContent = allRewards.filter(r => r.is_active !== false).length;
+            if (document.getElementById('statAssigned')) document.getElementById('statAssigned').textContent = assignedRewards.length;
+            if (document.getElementById('statRedeemed')) document.getElementById('statRedeemed').textContent = assignedRewards.filter(a => a.redeemed).length;
         }
 
         // --- Tab Switching ---
@@ -757,21 +758,21 @@
             btn.classList.add('active');
 
             if (tab === 'rewards') {
-                document.getElementById('rewardsGrid').style.display = 'grid';
-                document.getElementById('assignedTable').style.display = 'none';
+                if (document.getElementById('rewardsGrid')) document.getElementById('rewardsGrid').style.display = 'grid';
+                if (document.getElementById('assignedTable')) document.getElementById('assignedTable').style.display = 'none';
             } else {
-                document.getElementById('rewardsGrid').style.display = 'none';
-                document.getElementById('assignedTable').style.display = 'block';
+                if (document.getElementById('rewardsGrid')) document.getElementById('rewardsGrid').style.display = 'none';
+                if (document.getElementById('assignedTable')) document.getElementById('assignedTable').style.display = 'block';
             }
         }
 
         // --- Modal Functions ---
         function openCreateModal() {
             document.getElementById('rewardForm').reset();
-            document.getElementById('rewardId').value = '';
-            document.getElementById('modalTitle').textContent = 'Create Reward';
-            document.getElementById('saveBtnText').textContent = 'Create Reward';
-            document.getElementById('imagePreview').style.display = 'none';
+            if (document.getElementById('rewardId')) document.getElementById('rewardId').value = '';
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Create Reward';
+            if (document.getElementById('saveBtnText')) document.getElementById('saveBtnText').textContent = 'Create Reward';
+            if (document.getElementById('imagePreview')) document.getElementById('imagePreview').style.display = 'none';
             document.getElementById('rewardModal').classList.add('open');
         }
 
@@ -779,20 +780,20 @@
             const reward = allRewards.find(r => r.id === id);
             if (!reward) return;
 
-            document.getElementById('rewardId').value = reward.id;
-            document.getElementById('rewardTitle').value = reward.title;
-            document.getElementById('couponCode').value = reward.coupon_code;
-            document.getElementById('rewardDesc').value = reward.description || '';
-            document.getElementById('expiryDate').value = reward.expiry_text || '';
-            document.getElementById('imageUrl').value = reward.image_url || '';
-            document.getElementById('rewardValue').value = reward.value || '';
+            if (document.getElementById('rewardId')) document.getElementById('rewardId').value = reward.id;
+            if (document.getElementById('rewardTitle')) document.getElementById('rewardTitle').value = reward.title;
+            if (document.getElementById('couponCode')) document.getElementById('couponCode').value = reward.coupon_code;
+            if (document.getElementById('rewardDesc')) document.getElementById('rewardDesc').value = reward.description || '';
+            if (document.getElementById('expiryDate')) document.getElementById('expiryDate').value = reward.expiry_text || '';
+            if (document.getElementById('imageUrl')) document.getElementById('imageUrl').value = reward.image_url || '';
+            if (document.getElementById('rewardValue')) document.getElementById('rewardValue').value = reward.value || '';
 
             if (reward.image_url) {
                 previewImage(reward.image_url);
             }
 
-            document.getElementById('modalTitle').textContent = 'Edit Reward';
-            document.getElementById('saveBtnText').textContent = 'Save Changes';
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Edit Reward';
+            if (document.getElementById('saveBtnText')) document.getElementById('saveBtnText').textContent = 'Save Changes';
             document.getElementById('rewardModal').classList.add('open');
         }
 
@@ -800,10 +801,10 @@
             const reward = allRewards.find(r => r.id === id);
             if (!reward) return;
 
-            document.getElementById('assignRewardId').value = id;
-            document.getElementById('previewCode').textContent = reward.coupon_code;
-            document.getElementById('previewTitle').textContent = reward.title;
-            document.getElementById('previewExpiry').textContent = reward.expiry_text || 'No expiry set';
+            if (document.getElementById('assignRewardId')) document.getElementById('assignRewardId').value = id;
+            if (document.getElementById('previewCode')) document.getElementById('previewCode').textContent = reward.coupon_code;
+            if (document.getElementById('previewTitle')) document.getElementById('previewTitle').textContent = reward.title;
+            if (document.getElementById('previewExpiry')) document.getElementById('previewExpiry').textContent = reward.expiry_text || 'No expiry set';
 
             selectedRecipients = [];
             currentAssignType = 'intern';
@@ -900,13 +901,13 @@
 
         // --- Save/Delete/Assign ---
         async function saveReward() {
-            const id = document.getElementById('rewardId').value;
-            const title = document.getElementById('rewardTitle').value.trim();
-            const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
-            const description = document.getElementById('rewardDesc').value.trim();
-            const expiryText = document.getElementById('expiryDate').value.trim();
-            const imageUrl = document.getElementById('imageUrl').value.trim();
-            const value = document.getElementById('rewardValue').value.trim();
+            const id = (document.getElementById('rewardId')?.value || '');
+            const title = (document.getElementById('rewardTitle')?.value || '').trim();
+            const couponCode = (document.getElementById('couponCode')?.value || '').trim().toUpperCase();
+            const description = (document.getElementById('rewardDesc')?.value || '').trim();
+            const expiryText = (document.getElementById('expiryDate')?.value || '').trim();
+            const imageUrl = (document.getElementById('imageUrl')?.value || '').trim();
+            const value = (document.getElementById('rewardValue')?.value || '').trim();
 
             if (!title || !couponCode) {
                 Swal.fire('Error', 'Please fill in the required fields.', 'error');
@@ -988,8 +989,8 @@
         }
 
         async function confirmAssign() {
-            const rewardId = document.getElementById('assignRewardId').value;
-            const message = document.getElementById('assignMessage').value.trim();
+            const rewardId = (document.getElementById('assignRewardId')?.value || '');
+            const message = (document.getElementById('assignMessage')?.value || '').trim();
 
             if (selectedRecipients.length === 0) {
                 Swal.fire('Error', 'Please select at least one recipient.', 'error');
@@ -1093,7 +1094,7 @@
             for (let i = 0; i < 8; i++) {
                 code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            document.getElementById('couponCode').value = code;
+            if (document.getElementById('couponCode')) document.getElementById('couponCode').value = code;
         }
 
         function previewImage(url) {

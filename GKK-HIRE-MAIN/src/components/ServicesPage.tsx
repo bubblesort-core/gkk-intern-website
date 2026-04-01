@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
+import SectionCanvas from './SectionCanvas';
 
 const services = [
     {
@@ -56,12 +57,13 @@ export default function ServicesPage({ scrollContainerRef }: { scrollContainerRe
     };
 
     return (
-        <section id="services" className="relative min-h-screen bg-white text-black py-16 md:py-24 px-4 md:px-12 overflow-hidden">
+        <section id="services" className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] py-16 md:py-24 px-4 md:px-12 overflow-hidden">
+            <SectionCanvas dotColor="rgba(240,239,233,0.06)" />
             {/* Header / Zigzag Pattern */}
-            <div className="absolute top-0 left-0 right-0 h-24 bg-[#E5E5E5] flex flex-col justify-end overflow-hidden z-10">
+            <div className="absolute top-0 left-0 right-0 h-24 bg-[var(--border)] flex flex-col justify-end overflow-hidden z-10">
                 <div className="flex flex-row absolute -bottom-6 -left-5">
                     {[...Array(40)].map((_, i) => (
-                        <div key={i} className="w-12 h-12 bg-white transform rotate-45 -mr-6" />
+                        <div key={i} className="w-12 h-12 bg-[var(--bg-primary)] transform rotate-45 -mr-6" />
                     ))}
                 </div>
             </div>
@@ -84,7 +86,7 @@ export default function ServicesPage({ scrollContainerRef }: { scrollContainerRe
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
                             viewport={{ once: false, amount: 0.2 }}
-                            className="text-4xl md:text-8xl font-black tracking-tighter uppercase leading-[0.9] text-black"
+                            className="text-4xl md:text-8xl font-black tracking-tighter uppercase leading-[0.9] text-[var(--text-primary)]"
                         >
                             What You Will Master
                         </motion.h2>
@@ -110,7 +112,7 @@ export default function ServicesPage({ scrollContainerRef }: { scrollContainerRe
                 >
                     {services.map((service) => (
                         <motion.div key={service.id} variants={itemVariants} className="group cursor-pointer">
-                            <div className="relative aspect-square bg-neutral-100 mb-6 overflow-hidden">
+                            <div className="relative aspect-square bg-[var(--bg-surface)] mb-6 overflow-hidden">
                                 <img
                                     src={service.image}
                                     alt={service.title}
@@ -143,7 +145,7 @@ export default function ServicesPage({ scrollContainerRef }: { scrollContainerRe
                         </div>
 
                         <div className="relative z-10">
-                            <a href="/Dashboard/" className="bg-white text-black px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-neutral-200 transition-colors inline-block no-underline">
+                            <a href="/dashboard/" className="bg-white text-black px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-neutral-200 transition-colors inline-block no-underline">
                                 Apply Now
                             </a>
                         </div>

@@ -13,17 +13,11 @@ import lock from 'react-useanimations/lib/lock';
 import github from 'react-useanimations/lib/github';
 import link from 'react-useanimations/lib/maximizeMinimize2'; // Using as a generic link icon
 
-// Helper to determine rank based on XP
-const calculateLevel = (xp) => {
-    let level = 1;
-    let xpNeeded = 100;
-    let totalXp = 0;
-    while (totalXp + xpNeeded <= (xp || 0)) {
-        totalXp += xpNeeded;
-        level++;
-        xpNeeded = level * 100;
-    }
-    return level;
+// Helper to determine Level based on Streak
+const calculateLevel = (streak) => {
+    if (!streak || streak <= 0) return 1;
+    // Level up every 5 days of streak to match dashboard logic
+    return 1 + Math.floor(streak / 5);
 };
 
 export default function InternProfile() {
@@ -180,7 +174,7 @@ export default function InternProfile() {
                 borderBottom: '1px solid var(--border)',
                 backdropFilter: 'blur(10px)'
             }}>
-                <img src="/assets/gkk-intern-logo.png" alt="GKK Intern" style={{ height: '48px', objectFit: 'contain' }} />
+                    <img src="/assets/gkk-intern-logo.png" alt="GKK" style={{ height: '48px', objectFit: 'contain' }} />
                 <div style={{ width: '1px', height: '32px', background: 'var(--border)' }}></div>
                 <img src="/assets/bubblesort-logo.png" alt="Bubblesort" style={{ height: '42px', objectFit: 'contain', filter: 'grayscale(0%) opacity(1)' }} />
             </div>
@@ -260,7 +254,7 @@ export default function InternProfile() {
                                 </p>
                             )}
                             <p style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.8rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                                GKK INTERN • LEVEL {calculateLevel(profile.xp)}
+                                GKK INTERN • LEVEL {calculateLevel(profile.current_streak)}
                             </p>
                         </div>
 
@@ -281,8 +275,8 @@ export default function InternProfile() {
                                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem', color: 'var(--primary)' }}>
                                     <UseAnimations animation={star} size={28} strokeColor="currentColor" autoplay={true} loop={true} />
                                 </div>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>{profile.xp?.toLocaleString() || 0}</div>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>XP Earned</div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>{calculateLevel(profile.current_streak)}</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Level</div>
                             </div>
                             <div className="stat-card" style={{ padding: '0.75rem', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem', color: '#f59e0b' }}>

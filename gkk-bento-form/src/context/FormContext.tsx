@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { FormSubmission } from '@/lib/supabase';
 
 interface FormContextType {
@@ -7,10 +7,28 @@ interface FormContextType {
     resetForm: () => void;
     cvFile: File | null;
     setCvFile: (file: File | null) => void;
-    activeCard: string | null;
-    setActiveCard: (card: string | null) => void;
-    calculateProgress: () => number;
     activeBatch: string;
+    setActiveBatch: (batch: string) => void;
+    // Step management
+    currentStep: number;
+    setCurrentStep: (step: number) => void;
+    showPreview: boolean;
+    setShowPreview: (show: boolean) => void;
+    completedSteps: Set<number>;
+    markStepComplete: (step: number) => void;
+    termsAccepted: boolean;
+    setTermsAccepted: (accepted: boolean) => void;
+    // Cloudy
+    cloudyMessage: string;
+    setCloudyMessage: (msg: string) => void;
+    cloudyBounce: boolean;
+    triggerCloudyBounce: () => void;
+    // Helpers
+    getCompletionPercent: () => number;
+    firstName: string;
+    setFirstName: (name: string) => void;
+    lastName: string;
+    setLastName: (name: string) => void;
 }
 
 const initialFormData: FormSubmission = {
@@ -37,12 +55,20 @@ const initialFormData: FormSubmission = {
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
-export function FormProvider({ children, initialBatch = 'Batch 1' }: { children: ReactNode, initialBatch?: string }) {
+export function FormProvider({ children, initialBatch = 'Phase 1' }: { children: ReactNode; initialBatch?: string }) {
     const [formData, setFormData] = useState<FormSubmission>(initialFormData);
     const [cvFile, setCvFile] = useState<File | null>(null);
-    const [activeCard, setActiveCard] = useState<string | null>(null);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [showPreview, setShowPreview] = useState(false);
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [cloudyMessage, setCloudyMessage] = useState("Hey! Let's start with who you are 👋");
+    const [cloudyBounce, setCloudyBounce] = useState(false);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [activeBatch, setActiveBatch] = useState(initialBatch);
 
-    const updateFormData = (data: Partial<FormSubmission>) => {
+    const updateFormData = useCallback((data: Partial<FormSubmission>) => {
         setFormData((prev) => {
             let hasChanges = false;
             for (const key in data) {
@@ -54,34 +80,50 @@ export function FormProvider({ children, initialBatch = 'Batch 1' }: { children:
             if (!hasChanges) return prev;
             return { ...prev, ...data };
         });
-    };
+    }, []);
 
     const resetForm = () => {
         setFormData(initialFormData);
         setCvFile(null);
+        setCurrentStep(1);
+        setShowPreview(false);
+        setCompletedSteps(new Set());
+        setTermsAccepted(false);
+        setFirstName('');
+        setLastName('');
     };
 
-    const calculateProgress = () => {
-        const requiredFields = [
-            !!(formData.full_name?.trim() && formData.email?.trim() && formData.is_email_verified), // Identity
-            !!formData.college?.trim(), // Education
-            !!(formData.phone?.trim() && formData.phone.length >= 10 && formData.phone.length <= 12), // Phone
-            !!(formData.whatsapp_number?.trim() && formData.whatsapp_number.length >= 10 && formData.whatsapp_number.length <= 12), // WhatsApp
-            !!formData.age?.trim(), // Age
-            !!formData.sex?.trim(), // Sex
-            !!(formData.interview_date && formData.interview_time), // Schedule
-            !!(formData.interests && formData.interests.length > 0), // Interests
-            !!formData.discovery_source, // Discovery
-        ];
+    const markStepComplete = useCallback((step: number) => {
+        setCompletedSteps(prev => {
+            const next = new Set(prev);
+            next.add(step);
+            return next;
+        });
+    }, []);
 
-        const completedCount = requiredFields.filter(Boolean).length;
-        return Math.min(100, Math.round((completedCount / requiredFields.length) * 100));
-    };
+    const triggerCloudyBounce = useCallback(() => {
+        setCloudyBounce(true);
+        setTimeout(() => setCloudyBounce(false), 600);
+    }, []);
+
+    const getCompletionPercent = useCallback(() => {
+        // Each step is 25%
+        return completedSteps.size * 25;
+    }, [completedSteps]);
 
     return (
         <FormContext.Provider value={{
             formData, updateFormData, resetForm, cvFile, setCvFile,
-            activeCard, setActiveCard, calculateProgress, activeBatch: initialBatch
+            activeBatch, setActiveBatch,
+            currentStep, setCurrentStep,
+            showPreview, setShowPreview,
+            completedSteps, markStepComplete,
+            termsAccepted, setTermsAccepted,
+            cloudyMessage, setCloudyMessage,
+            cloudyBounce, triggerCloudyBounce,
+            getCompletionPercent,
+            firstName, setFirstName,
+            lastName, setLastName,
         }}>
             {children}
         </FormContext.Provider>

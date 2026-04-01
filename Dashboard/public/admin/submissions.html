@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -9,7 +9,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Minimal CSS -->
     <link rel="stylesheet" href="../css/admin-minimal.css">
@@ -79,7 +79,6 @@
             style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
 
         <!-- Sidebar -->
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <!-- Injected via admin-sidebar.js -->
         </aside>
@@ -94,16 +93,12 @@
                     <h1 class="page-title">Submissions</h1>
                 </div>
                 <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
-                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()" title="Refresh Data">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <!-- <button class="btn btn-secondary" onclick="exportSubmissions()">
-                        <i class="fas fa-download"></i> Export
-                    </button> -->
                 </div>
             </header>
 
-            <!-- ... (rest of page body) ... -->
             <div class="page-body">
                 <!-- Submissions Tab Bar -->
                 <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--c-border);">
@@ -117,7 +112,7 @@
                     </button>
                 </div>
 
-                <!-- TAB 1: Assigned Projects (existing) -->
+                <!-- TAB 1: Assigned Projects -->
                 <div id="adminTeamTab">
                     <div class="card">
                         <div class="card-header" style="border-bottom: 1px solid var(--c-border); padding: 20px 24px;">
@@ -136,12 +131,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="submissionsTable">
-                                    <!-- Skeleton injected via JS -->
+                                    <!-- JS Injected -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div> <!-- END #adminTeamTab -->
+                </div>
 
                 <!-- TAB 2: Custom Projects -->
                 <div id="adminCustomTab" style="display: none;">
@@ -177,12 +172,12 @@
                             </table>
                         </div>
                     </div>
-                </div> <!-- END #adminCustomTab -->
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Review Modal -->
+    <!-- Review Modal (Standard) -->
     <div class="modal-overlay" id="reviewModal">
         <div class="modal-container">
             <div class="modal-header">
@@ -190,38 +185,34 @@
                 <button class="modal-close" onclick="closeModal('reviewModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <!-- Status Preview -->
                 <div id="statusPreview"
                     style="padding: 12px 16px; border-radius: 8px; margin-bottom: 4px; display: none; font-size: 0.9rem;">
                     <div id="statusPreviewText"></div>
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">Review Feedback</label>
                     <textarea id="reviewNotes" class="form-textarea" rows="5"
                         placeholder="Add your feedback for the intern..." style="min-height: 120px;"></textarea>
                 </div>
-
-                <!-- Quick Feedback Templates -->
                 <div class="form-group">
                     <label class="form-label"
                         style="font-size: 0.8rem; color: var(--c-text-muted); margin-bottom: 8px;">Quick
                         Templates</label>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                         <button type="button" class="quick-feedback-btn"
-                            onclick="insertFeedback('Great work! Your submission meets all requirements.')">✨ Great
+                            onclick="insertFeedback('Great work! Your submission meets all requirements.')">? Great
                             Work</button>
                         <button type="button" class="quick-feedback-btn"
-                            onclick="insertFeedback('Please improve the UI/UX design and responsiveness.')">🎨 UI
+                            onclick="insertFeedback('Please improve the UI/UX design and responsiveness.')">?? UI
                             Improvements</button>
                         <button type="button" class="quick-feedback-btn"
-                            onclick="insertFeedback('Code quality needs improvement. Please refactor and add comments.')">💻
+                            onclick="insertFeedback('Code quality needs improvement. Please refactor and add comments.')">??
                             Code Quality</button>
                         <button type="button" class="quick-feedback-btn"
-                            onclick="insertFeedback('Missing required features. Please review the project requirements.')">📋
+                            onclick="insertFeedback('Missing required features. Please review the project requirements.')">??
                             Missing Features</button>
                         <button type="button" class="quick-feedback-btn"
-                            onclick="insertFeedback('Fix bugs and test thoroughly before resubmitting.')">🐛 Fix
+                            onclick="insertFeedback('Fix bugs and test thoroughly before resubmitting.')">?? Fix
                             Bugs</button>
                     </div>
                 </div>
@@ -248,34 +239,25 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <script>
         let currentSubmissionId = null;
 
-        // Mobile Sidebar Toggle
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('open');
-
-            if (sidebar.classList.contains('open')) {
-                overlay.style.display = 'block';
-            } else {
-                overlay.style.display = 'none';
-            }
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         }
 
-        // Close sidebar when clicking overlay
-        document.getElementById('sidebarOverlay').addEventListener('click', () => {
-            toggleSidebar(); // Close it
-        });
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
         async function init() {
             if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
-
-            // Inject Skeleton
+            
             const tbody = document.getElementById('submissionsTable');
             if (tbody && typeof SkeletonUI !== 'undefined') {
                 tbody.innerHTML = SkeletonUI.generateTableRows(5, 6);
@@ -286,663 +268,253 @@
         }
 
         async function loadSubmissions() {
-            // ... (existing loadSubmissions code) ...
-
             try {
-                // 1. Fetch Submissions (no join on profiles to avoid error)
                 const { data: subs, error } = await supabaseClient
                     .from('project_submissions')
-                    .select('*, projects(title)') // Projects usually has FK, so this might work. If not, we'll need to fetch projects manually too.
+                    .select('*, projects(title)')
                     .order('submitted_at', { ascending: false });
 
                 if (error) throw error;
                 if (!subs || !subs.length) {
-                    document.getElementById('submissionsTable').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color: var(--c-text-muted);">No submissions found.</td></tr>';
+                    if (document.getElementById('submissionsTable')) 
+                        document.getElementById('submissionsTable').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color: var(--c-text-muted);">No submissions found.</td></tr>';
                     return;
                 }
 
-                // 2. Fetch Profiles Securely via RPC
-                const { data: profiles, error: profError } = await supabaseClient.rpc('get_all_profile_emails');
-                if (profError) console.error("RPC Error:", profError);
-
-                // Map profiles for easy lookup
+                const { data: profiles } = await supabaseClient.rpc('get_all_profile_emails');
                 const profileMap = {};
-                if (profiles) {
-                    profiles.forEach(p => profileMap[p.id] = p);
-                }
+                if (profiles) profiles.forEach(p => profileMap[p.id] = p);
 
-                // 3. Store submissions for later use
                 window.allSubmissions = subs;
 
-                // 4. Render
-                document.getElementById('submissionsTable').innerHTML = subs.map(sub => {
-                    const profile = profileMap[sub.submitted_by] || {};
-                    const githubUrl = sub.github_url || '#';
-                    const hasFeedback = sub.feedback ? 'title="Has feedback"' : '';
-
-                    return `
-                    <tr>
-                        <td style="font-weight:500;">
-                            ${sub.projects?.title || 'Unknown Project'}
-                            ${sub.live_url ? `<a href="${sub.live_url}" target="_blank" style="font-size:0.75rem; display:block; color:var(--c-primary);"><i class="fas fa-globe"></i> Live Demo</a>` : ''}
-                        </td>
-                        <td>
-                            <div style="font-weight:500;">${profile.full_name || 'Unknown User'}</div>
-                            <div style="font-size:0.8rem; color:var(--c-text-muted);">${profile.email || 'No Email'}</div>
-                        </td>
-                        <td>
-                            ${sub.github_url ? `
-                                <a href="${sub.github_url}" target="_blank" style="color:var(--c-text-primary); text-decoration:underline; display:flex; align-items:center; gap:5px;">
-                                    <i class="fab fa-github"></i> View Code
-                                </a>
-                            ` : '<span style="color:var(--c-text-muted);">No Link</span>'}
-                        </td>
-                        <td style="font-size:0.85rem; color:var(--c-text-secondary);">${new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <span class="badge badge-${getStatusColor(sub.status)}" ${hasFeedback}>${formatStatus(sub.status)}</span>
-                            ${sub.feedback ? '<i class="fas fa-comment-dots" style="margin-left: 6px; color: var(--c-primary); font-size: 0.75rem;" title="Feedback provided"></i>' : ''}
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <button class="btn btn-secondary btn-sm" onclick="showSubmissionInfo('${sub.id}')" title="View Details" style="color: var(--c-primary);">
-                                    <i class="fas fa-info-circle"></i>
-                                </button>
-                                <button class="btn ${sub.status === 'approved' ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="openReviewModal('${sub.id}')">
-                                    ${sub.status === 'approved' ? 'Edit Review' : 'Review'}
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `}).join('');
-            } catch (e) { console.error('Error loading submissions:', e); }
+                if (document.getElementById('submissionsTable')) {
+                    document.getElementById('submissionsTable').innerHTML = subs.map(sub => {
+                        const profile = profileMap[sub.submitted_by] || {};
+                        const hasFeedback = sub.feedback ? 'title="Has feedback"' : '';
+                        return `
+                        <tr>
+                            <td style="font-weight:500;">
+                                ${sub.projects?.title || 'Unknown Project'}
+                                ${sub.live_url ? `<a href="${sub.live_url.startsWith('http') ? sub.live_url : 'https://' + sub.live_url}" target="_blank" style="font-size:0.75rem; display:block; color:var(--c-primary);"><i class="fas fa-globe"></i> Live Demo</a>` : ''}
+                            </td>
+                            <td>
+                                <div style="font-weight:500;">${profile.full_name || 'Unknown User'}</div>
+                                <div style="font-size:0.8rem; color:var(--c-text-muted);">${profile.email || 'No Email'}</div>
+                            </td>
+                            <td>
+                                ${sub.github_url ? `<a href="${sub.github_url.startsWith('http') ? sub.github_url : 'https://' + sub.github_url}" target="_blank" style="color:var(--c-text-primary); text-decoration:underline; display:flex; align-items:center; gap:5px;"><i class="fab fa-github"></i> View Code</a>` : '<span style="color:var(--c-text-muted);">No Link</span>'}
+                            </td>
+                            <td style="font-size:0.85rem; color:var(--c-text-secondary);">${new Date(sub.submitted_at || sub.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <span class="badge badge-${getStatusColor(sub.status)}" ${hasFeedback}>${formatStatus(sub.status)}</span>
+                                ${sub.feedback ? '<i class="fas fa-comment-dots" style="margin-left: 6px; color: var(--c-primary); font-size: 0.75rem;"></i>' : ''}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <button class="btn btn-secondary btn-sm" onclick="showSubmissionInfo('${sub.id}')" title="View Details" style="color: var(--c-primary); height:32px; width:32px; padding:0; display:flex; align-items:center; justify-content:center;"><i class="fas fa-info-circle"></i></button>
+                                    <button class="btn ${sub.status === 'approved' ? 'btn-secondary' : 'btn-primary'} btn-sm" onclick="openReviewModal('${sub.id}')" style="height:32px;">${sub.status === 'approved' ? 'Edit' : 'Review'}</button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch (e) { console.error('Load error:', e); }
         }
 
         function formatStatus(s) {
-            if (!s) return 'Pending';
-            const statusMap = {
-                'pending': 'Pending',
-                'submitted': 'Submitted',
-                'approved': 'Approved',
-                'rejected': 'Rejected',
-                'changes_requested': 'Changes Requested',
-                'under_review': 'Under Review'
-            };
-            return statusMap[s] || s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ');
+            const map = { 'changes_requested': 'Changes Requested', 'under_review': 'Under Review' };
+            return map[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Pending');
         }
 
         function getStatusColor(s) {
-            if (s === 'pending' || s === 'submitted') return 'warning';
             if (s === 'approved') return 'success';
             if (s === 'rejected') return 'error';
-            if (s === 'changes_requested') return 'warning';
             if (s === 'under_review') return 'info';
-            return 'neutral';
+            return 'warning';
         }
 
-        // Insert feedback template
         function insertFeedback(text) {
             const textarea = document.getElementById('reviewNotes');
-            if (textarea.value) {
-                textarea.value += '\n' + text;
-            } else {
-                textarea.value = text;
-            }
+            textarea.value = textarea.value ? textarea.value + '\n' + text : text;
             textarea.focus();
-        }
-
-        // Show status preview when hovering over buttons
-        function showStatusPreview(status) {
-            const preview = document.getElementById('statusPreview');
-            const previewText = document.getElementById('statusPreviewText');
-
-            const messages = {
-                'approved': '🎉 Intern will see: "Congratulations! Your project has been approved!"',
-                'rejected': '❌ Intern will see: "Your submission was rejected. Please review the requirements."',
-                'changes_requested': '⚠️ Intern will see: "Changes have been requested. Please review and update your submission."'
-            };
-
-            const colors = {
-                'approved': { bg: 'rgba(16, 185, 129, 0.1)', border: 'rgba(16, 185, 129, 0.3)', text: '#6ee7b7' },
-                'rejected': { bg: 'rgba(239, 68, 68, 0.1)', border: 'rgba(239, 68, 68, 0.3)', text: '#fca5a5' },
-                'changes_requested': { bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.3)', text: '#fcd34d' }
-            };
-
-            if (messages[status]) {
-                previewText.textContent = messages[status];
-                preview.style.display = 'block';
-                preview.style.background = colors[status].bg;
-                preview.style.border = `1px solid ${colors[status].border}`;
-                preview.style.color = colors[status].text;
-            }
         }
 
         function openReviewModal(id) {
             currentSubmissionId = id;
-
-            // Load existing feedback if available
-            const submission = window.allSubmissions?.find(s => s.id === id);
-            document.getElementById('reviewNotes').value = submission?.feedback || '';
-
-            // Update modal title based on current status
-            const modalTitle = document.querySelector('#reviewModal .modal-title');
-            if (submission?.status === 'approved') {
-                modalTitle.textContent = 'Edit Review';
-            } else {
-                modalTitle.textContent = 'Review Submission';
-            }
-
-            // Show current status preview if already reviewed
-            if (submission?.status && submission.status !== 'pending' && submission.status !== 'submitted') {
-                showStatusPreview(submission.status);
-            } else {
-                document.getElementById('statusPreview').style.display = 'none';
-            }
-
+            const sub = window.allSubmissions?.find(s => s.id === id);
+            document.getElementById('reviewNotes').value = sub?.feedback || '';
             document.getElementById('reviewModal').classList.add('open');
         }
+
         function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
         async function submitReview(status) {
             const notes = document.getElementById('reviewNotes').value;
-
-            // Show loading state
-            const btns = document.querySelectorAll('.modal-footer .btn');
-            const originalTexts = [];
-            btns.forEach((btn, index) => {
-                originalTexts[index] = btn.innerHTML;
-                btn.disabled = true;
-                if (btn.onclick && btn.onclick.toString().includes(status)) {
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                }
-            });
-
             try {
-                // Get the submission to find the project_id
-                const submission = window.allSubmissions?.find(s => s.id === currentSubmissionId);
-
-                // Update the submission
+                const sub = window.allSubmissions?.find(s => s.id === currentSubmissionId);
                 const { error } = await supabaseClient.from('project_submissions').update({
-                    status: status,
-                    feedback: notes,
-                    reviewed_at: new Date().toISOString()
+                    status: status, feedback: notes, reviewed_at: new Date().toISOString()
                 }).eq('id', currentSubmissionId);
-
                 if (error) throw error;
 
-                // Also update the project status to match
-                if (submission?.project_id) {
-                    const projectStatusMap = {
-                        'approved': 'approved',
-                        'rejected': 'rejected',
-                        'changes_requested': 'changes_requested'
-                    };
-
-                    const { error: projectError } = await supabaseClient.from('projects').update({
-                        status: projectStatusMap[status] || status
-                    }).eq('id', submission.project_id);
-
-                    if (projectError) {
-                        console.warn('Could not update project status:', projectError);
-                    }
+                if (sub?.project_id) {
+                    await supabaseClient.from('projects').update({ status: status }).eq('id', sub.project_id);
                 }
 
-                // Show success message
-                const statusNames = {
-                    'approved': 'approved ✓',
-                    'rejected': 'rejected',
-                    'changes_requested': 'marked for changes'
-                };
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: `Submission ${statusNames[status] || status}!`,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-
+                Swal.fire({ icon: 'success', title: 'Updated', timer: 1000, showConfirmButton: false });
                 closeModal('reviewModal');
                 loadSubmissions();
-            } catch (e) {
-                console.error('Error updating submission:', e);
-                Swal.fire('Error', 'Error updating submission. Please try again.', 'error');
-            } finally {
-                btns.forEach((btn, index) => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalTexts[index];
-                });
-            }
+            } catch (e) { Swal.fire('Error', 'Update failed', 'error'); }
         }
 
-        // Show detailed submission info with team details
-        async function showSubmissionInfo(submissionId) {
-            const submission = window.allSubmissions?.find(s => s.id === submissionId);
-            if (!submission) return;
-
+        async function showSubmissionInfo(id) {
+            const sub = window.allSubmissions?.find(s => s.id === id);
+            if (!sub) return;
             try {
-                // Fetch project with team
-                const { data: project, error: projectError } = await supabaseClient
-                    .from('projects')
-                    .select('*, teams(id, name, max_members, is_active)')
-                    .eq('id', submission.project_id)
-                    .single();
-
-                if (projectError) throw projectError;
-
-                // Fetch submitter info (Use RPC cache or fetch fresh if needed, but for single item we can try RPC again or just fallback)
-                // For simplicity and security, let's use the RPC call again (it's fast) or just find it from window.allProfiles if we stored it?
-                // Better: just fetch all safely.
+                const { data: project } = await supabaseClient.from('projects').select('*, teams(*)').eq('id', sub.project_id).single();
                 const { data: allProfs } = await supabaseClient.rpc('get_all_profile_emails');
-                const submitter = allProfs ? allProfs.find(p => p.id === submission.submitted_by) : null;
-
-                let teamHtml = '<div style="color:var(--c-text-muted); text-align:center; padding:12px;">No team assigned</div>';
-
-                if (project.teams) {
-                    // Fetch team members (Raw)
-                    const { data: teamMembersRaw } = await supabaseClient
-                        .from('team_members')
-                        .select('id, user_id, role') // Select user_id to map manually
-                        .eq('team_id', project.teams.id);
-
-                    // Map profiles to team members
-                    const teamMembers = (teamMembersRaw || []).map(m => {
-                        const prof = allProfs ? allProfs.find(p => p.id === m.user_id) : null;
-                        return { ...m, profiles: prof };
-                    });
-
-                    const members = teamMembers || [];
-                    const leader = members.find(m => m.role === 'Leader');
-                    const otherMembers = members.filter(m => m.role !== 'Leader');
-
-                    const buildMemberHtml = (member, isLeader = false) => {
-                        const name = member.profiles?.full_name || 'Unknown';
-                        const email = member.profiles?.email || '';
-                        const initial = name[0]?.toUpperCase() || '?';
-                        const avatarUrl = member.profiles?.avatar_url;
-
-                        return `
-                            <div style="display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--c-bg-app); border-radius:6px; margin-bottom:6px; ${isLeader ? 'border-left:3px solid #f59e0b;' : ''}">
-                                <div style="width:32px; height:32px; border-radius:50%; background:${isLeader ? 'rgba(245,158,11,0.2)' : 'rgba(99,102,241,0.2)'}; color:${isLeader ? '#fbbf24' : '#a5b4fc'}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem;">
-                                    ${avatarUrl ? `<img src="${getProxiedUrl(avatarUrl)}" loading="lazy" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}
-                                </div>
-                                <div style="flex:1;">
-                                    <div style="font-weight:600; font-size:0.9rem; display:flex; align-items:center; gap:6px;">
-                                        ${name}
-                                        ${isLeader ? '<span style="background:rgba(245,158,11,0.2); color:#fbbf24; padding:1px 6px; border-radius:3px; font-size:0.65rem; font-weight:700;">LEADER</span>' : ''}
-                                    </div>
-                                    <div style="font-size:0.75rem; color:var(--c-text-muted);">${email}</div>
-                                </div>
-                            </div>
-                        `;
-                    };
-
-                    teamHtml = `
-                        <div style="margin-bottom:12px;">
-                            <div style="font-size:0.8rem; font-weight:600; color:var(--c-text-secondary); margin-bottom:6px;">
-                                <i class="fas fa-users" style="margin-right:4px;"></i> ${project.teams.name}
-                                <span class="badge badge-${project.teams.is_active !== false ? 'success' : 'neutral'}" style="margin-left:8px; font-size:0.65rem;">${project.teams.is_active !== false ? 'Active' : 'Inactive'}</span>
-                            </div>
-                        </div>
-                        <div style="margin-bottom:8px;">
-                            <div style="font-size:0.75rem; color:var(--c-text-muted); margin-bottom:4px;">Team Leader</div>
-                            ${leader ? buildMemberHtml(leader, true) : '<div style="color:var(--c-text-muted); font-size:0.85rem; padding:8px;">No leader assigned</div>'}
-                        </div>
-                        <div>
-                            <div style="font-size:0.75rem; color:var(--c-text-muted); margin-bottom:4px;">Members (${otherMembers.length})</div>
-                            ${otherMembers.length > 0 ? otherMembers.map(m => buildMemberHtml(m, false)).join('') : '<div style="color:var(--c-text-muted); font-size:0.85rem; padding:8px;">No other members</div>'}
-                        </div>
-                    `;
-                }
-
-                // Submission status
-                const statusColor = getStatusColor(submission.status);
-                const statusLabel = formatStatus(submission.status);
-
-                // Submitter info
-                const submitterName = submitter?.full_name || 'Unknown';
-                const submitterEmail = submitter?.email || '';
-                const submitterInitial = submitterName[0]?.toUpperCase() || '?';
-
+                const submitter = allProfs?.find(p => p.id === sub.submitted_by);
+                
                 Swal.fire({
-                    title: `<i class="fas fa-clipboard-check" style="margin-right:8px; color:var(--c-primary);"></i> Submission Details`,
-                    html: `
-                        <div style="text-align:left;">
-                            <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
-                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:4px;">Project</div>
-                                <div style="font-weight:600; font-size:1.05rem;">${project.title}</div>
-                                <span class="badge badge-${statusColor}" style="margin-top:8px;">${statusLabel}</span>
-                            </div>
-
-                            <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
-                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:6px;">Submitted By</div>
-                                <div style="display:flex; align-items:center; gap:10px; background:var(--c-bg-app); padding:10px; border-radius:6px;">
-                                    <div style="width:36px; height:36px; border-radius:50%; background:rgba(59,130,246,0.2); color:#60a5fa; display:flex; align-items:center; justify-content:center; font-weight:700;">
-                                        ${submitter?.avatar_url ? `<img src="${getProxiedUrl(submitter.avatar_url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : submitterInitial}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight:600;">${submitterName}</div>
-                                        <div style="font-size:0.8rem; color:var(--c-text-muted);">${submitterEmail}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
-                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:6px;">Links</div>
-                                <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                                    ${submission.github_url ? `<a href="${submission.github_url}" target="_blank" style="display:flex; align-items:center; gap:6px; color:var(--c-text-primary);"><i class="fab fa-github"></i> GitHub</a>` : ''}
-                                    ${submission.live_url ? `<a href="${submission.live_url}" target="_blank" style="display:flex; align-items:center; gap:6px; color:var(--c-primary);"><i class="fas fa-globe"></i> Live Demo</a>` : ''}
-                                    ${!submission.github_url && !submission.live_url ? '<span style="color:var(--c-text-muted);">No links provided</span>' : ''}
-                                </div>
-                            </div>
-
-                            <div>
-                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:6px;">Team</div>
-                                ${teamHtml}
-                            </div>
+                    title: `<i class="fas fa-info-circle" style="margin-right:8px; color:var(--c-primary);"></i> Project Info`,
+                    html: `<div style="text-align:left; font-size:0.9rem;">
+                        <div style="margin-bottom:12px; font-weight:600; font-size:1.1rem;">${project.title}</div>
+                        <div style="margin-bottom:12px; color:var(--c-text-muted);">${project.description || 'No description'}</div>
+                        <div style="padding:10px; background:rgba(0,0,0,0.2); border-radius:8px; margin-bottom:12px;">
+                            <strong>Team:</strong> ${project.teams?.name || 'Individual'}<br>
+                            <strong>Intern:</strong> ${submitter?.full_name || 'Unknown'}
                         </div>
-                    `,
-                    width: '500px',
-                    showCloseButton: true,
-                    showConfirmButton: false
+                        <div style="display:flex; gap:10px;">
+                            ${sub.github_url ? `<a href="${sub.github_url}" target="_blank" style="color:var(--c-primary);"><i class="fab fa-github"></i> Repository</a>` : ''}
+                            ${sub.live_url ? `<a href="${sub.live_url}" target="_blank" style="color:var(--c-primary);"><i class="fas fa-globe"></i> Live Demo</a>` : ''}
+                        </div>
+                    </div>`,
+                    showConfirmButton: false, showCloseButton: true,
+                    customClass: { container: 'admin-swal-container', popup: 'admin-swal-popup' }
                 });
-
-            } catch (err) {
-                console.error('Error loading submission info:', err);
-                Swal.fire('Error', 'Could not load submission information', 'error');
-            }
+            } catch(e) { console.error(e); }
         }
 
-        // ════ Custom Projects Functions ════
+        // ---- Custom Projects ----
         function switchAdminTab(tab) {
-            const teamTab = document.getElementById('adminTeamTab');
-            const customTab = document.getElementById('adminCustomTab');
-            const teamBtn = document.getElementById('adminTeamTabBtn');
-            const customBtn = document.getElementById('adminCustomTabBtn');
-
-            if (tab === 'team') {
-                teamTab.style.display = '';
-                customTab.style.display = 'none';
-                teamBtn.classList.add('active');
-                teamBtn.style.color = 'var(--c-primary)';
-                teamBtn.style.borderBottomColor = 'var(--c-primary)';
-                customBtn.classList.remove('active');
-                customBtn.style.color = 'var(--c-text-muted)';
-                customBtn.style.borderBottomColor = 'transparent';
-            } else {
-                teamTab.style.display = 'none';
-                customTab.style.display = '';
-                customBtn.classList.add('active');
-                customBtn.style.color = 'var(--c-primary)';
-                customBtn.style.borderBottomColor = 'var(--c-primary)';
-                teamBtn.classList.remove('active');
-                teamBtn.style.color = 'var(--c-text-muted)';
-                teamBtn.style.borderBottomColor = 'transparent';
-                loadCustomProjects();
-            }
+            const isTeam = tab === 'team';
+            document.getElementById('adminTeamTab').style.display = isTeam ? '' : 'none';
+            document.getElementById('adminCustomTab').style.display = isTeam ? 'none' : '';
+            document.getElementById('adminTeamTabBtn').className = `admin-tab ${isTeam ? 'active' : ''}`;
+            document.getElementById('adminCustomTabBtn').className = `admin-tab ${!isTeam ? 'active' : ''}`;
+            if (!isTeam) loadCustomProjects();
         }
 
         async function loadCustomProjects() {
             const tbody = document.getElementById('customSubmissionsTable');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--c-text-muted);"><i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Loading custom projects...</td></tr>';
-
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
             try {
-                // Fetch submissions
-                const { data: subs, error } = await supabaseClient
-                    .from('custom_project_submissions')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                if (!subs || !subs.length) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color: var(--c-text-muted);">No custom submissions found.</td></tr>';
-                    return;
-                }
-
-                // Fetch Profiles Securely via RPC
-                const { data: profiles, error: profError } = await supabaseClient.rpc('get_all_profile_emails');
-                if (profError) console.error("RPC Error:", profError);
-
+                const { data: subs } = await supabaseClient.from('custom_project_submissions').select('*').order('created_at', { ascending: false });
+                const { data: profiles } = await supabaseClient.rpc('get_all_profile_emails');
                 const profileMap = {};
-                if (profiles) {
-                    profiles.forEach(p => profileMap[p.id] = p);
-                }
-
+                if (profiles) profiles.forEach(p => profileMap[p.id] = p);
                 window.allCustomSubmissions = subs;
                 window.allProfilesMap = profileMap;
 
                 tbody.innerHTML = subs.map(sub => {
                     const profile = profileMap[sub.intern_id] || {};
-                    const avatarInitials = (profile.full_name || '?').charAt(0).toUpperCase();
-                    const statusColors = {
-                        submitted: 'warning',
-                        reviewed: 'info',
-                        approved: 'success',
-                        rejected: 'error'
-                    };
-                    const badgeClass = statusColors[sub.status] || 'neutral';
-
-                    return `
-                    <tr>
+                    return `<tr>
                         <td>
-                            <div style="font-weight: 600; font-size: 0.95rem; color: var(--c-text-primary); margin-bottom: 4px;">${sub.title}</div>
-                            <div style="font-size: 0.8rem; color: var(--c-text-muted); line-height: 1.4; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${sub.description}
-                            </div>
+                            <div style="font-weight:600; color:var(--c-text-primary);">${sub.title}</div>
+                            <div style="font-size:0.8rem; color:var(--c-text-muted); max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${sub.description}</div>
                         </td>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(99, 102, 241, 0.15); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; flex-shrink: 0;">
-                                    ${profile.avatar_url ? `<img src="${getProxiedUrl(profile.avatar_url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : avatarInitials}
-                                </div>
-                                <div>
-                                    <div style="font-weight:500; font-size: 0.85rem; color: var(--c-text-primary);">${profile.full_name || 'Unknown User'}</div>
-                                    <div style="font-size:0.75rem; color:var(--c-text-muted);">${profile.email || 'No Email'}</div>
-                                </div>
-                            </div>
+                            <div style="font-weight:500; font-size:0.85rem;">${profile.full_name || 'Intern'}</div>
+                            <div style="font-size:0.75rem; color:var(--c-text-muted);">${profile.email || ''}</div>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <a href="${sub.deployed_url}" target="_blank" style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(16, 185, 129, 0.2); transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.15)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">
-                                    <i class="fas fa-globe"></i> Live
-                                </a>
-                                ${sub.github_url ? `
-                                <a href="${sub.github_url}" target="_blank" style="font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); color: var(--c-text-secondary); padding: 4px 8px; border-radius: 4px; text-decoration: none; display: flex; align-items: center; gap: 4px; border: 1px solid var(--c-border); transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'">
-                                    <i class="fab fa-github"></i> Code
-                                </a>
-                                ` : ''}
+                            <div style="display:flex; gap:8px;">
+                                <a href="${sub.deployed_url}" target="_blank" style="color:#10b981;"><i class="fas fa-globe"></i></a>
+                                ${sub.github_url ? `<a href="${sub.github_url}" target="_blank" style="color:var(--c-text-secondary);"><i class="fab fa-github"></i></a>` : ''}
                             </div>
                         </td>
+                        <td><span class="badge badge-${getStatusColor(sub.status)}">${formatStatus(sub.status)}</span></td>
                         <td>
-                            <div style="margin-bottom: 4px;">
-                                <span class="badge badge-${badgeClass}">${sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}</span>
-                            </div>
-                            <div style="font-size:0.75rem; color:var(--c-text-secondary);">
-                                <i class="far fa-calendar-alt" style="margin-right: 4px;"></i>${new Date(sub.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                            <div style="display:flex; gap:6px;">
+                                <button class="btn btn-secondary btn-sm" onclick="showCustomProjectDetail('${sub.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-sm" onclick="deleteCustomProject('${sub.id}')" style="background:rgba(239,68,68,0.1); color:#f87171;"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
-                        <td>
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <button class="btn btn-secondary btn-sm" onclick="showCustomProjectDetail('${sub.id}')" title="View Details" style="color: var(--c-primary); height: 32px; padding: 0 10px;">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="btn btn-sm" onclick="deleteCustomProject('${sub.id}')" title="Delete Submission" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #f87171; height: 32px; padding: 0 10px;">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    `;
+                    </tr>`;
                 }).join('');
-            } catch (e) {
-                console.error('Error loading custom projects:', e);
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color: #ef4444;"><i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i> Error loading custom projects</td></tr>';
-            }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="5">Error loading projects</td></tr>'; }
         }
 
         function showCustomProjectDetail(id) {
             const sub = window.allCustomSubmissions?.find(s => s.id === id);
             if (!sub) return;
-
             const profile = window.allProfilesMap?.[sub.intern_id] || {};
             const avatarInitials = (profile.full_name || '?').charAt(0).toUpperCase();
 
             Swal.fire({
-                title: `<div style="display: flex; align-items: flex-start; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; margin-bottom: 8px; width: 100%; text-align: left;">
-                            <div style="width: 48px; height: 48px; min-width: 48px; border-radius: 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15)); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                <i class="fas fa-rocket" style="color: var(--c-primary); font-size: 1.25rem;"></i>
-                            </div>
-                            <div style="flex: 1; min-width: 0; padding-top: 2px;">
-                                <h3 style="margin: 0 0 6px 0; font-size: 1.35rem; color: var(--c-text-primary); font-weight: 600; line-height: 1.2; word-break: break-word;">${sub.title}</h3>
-                                <div style="font-size: 0.85rem; color: var(--c-text-muted); font-weight: 400; line-height: 1.4;">
-                                    Submitted by <span style="color: var(--c-text-secondary); font-weight: 500;">${profile.full_name || 'Unknown'}</span> on ${new Date(sub.created_at).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
-                                </div>
-                            </div>
-                        </div>`,
-                html: `
-                    <div style="text-align: left;">
-                        <!-- Profile Card -->
-                        <div style="display: flex; align-items: center; gap: 12px; background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(99, 102, 241, 0.2); color: var(--c-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem;">
-                                ${profile.avatar_url ? `<img src="${getProxiedUrl(profile.avatar_url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : avatarInitials}
-                            </div>
-                            <div>
-                                <div style="font-weight: 600; font-size: 0.95rem; color: var(--c-text-primary);">${profile.full_name || 'Unknown User'}</div>
-                                <div style="font-size: 0.8rem; color: var(--c-text-muted);">${profile.email || 'No email provided'}</div>
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div style="margin-bottom: 20px;">
-                            <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-text-muted); margin-bottom: 8px;">Purpose / Description</div>
-                            <div style="background: var(--c-bg-app); border: 1px solid var(--c-border); padding: 16px; border-radius: 8px; color: var(--c-text-secondary); font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;">${sub.description}</div>
-                        </div>
-
-                        <!-- Links -->
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-text-muted); margin-bottom: 8px;">Project Links</div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                <a href="${sub.deployed_url}" target="_blank" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; color: #10b981; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.05)'">
-                                    <div style="width: 32px; height: 32px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                        <i class="fas fa-globe"></i>
-                                    </div>
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div style="font-weight: 600; font-size: 0.85rem;">Live Deployment</div>
-                                        <div style="font-size: 0.75rem; color: rgba(16, 185, 129, 0.7); word-break: break-all; white-space: normal;">${sub.deployed_url}</div>
-                                    </div>
-                                    <i class="fas fa-external-link-alt" style="font-size: 0.75rem; margin-left: auto; flex-shrink: 0;"></i>
-                                </a>
-                                
-                                <a href="${sub.github_url || '#'}" ${sub.github_url ? 'target="_blank"' : 'onclick="event.preventDefault()"'} style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: ${sub.github_url ? 'var(--c-text-primary)' : 'var(--c-text-muted)'}; text-decoration: none; transition: all 0.2s; ${!sub.github_url ? 'opacity: 0.6; cursor: default;' : ''}" ${sub.github_url ? 'onmouseover="this.style.background=\'rgba(255, 255, 255, 0.06)\'" onmouseout="this.style.background=\'rgba(255, 255, 255, 0.03)\'"' : ''}>
-                                    <div style="width: 32px; height: 32px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                        <i class="fab fa-github"></i>
-                                    </div>
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div style="font-weight: 600; font-size: 0.85rem;">GitHub Repo</div>
-                                        <div style="font-size: 0.75rem; color: var(--c-text-muted); word-break: break-all; white-space: normal;">${sub.github_url || 'Not provided'}</div>
-                                    </div>
-                                    ${sub.github_url ? `<i class="fas fa-external-link-alt" style="font-size: 0.75rem; margin-left: auto; flex-shrink: 0; color: var(--c-text-muted);"></i>` : ''}
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Admin Actions -->
-                        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; justify-content: flex-end;">
-                            ${sub.status !== 'approved' ? `<button class="btn btn-primary" style="background-color: #10b981; border-color: #10b981; flex: 1;" onclick="updateCustomProjectStatus('${sub.id}', 'approved')"><i class="fas fa-check"></i> ${sub.status === 'rejected' ? 'Change to Approved' : 'Approve Project'}</button>` : ''}
-                            ${sub.status !== 'rejected' ? `<button class="btn btn-primary" style="background-color: #ef4444; border-color: #ef4444; flex: 1;" onclick="updateCustomProjectStatus('${sub.id}', 'rejected')"><i class="fas fa-times"></i> ${sub.status === 'approved' ? 'Change to Rejected' : 'Reject Project'}</button>` : ''}
+                title: `<i class="fas fa-rocket" style="margin-right:12px; color:var(--c-primary);"></i> Custom Project`,
+                html: `<div style="text-align:left;">
+                    <div style="font-size:1.2rem; font-weight:700; color:var(--c-text-primary); margin-bottom:15px;">${sub.title}</div>
+                    <div style="display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:10px; margin-bottom:20px;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:var(--c-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:700;">${avatarInitials}</div>
+                        <div>
+                            <div style="font-weight:600;">${profile.full_name || 'Intern'}</div>
+                            <div style="font-size:0.8rem; color:var(--c-text-muted);">${profile.email || ''}</div>
                         </div>
                     </div>
-                `,
-                width: '600px',
-                showCloseButton: true,
-                showConfirmButton: false,
-                customClass: {
-                    container: 'admin-swal-container',
-                    popup: 'admin-swal-popup'
-                }
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--c-text-muted); margin-bottom:8px;">Description</div>
+                        <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:10px; line-height:1.6; font-size:0.95rem; white-space:pre-wrap;">${sub.description}</div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <a href="${sub.deployed_url}" target="_blank" style="flex:1; background:#10b981; color:white; text-align:center; padding:12px; border-radius:8px; text-decoration:none; font-weight:600;"><i class="fas fa-globe"></i> Live Link</a>
+                        ${sub.github_url ? `<a href="${sub.github_url}" target="_blank" style="flex:1; background:#334155; color:white; text-align:center; padding:12px; border-radius:8px; text-decoration:none; font-weight:600;"><i class="fab fa-github"></i> Repository</a>` : ''}
+                    </div>
+                    <div style="margin-top:15px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.05); display:flex; gap:10px;">
+                        ${sub.status !== 'approved' ? `<button class="btn btn-primary" style="flex:1; background:#10b981; border:none;" onclick="updateCustomProjectStatus('${sub.id}', 'approved')">Approve</button>` : ''}
+                        ${sub.status !== 'rejected' ? `<button class="btn btn-primary" style="flex:1; background:#ef4444; border:none;" onclick="updateCustomProjectStatus('${sub.id}', 'rejected')">Reject</button>` : ''}
+                    </div>
+                </div>`,
+                width: '550px', showConfirmButton: false, showCloseButton: true,
+                customClass: { container: 'admin-swal-container', popup: 'admin-swal-popup' }
             });
         }
 
         async function updateCustomProjectStatus(id, status) {
-            Swal.close();
-
-            const actionText = status === 'approved' ? 'Approve' : 'Reject';
             const confirmColor = status === 'approved' ? '#10b981' : '#ef4444';
-
-            const result = await Swal.fire({
-                title: `${actionText} Project?`,
-                html: `
-                    <p style="margin-bottom: 1.5rem; color: var(--c-text-secondary); font-size: 0.95rem;">Are you sure you want to mark this custom project as <strong>${status}</strong>?</p>
-                    <div style="text-align: left;">
-                        <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--c-text-primary); margin-bottom: 8px;">Admin Remarks (Optional)</label>
-                        <textarea id="adminNotesInput" class="swal2-textarea" style="margin: 0; width: 100%; box-sizing: border-box; min-height: 80px;" placeholder="Provide feedback to the intern..."></textarea>
-                    </div>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: confirmColor,
-                cancelButtonColor: '#475569',
-                confirmButtonText: `<i class="${status === 'approved' ? 'fas fa-check' : 'fas fa-times'}"></i> Yes, ${actionText}`,
-                preConfirm: () => {
-                    return document.getElementById('adminNotesInput').value;
-                }
+            const { value: notes, isConfirmed } = await Swal.fire({
+                title: `${status === 'approved' ? 'Approve' : 'Reject'} Project?`,
+                html: `<div style="text-align:left;">
+                    <p style="margin-bottom:15px;">Marking this project as <strong>${status}</strong>.</p>
+                    <textarea id="adminNotes" placeholder="Admin notes (optional)" style="width:100%; min-height:100px; background:rgba(0,0,0,0.1); border:1px solid var(--c-border); border-radius:8px; padding:10px; color:var(--c-text-primary);"></textarea>
+                </div>`,
+                showCancelButton: true, confirmButtonColor: confirmColor,
+                preConfirm: () => document.getElementById('adminNotes').value,
+                customClass: { container: 'admin-swal-container', popup: 'admin-swal-popup' }
             });
 
-            if (!result.isConfirmed) return;
-            const notes = result.value;
-
-            try {
-                const { error } = await supabaseClient
-                    .from('custom_project_submissions')
-                    .update({
-                        status: status,
-                        admin_notes: notes || null
-                    })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                Swal.fire('Success', 'Project submission updated successfully', 'success');
-                loadCustomProjects();
-            } catch (err) {
-                console.error('Update error:', err);
-                Swal.fire('Error', 'Failed to update custom project.', 'error');
+            if (isConfirmed) {
+                const { error } = await supabaseClient.from('custom_project_submissions').update({ status, admin_notes: notes }).eq('id', id);
+                if (!error) {
+                    Swal.fire({ icon: 'success', title: 'Updated', timer: 1000, showConfirmButton: false });
+                    loadCustomProjects();
+                }
             }
         }
 
         async function deleteCustomProject(id) {
-            const result = await Swal.fire({
-                title: 'Delete Project?',
-                text: "This action cannot be undone. Are you sure?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#475569',
-                confirmButtonText: '<i class="fas fa-trash"></i> Yes, delete it'
+            const { isConfirmed } = await Swal.fire({
+                title: 'Delete Project?', text: 'This cannot be undone.', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#ef4444',
+                customClass: { container: 'admin-swal-container', popup: 'admin-swal-popup' }
             });
-
-            if (!result.isConfirmed) return;
-
-            try {
-                const { error } = await supabaseClient.from('custom_project_submissions').delete().eq('id', id);
-                if (error) throw error;
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Deleted',
-                    text: 'The project submission has been removed.',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+            if (isConfirmed) {
+                await supabaseClient.from('custom_project_submissions').delete().eq('id', id);
                 loadCustomProjects();
-            } catch (err) {
-                console.error('Delete error:', err);
-                Swal.fire('Error', 'Failed to delete custom project.', 'error');
             }
         }
 
         init();
     </script>
-
 </body>
-
 </html>

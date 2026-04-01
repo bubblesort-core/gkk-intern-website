@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -258,7 +258,7 @@
                         <div>
                             <div class="preview-title" id="previewTitle">Notification Title</div>
                             <div class="preview-body" id="previewBody">Your message will appear here...</div>
-                            <div class="preview-time">Just now · GKK Intern</div>
+                            <div class="preview-time">Just now � GKK Intern</div>
                         </div>
                     </div>
 
@@ -288,6 +288,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script>
         // Sidebar Mobile Toggle
@@ -297,7 +298,7 @@
             sidebar.classList.toggle('open');
             sidebarOverlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', () => toggleSidebar());
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
 
         // Character count
         function updateCharCount(inputId, max, countId) {
@@ -309,22 +310,22 @@
 
         // Live preview
         function updatePreview() {
-            const title = document.getElementById('notifTitle').value || 'Notification Title';
-            const body = document.getElementById('notifBody').value || 'Your message will appear here...';
-            document.getElementById('previewTitle').textContent = title;
-            document.getElementById('previewBody').textContent = body;
+            const title = (document.getElementById('notifTitle')?.value || '') || 'Notification Title';
+            const body = (document.getElementById('notifBody')?.value || '') || 'Your message will appear here...';
+            if (document.getElementById('previewTitle')) document.getElementById('previewTitle').textContent = title;
+            if (document.getElementById('previewBody')) document.getElementById('previewBody').textContent = body;
         }
 
         function toggleSpecificInterns() {
-            const targetAudience = document.getElementById('targetAudience').value;
-            document.getElementById('specificInternsContainer').style.display = targetAudience === 'specific' ? 'block' : 'none';
+            const targetAudience = (document.getElementById('targetAudience')?.value || '');
+            if (document.getElementById('specificInternsContainer')) document.getElementById('specificInternsContainer').style.display = targetAudience === 'specific' ? 'block' : 'none';
         }
 
         // Send push notification
         async function sendNotification() {
-            const title = document.getElementById('notifTitle').value.trim();
-            const body = document.getElementById('notifBody').value.trim();
-            const targetAudience = document.getElementById('targetAudience').value;
+            const title = (document.getElementById('notifTitle')?.value || '').trim();
+            const body = (document.getElementById('notifBody')?.value || '').trim();
+            const targetAudience = (document.getElementById('targetAudience')?.value || '');
 
             let targetIds = [];
 
@@ -396,8 +397,8 @@
                 if (data && data.success === false) throw new Error(data.error || 'Unknown FCM error');
 
                 // Clear form
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifBody').value = '';
+                if (document.getElementById('notifTitle')) document.getElementById('notifTitle').value = '';
+                if (document.getElementById('notifBody')) document.getElementById('notifBody').value = '';
                 updatePreview();
                 updateCharCount('notifTitle', 100, 'titleCount');
                 updateCharCount('notifBody', 300, 'bodyCount');
@@ -477,7 +478,7 @@
                 `).join('');
 
             } catch (e) {
-                // Table might not exist yet — show graceful empty state
+                // Table might not exist yet � show graceful empty state
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-bell-slash"></i>
@@ -502,7 +503,7 @@
                 ).join('');
             } catch (e) {
                 console.error('Failed to load interns dropdown:', e);
-                document.getElementById('specificInterns').innerHTML = '<option disabled>Error loading interns</option>';
+                if (document.getElementById('specificInterns')) document.getElementById('specificInterns').innerHTML = '<option disabled>Error loading interns</option>';
             }
         }
 

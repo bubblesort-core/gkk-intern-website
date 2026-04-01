@@ -83,15 +83,49 @@ export default function OverviewSection() {
         }
     };
 
+    const getStatusLabel = (status) => {
+        if (!status) return 'Pending';
+        if (status === 'completed' || status === 'approved') return 'Completed';
+        if (status === 'changes_requested') return 'Pending';
+        if (status === 'in_progress') return 'Active';
+        return 'Pending';
+    };
+
+    const timelineEvents = [
+        {
+            id: 'streak',
+            title: 'Consistency streak',
+            value: `${streak} day${streak === 1 ? '' : 's'}`,
+            status: streak > 0 ? 'Active' : 'Pending'
+        },
+        {
+            id: 'project',
+            title: activeProject ? activeProject.title : 'Project assignment',
+            value: activeProject ? (activeProject.status || 'assigned').replace('_', ' ') : 'Awaiting assignment',
+            status: getStatusLabel(activeProject?.status)
+        },
+        {
+            id: 'completion',
+            title: 'Completed projects',
+            value: `${completedCount} completed`,
+            status: completedCount > 0 ? 'Completed' : 'Pending'
+        },
+        {
+            id: 'workshops',
+            title: 'Workshop activity',
+            value: `${workshopCount} live sessions`,
+            status: workshopCount > 0 ? 'Active' : 'Locked'
+        }
+    ];
+
     return (
         <div className="dash-section-ready">
-            {/* Locked Banner */}
             {isLocked && (
                 <div className="dash-locked-banner">
-                    <div style={{ background: '#f59e0b', color: 'white', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', fontSize: '1.25rem', flexShrink: 0 }}>
+                    <div className="dash-locked-icon-wrap">
                         <i className="fas fa-lock" />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div>
                         <h3>Registration Pending</h3>
                         <p>Complete your one-time registration fee to unlock Projects, Team Chat, and Live Updates.</p>
                     </div>
@@ -101,31 +135,21 @@ export default function OverviewSection() {
                 </div>
             )}
 
-            {/* Welcome Hero */}
-            <div className="dash-card" style={{ position: 'relative', overflow: 'hidden', marginBottom: '2rem', borderLeft: '4px solid var(--dash-accent)' }}>
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>
-                        Welcome back, <span className="dash-text-gradient">{name}</span> 👋
-                    </h1>
-                    <p style={{ color: 'var(--dash-text-secondary)', maxWidth: 600, marginBottom: '0.5rem' }}>
-                        You're doing great! Check your active projects and connect with your team to keep the momentum going.
-                    </p>
-                    <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                        <span style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '6px 14px', borderRadius: 20, fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                            <i className="fas fa-tag" /> {currentProfile?.role?.toUpperCase() || 'INTERN'}
-                        </span>
-                        {currentTeam?.batches?.name && (
-                            <span style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', padding: '6px 14px', borderRadius: 20, fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                                <i className="fas fa-layer-group" /> {currentTeam.batches.name}
-                            </span>
-                        )}
-                        {currentTeam?.name && (
-                            <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '6px 14px', borderRadius: 20, fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                                <i className="fas fa-users" /> {currentTeam.name}
-                            </span>
-                        )}
+            <div className="dash-bento-grid">
+                <section className="dash-bento-tile dash-bento-hero dash-bento-w2" data-tone="sky">
+                    <div className="dash-tile-header">
+                        <h2>Welcome back, {name}</h2>
+                        <span className="dash-status-badge active">Active</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
+                    <p className="dash-tile-subtitle">
+                        You're doing great. Keep momentum by staying aligned with your projects and team.
+                    </p>
+                    <div className="dash-hero-tags">
+                        <span className="dash-pill chip-role">{currentProfile?.role?.toUpperCase() || 'INTERN'}</span>
+                        {currentTeam?.batches?.name && <span className="dash-pill chip-batch">{currentTeam.batches.name}</span>}
+                        {currentTeam?.name && <span className="dash-pill chip-team">{currentTeam.name}</span>}
+                    </div>
+                    <div className="dash-hero-actions">
                         <button className="dash-btn dash-btn-primary" onClick={() => goTo('projects')}>
                             <i className="fas fa-play" /> Resume Project
                         </button>
@@ -133,156 +157,153 @@ export default function OverviewSection() {
                             <i className="fas fa-users" /> Team Chat
                         </button>
                     </div>
-                </div>
-                <div style={{ position: 'absolute', right: -20, top: -20, width: 200, height: 200, background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-            </div>
+                </section>
 
-            {/* Stats Grid */}
-            <div className="dash-stats-grid">
-                <div className="dash-stat-card" onClick={() => goTo('projects')}>
-                    <div className="dash-stat-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                        <i className="fas fa-layer-group" />
-                    </div>
-                    <div>
-                        <div className="dash-stat-value">{projectCount}</div>
-                        <div className="dash-stat-label">Active Projects</div>
-                    </div>
-                </div>
-                <div className="dash-stat-card">
-                    <div className="dash-stat-icon" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
-                        <i className="fas fa-calendar-star" />
-                    </div>
-                    <div>
-                        <div className="dash-stat-value">{workshopCount}</div>
-                        <div className="dash-stat-label">Live Workshops</div>
-                    </div>
-                </div>
-                <div className="dash-stat-card" onClick={() => goTo('team')}>
-                    <div className="dash-stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                        <i className="fas fa-users" />
-                    </div>
-                    <div>
-                        <div className="dash-stat-value">{memberCount}</div>
-                        <div className="dash-stat-label">Team Members</div>
-                    </div>
-                </div>
-                <div className="dash-stat-card">
-                    <div className="dash-stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                        <i className="fas fa-fire" />
-                    </div>
-                    <div>
-                        <div className="dash-stat-value">{streak}</div>
-                        <div className="dash-stat-label">Day Streak</div>
-                    </div>
-                </div>
-            </div>
+                <button className="dash-bento-tile dash-bento-stat" data-tone="blue" onClick={() => goTo('projects')}>
+                    <div className="dash-stat-icon"><i className="fas fa-layer-group" /></div>
+                    <div className="dash-stat-value">{projectCount}</div>
+                    <div className="dash-stat-label">Active Projects</div>
+                </button>
 
-            {/* Split Grid */}
-            <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: '1fr 1fr' }}>
-                {/* Current Focus & Workshops */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    {/* Current Focus */}
-                    <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ fontSize: '1.1rem' }}>🚀 Current Focus</h3>
-                            <button onClick={() => goTo('projects')} style={{ fontSize: '0.85rem', color: 'var(--dash-accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                View All
+                <div className="dash-bento-tile dash-bento-stat" data-tone="violet">
+                    <div className="dash-stat-icon"><i className="fas fa-calendar-star" /></div>
+                    <div className="dash-stat-value">{workshopCount}</div>
+                    <div className="dash-stat-label">Live Workshops</div>
+                </div>
+
+                <button className="dash-bento-tile dash-bento-stat" data-tone="mint" onClick={() => goTo('team')}>
+                    <div className="dash-stat-icon"><i className="fas fa-users" /></div>
+                    <div className="dash-stat-value">{memberCount}</div>
+                    <div className="dash-stat-label">Team Members</div>
+                </button>
+
+                <div className="dash-bento-tile dash-bento-stat" data-tone="amber">
+                    <div className="dash-stat-icon"><i className="fas fa-fire" /></div>
+                    <div className="dash-stat-value">{streak}</div>
+                    <div className="dash-stat-label">Day Streak</div>
+                </div>
+
+                <section className="dash-bento-tile dash-bento-focus dash-bento-h2" data-tone="sky">
+                    <div className="dash-tile-header">
+                        <h3>Current Focus</h3>
+                        <button className="dash-link-btn" onClick={() => goTo('projects')}>View All</button>
+                    </div>
+
+                    {activeProject ? (
+                        <>
+                            <div className="dash-project-state" style={{ color: getStatusColor(activeProject.status) }}>
+                                <i className="fas fa-circle" /> {(activeProject.status || 'assigned').replace('_', ' ').toUpperCase()}
+                            </div>
+                            <h4 className="dash-focus-title">{activeProject.title}</h4>
+                            <p className="dash-focus-description">
+                                {activeProject.description || 'No description available for this project.'}
+                            </p>
+                            <button className="dash-btn dash-btn-primary" onClick={() => goTo('projects')}>
+                                Continue Work <i className="fas fa-arrow-right" />
                             </button>
-                        </div>
-                        <div className="dash-card" style={{ minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                            {activeProject ? (
-                                <div style={{ width: '100%', textAlign: 'left' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                                        <div>
-                                            <div style={{ fontSize: '0.75rem', color: getStatusColor(activeProject.status), fontWeight: 700, letterSpacing: 0.5, marginBottom: '0.25rem' }}>
-                                                <i className="fas fa-circle" style={{ fontSize: '0.5rem', verticalAlign: 'middle', marginRight: 4 }} />
-                                                {(activeProject.status || 'assigned').replace('_', ' ').toUpperCase()}
-                                            </div>
-                                            <h4 style={{ fontSize: '1.1rem', color: 'white', margin: 0, lineHeight: 1.4 }}>{activeProject.title}</h4>
-                                        </div>
-                                        <div style={{ width: 40, height: 40, background: 'rgba(59,130,246,0.1)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-                                            <i className="fas fa-rocket" />
-                                        </div>
-                                    </div>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--dash-text-secondary)', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                        {activeProject.description || 'No description available for this project.'}
-                                    </p>
-                                    <button className="dash-btn dash-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => goTo('projects')}>
-                                        Continue Work <i className="fas fa-arrow-right" style={{ marginLeft: 8 }} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div style={{ textAlign: 'center', color: 'var(--dash-text-muted)' }}>
-                                    <i className="fas fa-layer-group" style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }} />
-                                    <p>No active projects</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Active Workshops Spotlight */}
-                    {activeWorkshops.length > 0 && (
-                        <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <h3 style={{ fontSize: '1.1rem' }}>🎁 Special Workshops</h3>
-                                <span style={{ fontSize: '0.75rem', background: '#3b82f6', color: 'white', padding: '2px 8px', borderRadius: 4, fontWeight: 'bold' }}>LIVE</span>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {activeWorkshops.slice(0, 2).map(w => (
-                                    <div key={w.id} className="dash-card dash-workshop-card" onClick={() => showWorkshopDetails(w)} style={{ cursor: 'pointer', padding: '1.25rem', transition: 'transform 0.2s', border: '1px solid rgba(59, 130, 246, 0.1)' }}>
-                                        <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
-                                            {w.hero_image_url && (
-                                                <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
-                                                    <img src={w.hero_image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                </div>
-                                            )}
-                                            <div style={{ flex: 1 }}>
-                                                <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: 'white' }}>{w.title}</h4>
-                                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--dash-text-secondary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                    {w.description}
-                                                </p>
-                                            </div>
-                                            <i className="fas fa-chevron-right" style={{ opacity: 0.3 }} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                        </>
+                    ) : (
+                        <div className="dash-empty-focus">
+                            <i className="fas fa-layer-group" />
+                            <p>No active projects</p>
                         </div>
                     )}
-                </div>
+                </section>
 
-                {/* Quick Actions */}
-                <div>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>⚡ Quick Actions</h3>
-                    <div className="dash-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <button className="dash-action-row" onClick={() => goTo('meetings')}>
-                            <div className="dash-action-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                                <i className="fas fa-video" />
+                <section className="dash-bento-tile dash-bento-timeline dash-bento-h2" data-tone="peach">
+                    <div className="dash-tile-header">
+                        <h3>Progress Timeline</h3>
+                        <span className="dash-status-badge pending">Activity</span>
+                    </div>
+                    <div className="dash-vertical-timeline">
+                        {timelineEvents.map((event) => (
+                            <div key={event.id} className="dash-timeline-item">
+                                <div className={`dash-timeline-dot ${event.status.toLowerCase()}`} />
+                                <div className="dash-timeline-content">
+                                    <div className="dash-timeline-head">
+                                        <strong>{event.title}</strong>
+                                        <span className={`dash-status-badge ${event.status.toLowerCase()}`}>{event.status}</span>
+                                    </div>
+                                    <p>{event.value}</p>
+                                </div>
                             </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="dash-bento-tile dash-bento-workshops dash-bento-w2" data-tone="lavender">
+                    <div className="dash-tile-header">
+                        <h3>Special Workshops</h3>
+                        <span className={`dash-status-badge ${workshopCount > 0 ? 'active' : 'locked'}`}>
+                            {workshopCount > 0 ? 'Live' : 'Locked'}
+                        </span>
+                    </div>
+
+                    {activeWorkshops.length > 0 ? (
+                        <div className="dash-workshop-list">
+                            {activeWorkshops.slice(0, 2).map((w) => (
+                                <button
+                                    key={w.id}
+                                    className="dash-workshop-row"
+                                    onClick={() => showWorkshopDetails(w)}
+                                >
+                                    {w.hero_image_url && (
+                                        <div className="dash-workshop-thumb">
+                                            <img src={w.hero_image_url} alt={w.title} />
+                                        </div>
+                                    )}
+                                    <div className="dash-workshop-meta">
+                                        <h4>{w.title}</h4>
+                                        <p>{w.description}</p>
+                                    </div>
+                                    <i className="fas fa-chevron-right" />
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="dash-empty-focus">
+                            <i className="fas fa-calendar-star" />
+                            <p>No workshops available right now</p>
+                        </div>
+                    )}
+                </section>
+
+                <section className={`dash-bento-tile dash-bento-actions ${isLocked ? 'is-locked' : ''}`} data-tone="mint">
+                    <div className="dash-tile-header">
+                        <h3>Quick Actions</h3>
+                        <span className={`dash-status-badge ${isLocked ? 'locked' : 'active'}`}>
+                            {isLocked ? 'Locked' : 'Active'}
+                        </span>
+                    </div>
+                    <div className="dash-actions-list">
+                        <button className="dash-action-row" onClick={() => goTo('meetings')}>
+                            <div className="dash-action-icon"><i className="fas fa-video" /></div>
                             <span>Join Meeting</span>
-                            <i className="fas fa-chevron-right" style={{ marginLeft: 'auto', opacity: 0.5 }} />
+                            <i className="fas fa-chevron-right" />
                         </button>
                         <button className="dash-action-row" onClick={() => goTo('resources')}>
-                            <div className="dash-action-icon" style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4' }}>
-                                <i className="fas fa-book" />
-                            </div>
+                            <div className="dash-action-icon"><i className="fas fa-book" /></div>
                             <span>Resources</span>
-                            <i className="fas fa-chevron-right" style={{ marginLeft: 'auto', opacity: 0.5 }} />
+                            <i className="fas fa-chevron-right" />
                         </button>
                         <button className="dash-action-row" onClick={() => goTo('profile')}>
-                            <div className="dash-action-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                                <i className="fas fa-user-edit" />
-                            </div>
+                            <div className="dash-action-icon"><i className="fas fa-user-edit" /></div>
                             <span>Edit Profile</span>
-                            <i className="fas fa-chevron-right" style={{ marginLeft: 'auto', opacity: 0.5 }} />
+                            <i className="fas fa-chevron-right" />
                         </button>
                     </div>
+                    {isLocked && <div className="dash-lock-overlay"><i className="fas fa-lock" /> Access after payment</div>}
+                </section>
 
-                    <div className="dash-tip" style={{ marginTop: '2rem' }}>
-                        <h4><i className="fas fa-lightbulb" /> Tip of the Day</h4>
-                        <p>Update your daily status in the Team Chat to keep your mentors informed!</p>
+                <section className="dash-bento-tile dash-bento-tip" data-tone="cream">
+                    <div className="dash-tile-header">
+                        <h3>Tip of the Day</h3>
+                        <span className="dash-status-badge completed">Completed</span>
                     </div>
-                </div>
+                    <p className="dash-tip-text">
+                        Update your daily status in the Team Chat to keep your mentors informed.
+                    </p>
+                </section>
             </div>
         </div>
     );

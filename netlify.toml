@@ -51,6 +51,27 @@
   force = true
 
 # Redirects for SPA routing
+# Legacy User Page Redirects
+[[redirects]]
+  from = "/user/login.html"
+  to = "/dashboard/user/login"
+  status = 301
+
+[[redirects]]
+  from = "/user/signup.html"
+  to = "/dashboard/user/signup"
+  status = 301
+
+[[redirects]]
+  from = "/user/index.html"
+  to = "/dashboard/user/dashboard"
+  status = 301
+
+[[redirects]]
+  from = "/user/rewards.html"
+  to = "/dashboard/user/dashboard/rewards"
+  status = 301
+
 [[redirects]]
   from = "/"
   to = "/index.html"

@@ -323,7 +323,7 @@
             }
         });
 
-        document.getElementById('togglePassword').addEventListener('click', () => {
+        document.getElementById('togglePassword')?.addEventListener('click', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
             document.getElementById('eyeIcon').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';

@@ -38,10 +38,9 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
         { label: "Home", index: 0 },
         { label: "About", index: 1 },
         { label: "Services", index: 2 },
-        { label: "Alumni", index: 3 }, // Portfolio Section (h-[300vh])
-        { label: "Insights", index: 6 }, // Starts after Portfolio (300vh start + 300vh height = 600vh)
-        { label: "Achievements", index: 7 }, // After Blog
-        { label: "Contact", index: 9 }, // After Achievement + CTA
+        { label: "Alumni", index: 3 }, // Since Portfolio was removed, Alumni starts at 300vh
+        { label: "Achievements", index: 6 }, // After Alumni (300vh)
+        { label: "Contact", index: 8 }, // After Achievement (100vh) + CTA (100vh)
     ];
 
     useEffect(() => {
@@ -52,12 +51,15 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
 
         timeline.current = gsap.timeline({ paused: true });
 
-        // Overlay expansion
-        timeline.current.to(overlayRef.current, {
-            duration: 1,
-            height: '100vh',
-            ease: 'power4.inOut', // Very close to custom editorial eases
-        });
+        // Overlay expansion - using clipPath stops reflow jitter compared to height animation
+        timeline.current.fromTo(overlayRef.current,
+            { clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)' },
+            {
+                duration: 1,
+                clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+                ease: 'power4.inOut',
+            }
+        );
 
         // Links reveal (staggered)
         timeline.current.fromTo(
@@ -119,20 +121,22 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
                 activeOpacity={0.8}
             >
                 <div className="flex flex-row items-center gap-2 group cursor-pointer">
-                    <span className="text-xs md:text-sm font-bold tracking-widest uppercase transition-colors group-hover:text-neutral-500">
+                    <span className="text-xs md:text-sm text-right w-[46px] font-bold tracking-widest uppercase transition-colors group-hover:text-[var(--accent)] text-[var(--text-primary)] inline-block">
                         {isOpen ? "Close" : "Menu"}
                     </span>
-                    <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full border border-black flex items-center justify-center transition-all duration-300 ${isOpen ? "rotate-45" : ""}`}>
+                    <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full border border-[var(--text-primary)] flex items-center justify-center transition-all duration-300 ${isOpen ? "rotate-45" : ""} text-[var(--text-primary)]`}>
                         <span className="text-base md:text-lg leading-none mb-1">+</span>
                     </div>
                 </div>
             </TouchableOpacity>
 
-            {/* Full Screen Overlay */}
             <div
                 ref={overlayRef}
-                className="fixed top-0 left-0 w-full bg-[#E5E5E5] z-[50] overflow-hidden h-0 flex flex-col justify-center px-4 md:px-20"
-                style={{ height: 0 }} // Start hidden
+                className="fixed top-0 left-0 w-full bg-[var(--bg-primary)] z-[50] overflow-hidden flex flex-col justify-center px-4 md:px-20 [clip-path:polygon(0%_0%,_100%_0%,_100%_0%,_0%_0%)]"
+                style={{ 
+                    height: '100vh',
+                    pointerEvents: isOpen ? 'auto' : 'none'
+                }} // Start hidden securely
             >
                 <div ref={linksRef} className="flex flex-col gap-2 md:gap-4 max-w-4xl">
                     {menuItems.map((item, idx) => (
@@ -142,7 +146,7 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
                                 className="menu-link-item cursor-pointer group"
                                 onClick={() => handleLinkPress(item.index)}
                             >
-                                <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-black transition-colors group-hover:text-neutral-500 group-hover:translate-x-4 duration-300">
+                                <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">
                                     {item.label}
                                 </h3>
                             </div>
@@ -151,25 +155,25 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6 md:mt-8 pt-6 md:pt-8 border-t border-neutral-300">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6 md:mt-8 pt-6 md:pt-8 border-t border-[var(--border)]">
                     <a
                         href="/dashboard/apply/"
                         onClick={(e) => { e.preventDefault(); triggerTransition('apply', '/dashboard/apply/'); }}
-                        className="menu-link-item px-8 py-3 bg-black text-white text-sm font-bold uppercase tracking-wider hover:bg-neutral-800 transition-colors text-center rounded-sm"
+                        className="menu-link-item px-8 py-3 bg-[var(--accent)] text-black text-sm font-bold uppercase tracking-wider hover:brightness-110 transition-colors duration-300 text-center rounded-sm"
                     >
                         Apply Now
                     </a>
                     <a
                         href="/dashboard/user/login"
                         onClick={(e) => { e.preventDefault(); triggerTransition('login', '/dashboard/user/login'); }}
-                        className="menu-link-item px-8 py-3 border-2 border-black text-black text-sm font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors text-center rounded-sm"
+                        className="menu-link-item px-8 py-3 border-2 border-[var(--text-primary)] text-[var(--text-primary)] text-sm font-bold uppercase tracking-wider hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-colors duration-300 text-center rounded-sm"
                     >
                         Intern Login <span className="text-[10px] block font-normal normal-case">(Returning Users)</span>
                     </a>
                     <a
-                        href="/Dashboard/user/signup.html"
-                        onClick={(e) => { e.preventDefault(); triggerTransition('register', '/Dashboard/user/signup.html'); }}
-                        className="menu-link-item px-8 py-3 border-2 border-black bg-white text-black text-sm font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors text-center rounded-sm"
+                        href="/dashboard/user/signup.html"
+                        onClick={(e) => { e.preventDefault(); triggerTransition('register', '/dashboard/user/signup.html'); }}
+                        className="menu-link-item px-8 py-3 border-2 border-[var(--text-primary)] bg-transparent text-[var(--text-primary)] text-sm font-bold uppercase tracking-wider hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-colors duration-300 text-center rounded-sm"
                     >
                         Register <span className="text-[10px] block font-normal normal-case">(Approved Users)</span>
                     </a>

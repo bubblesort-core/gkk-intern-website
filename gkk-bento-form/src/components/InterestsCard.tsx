@@ -70,7 +70,7 @@ const InterestsCard: React.FC = () => {
 
     return (
         <div
-            className="md:col-span-12 order-7 md:order-7 bento-card glass-effect border border-border p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+            className="md:col-span-12 order-7 md:order-7 apply-card glass-effect border border-border p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
             onMouseEnter={() => updateFormData({ mascot_emotion: 'excited' })}
             onMouseLeave={() => updateFormData({ mascot_emotion: 'neutral' })}
             onFocus={() => updateFormData({ mascot_emotion: 'excited' })}

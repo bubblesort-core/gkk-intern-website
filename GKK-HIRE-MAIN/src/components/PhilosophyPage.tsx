@@ -144,7 +144,7 @@ const PhilosophyPage: React.FC<PhilosophyPageProps> = ({ onBack }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF',
+        backgroundColor: 'var(--bg-primary)',
         position: 'relative',
         overflow: 'hidden',
         width: '100vw' as any,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     },
     topZigzagContainer: {
         height: 100,
-        backgroundColor: '#DCDFDB',
+        backgroundColor: 'var(--border)',
         overflow: 'hidden',
         justifyContent: 'flex-end',
         position: 'absolute',
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     zigzagTriangle: {
         width: 50,
         height: 50,
-        backgroundColor: '#FFF',
+        backgroundColor: 'var(--bg-primary)',
         transform: [{ rotate: '45deg' } as any],
         marginRight: -10,
     },
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '900',
         letterSpacing: 2,
-        color: '#000',
+        color: 'var(--text-primary)',
     },
     ghostTextContainerMotion: {
         position: 'absolute',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
         // @ts-ignore
         fontSize: 'clamp(80px, 20vw, 240px)',
         fontWeight: '900',
-        color: '#F4F4F4',
+        color: 'var(--text-faint)',
         letterSpacing: -15,
         opacity: 0.8,
     },
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
         // @ts-ignore
         fontSize: 'clamp(50px, 7vw, 90px)', // Slightly larger
         fontWeight: '900',
-        color: '#000',
+        color: 'var(--text-primary)',
         lineHeight: 90,
         letterSpacing: -2,
     },
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     },
     subtext: {
         fontSize: 18,
-        color: '#444',
+        color: 'var(--text-muted)',
         lineHeight: 28,
         width: '100%', // Allow full width
         maxWidth: 500, // But limit max width
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     manifestoBox: {
-        backgroundColor: '#F9F9F9',
+        backgroundColor: 'var(--bg-surface)',
         padding: 50,
         position: 'relative',
         shadowColor: '#000',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     },
     blackBar: {
         width: 6,
-        backgroundColor: '#000',
+        backgroundColor: 'var(--accent)',
         position: 'absolute',
         left: 0,
         top: 0,
@@ -279,14 +279,14 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: '900',
         letterSpacing: 2,
-        color: '#000',
+        color: 'var(--text-primary)',
         marginBottom: 20,
         textAlign: 'right',
     },
     manifestoText: {
         fontSize: 16,
         lineHeight: 26,
-        color: '#333',
+        color: 'var(--text-muted)',
         textAlign: 'right',
         marginBottom: 30,
     },
@@ -297,11 +297,11 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '900',
         letterSpacing: 1,
-        color: '#000',
+        color: 'var(--text-primary)',
     },
     linkUnderline: {
         height: 2,
-        backgroundColor: '#000',
+        backgroundColor: 'var(--text-primary)',
         marginTop: 4,
     },
 });

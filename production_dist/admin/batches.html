@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batches Management | GKK Interns - Code. Build. Deploy.</title>
+    <title>Phases Management | GKK Interns - Code. Build. Deploy.</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -190,14 +190,14 @@
                     <button class="mobile-menu-btn" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="page-title">Batches Management</h1>
+                    <h1 class="page-title">Phases Management</h1>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-secondary btn-sm" onclick="loadBatches()" title="Refresh Data">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     <button class="btn btn-primary" onclick="openCreateModal()">
-                        <i class="fas fa-plus"></i> New Batch
+                        <i class="fas fa-plus"></i> New Phase
                     </button>
                 </div>
             </header>
@@ -209,7 +209,7 @@
                     <!-- Content will be loaded here -->
                     <div class="add-batch-card" onclick="openCreateModal()">
                         <div class="icon-circle"><i class="fas fa-plus"></i></div>
-                        <div style="font-weight: 600;">Create New Batch</div>
+                        <div style="font-weight: 600;">Create New Phase</div>
                     </div>
                 </div>
             </div>
@@ -220,13 +220,13 @@
     <div class="modal-overlay" id="batchModal">
         <div class="modal-container">
             <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Create New Batch</h3>
+                <h3 class="modal-title" id="modalTitle">Create New Phase</h3>
                 <button class="modal-close" onclick="closeModal('batchModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="batchId">
                 <div class="form-group">
-                    <label class="form-label">Batch Name</label>
+                    <label class="form-label">Phase Name</label>
                     <input type="text" id="batchName" class="form-input" placeholder="e.g. Summer 2026 Cohort 1">
                 </div>
                 <div class="form-group">
@@ -253,7 +253,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('batchModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="saveBatch()">Save Batch</button>
+                <button class="btn btn-primary" onclick="saveBatch()">Save Phase</button>
             </div>
         </div>
     </div>
@@ -262,6 +262,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
 
@@ -302,7 +303,7 @@
             const addCardHTML = `
                 <div class="add-batch-card" onclick="openCreateModal()">
                     <div class="icon-circle"><i class="fas fa-plus"></i></div>
-                    <div style="font-weight: 600;">Create New Batch</div>
+                    <div style="font-weight: 600;">Create New Phase</div>
                 </div>
             `;
 
@@ -330,7 +331,7 @@
                         <div style="margin-top: 16px; display: flex; gap: 8px;">
                              <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="editBatch('${b.id}')"><i class="fas fa-edit"></i> Edit</button>
                              <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="goToTeams('${b.id}')"><i class="fas fa-users"></i> Teams</button>
-                             <button class="btn btn-secondary btn-sm" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="deleteBatch('${b.id}')" title="Delete Batch"><i class="fas fa-trash"></i></button>
+                             <button class="btn btn-secondary btn-sm" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="deleteBatch('${b.id}')" title="Delete Phase"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -361,11 +362,11 @@
 
                     if (error) throw error;
 
-                    Swal.fire('Deleted!', 'Batch has been deleted.', 'success');
+                    Swal.fire('Deleted!', 'Phase has been deleted.', 'success');
                     loadBatches();
                 } catch (error) {
                     console.error('Error deleting batch:', error);
-                    Swal.fire('Error!', 'Failed to delete batch.', 'error');
+                    Swal.fire('Error!', 'Failed to delete phase.', 'error');
                 }
             }
         }
@@ -375,10 +376,10 @@
         let selectedTeamsForBatch = new Set();
 
         async function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Create New Batch';
-            document.getElementById('batchId').value = '';
-            document.getElementById('batchName').value = '';
-            document.getElementById('batchDescription').value = '';
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Create New Phase';
+            if (document.getElementById('batchId')) document.getElementById('batchId').value = '';
+            if (document.getElementById('batchName')) document.getElementById('batchName').value = '';
+            if (document.getElementById('batchDescription')) document.getElementById('batchDescription').value = '';
             document.getElementById('batchActive').checked = true;
 
             selectedTeamsForBatch.clear();
@@ -422,7 +423,7 @@
                     <input type="checkbox" id="team_${t.id}" ${isSelected ? 'checked' : ''} onchange="toggleTeamSelection('${t.id}')">
                     <label for="team_${t.id}" style="margin-left:8px; flex:1; cursor:pointer;">
                         <span style="font-weight:500;">${t.name}</span>
-                        ${isAssigned ? `<span style="font-size:0.75rem; color:var(--c-text-muted); margin-left:8px;">(Currently in another batch)</span>` : ''}
+                        ${isAssigned ? `<span style="font-size:0.75rem; color:var(--c-text-muted); margin-left:8px;">(Currently in another phase)</span>` : ''}
                     </label>
                 </div>`;
             }).join('');
@@ -438,12 +439,12 @@
         }
 
         async function saveBatch() {
-            const id = document.getElementById('batchId').value;
-            const name = document.getElementById('batchName').value;
-            const description = document.getElementById('batchDescription').value;
+            const id = (document.getElementById('batchId')?.value || '');
+            const name = (document.getElementById('batchName')?.value || '');
+            const description = (document.getElementById('batchDescription')?.value || '');
             const active = document.getElementById('batchActive').checked;
 
-            if (!name) return Swal.fire('Error', 'Batch Name is required', 'warning');
+            if (!name) return Swal.fire('Error', 'Phase Name is required', 'warning');
 
             const btn = document.querySelector('#batchModal .btn-primary');
             const originalText = btn.innerText;
@@ -487,7 +488,7 @@
                 }
 
                 closeModal('batchModal');
-                Swal.fire('Success', `Batch ${id ? 'updated' : 'created'} successfully`, 'success');
+                Swal.fire('Success', `Phase ${id ? 'updated' : 'created'} successfully`, 'success');
                 loadBatches();
 
             } catch (err) {
@@ -504,10 +505,10 @@
                 const { data, error } = await supabaseClient.from('batches').select('*').eq('id', id).single();
                 if (error) throw error;
 
-                document.getElementById('modalTitle').textContent = 'Edit Batch';
-                document.getElementById('batchId').value = data.id;
-                document.getElementById('batchName').value = data.name;
-                document.getElementById('batchDescription').value = data.description || '';
+                if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Edit Phase';
+                if (document.getElementById('batchId')) document.getElementById('batchId').value = data.id;
+                if (document.getElementById('batchName')) document.getElementById('batchName').value = data.name;
+                if (document.getElementById('batchDescription')) document.getElementById('batchDescription').value = data.description || '';
                 document.getElementById('batchActive').checked = data.is_active;
 
                 selectedTeamsForBatch.clear();
@@ -517,12 +518,12 @@
 
             } catch (err) {
                 console.error(err);
-                Swal.fire('Error', 'Could not load batch details', 'error');
+                Swal.fire('Error', 'Could not load phase details', 'error');
             }
         }
 
         function goToTeams(batchId) {
-            window.location.href = `teams.html?batch=${batchId}`;
+            spaNavigate(`teams.html?batch=${batchId}`);
         }
 
         // Helper for Sidebar Toggle (Copy from others)
@@ -533,7 +534,7 @@
             if (sidebar.classList.contains('open')) overlay.style.display = 'block';
             else overlay.style.display = 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
         init();
     </script>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -149,7 +149,7 @@
                     <h1 class="page-title">QR Code Management</h1>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()" title="Refresh">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
@@ -296,6 +296,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
 
     <script>
@@ -319,7 +320,7 @@
             sidebar.classList.toggle('open');
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', () => toggleSidebar());
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
 
         // ============================================
         // MODAL HELPERS
@@ -344,7 +345,7 @@
             const session = getAdminSession();
             await loadData();
 
-            document.getElementById('searchInput').addEventListener('input', () => {
+            document.getElementById('searchInput')?.addEventListener('input', () => {
                 currentPage = 1;
                 renderTable();
             });
@@ -401,14 +402,14 @@
                 });
 
                 // Update stats
-                document.getElementById('totalInterns').textContent = allInterns.length;
-                document.getElementById('totalQRs').textContent = Object.keys(qrTokensMap).length;
-                document.getElementById('totalIdCards').textContent = (tokens || []).filter(t => t.id_card_url).length;
+                if (document.getElementById('totalInterns')) document.getElementById('totalInterns').textContent = allInterns.length;
+                if (document.getElementById('totalQRs')) document.getElementById('totalQRs').textContent = Object.keys(qrTokensMap).length;
+                if (document.getElementById('totalIdCards')) document.getElementById('totalIdCards').textContent = (tokens || []).filter(t => t.id_card_url).length;
 
                 renderTable();
             } catch (err) {
                 console.error('Load error:', err);
-                document.getElementById('qrTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:2rem;">Error: ${err.message}</td></tr>`;
+                if (document.getElementById('qrTableBody')) document.getElementById('qrTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444; padding:2rem;">Error: ${err.message}</td></tr>`;
             }
         }
 
@@ -416,7 +417,7 @@
         // RENDER TABLE
         // ============================================
         function renderTable() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
             let filtered = allInterns;
             if (search) {
                 filtered = filtered.filter(s => s.full_name.toLowerCase().includes(search) || s.email.toLowerCase().includes(search));
@@ -432,9 +433,9 @@
             // Pagination
             document.getElementById('prevPageBtn').disabled = currentPage <= 1;
             document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
-            document.getElementById('pageNumbers').textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('pageInfo').textContent = total > 0
-                ? `Showing ${startIdx + 1}–${endIdx} of ${total}`
+            if (document.getElementById('pageNumbers')) document.getElementById('pageNumbers').textContent = `Page ${currentPage} of ${totalPages}`;
+            if (document.getElementById('pageInfo')) document.getElementById('pageInfo').textContent = total > 0
+                ? `Showing ${startIdx + 1}�${endIdx} of ${total}`
                 : 'No interns found';
 
             const tbody = document.getElementById('qrTableBody');
@@ -515,7 +516,7 @@
                 qrTokensMap[applicationId] = data;
 
                 // Update stats
-                document.getElementById('totalQRs').textContent = Object.keys(qrTokensMap).length;
+                if (document.getElementById('totalQRs')) document.getElementById('totalQRs').textContent = Object.keys(qrTokensMap).length;
 
                 renderTable();
 
@@ -554,8 +555,8 @@
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            document.getElementById('qrInternName').textContent = intern ? intern.full_name : 'Unknown';
-            document.getElementById('qrInternEmail').textContent = intern ? intern.email : '';
+            if (document.getElementById('qrInternName')) document.getElementById('qrInternName').textContent = intern ? intern.full_name : 'Unknown';
+            if (document.getElementById('qrInternEmail')) document.getElementById('qrInternEmail').textContent = intern ? intern.email : '';
 
             openModal('qrModal');
         }
@@ -641,8 +642,8 @@
                 if (error) throw error;
 
                 delete qrTokensMap[applicationId];
-                document.getElementById('totalQRs').textContent = Object.keys(qrTokensMap).length;
-                document.getElementById('totalIdCards').textContent = Object.values(qrTokensMap).filter(t => t.id_card_url).length;
+                if (document.getElementById('totalQRs')) document.getElementById('totalQRs').textContent = Object.keys(qrTokensMap).length;
+                if (document.getElementById('totalIdCards')) document.getElementById('totalIdCards').textContent = Object.values(qrTokensMap).filter(t => t.id_card_url).length;
                 renderTable();
             } catch (err) {
                 console.error('Revoke error:', err);
@@ -661,8 +662,8 @@
             currentIdCardIntern = { intern, token };
             selectedIdCardFile = null;
 
-            document.getElementById('idCardInternName').textContent = intern.full_name;
-            document.getElementById('idCardInternEmail').textContent = intern.email;
+            if (document.getElementById('idCardInternName')) document.getElementById('idCardInternName').textContent = intern.full_name;
+            if (document.getElementById('idCardInternEmail')) document.getElementById('idCardInternEmail').textContent = intern.email;
             document.getElementById('uploadIdCardBtn').disabled = true;
 
             // Show existing ID card if available
@@ -689,7 +690,7 @@
                 area.classList.remove('has-image');
             }
 
-            document.getElementById('idCardFileInput').value = '';
+            if (document.getElementById('idCardFileInput')) document.getElementById('idCardFileInput').value = '';
             openModal('idCardModal');
         }
 
@@ -751,7 +752,7 @@
 
                 // Update local state
                 qrTokensMap[token.application_id].id_card_url = publicUrl;
-                document.getElementById('totalIdCards').textContent = Object.values(qrTokensMap).filter(t => t.id_card_url).length;
+                if (document.getElementById('totalIdCards')) document.getElementById('totalIdCards').textContent = Object.values(qrTokensMap).filter(t => t.id_card_url).length;
 
                 closeModal('idCardModal');
                 renderTable();

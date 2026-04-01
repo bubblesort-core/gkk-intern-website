@@ -1,21 +1,23 @@
-import { useRef, Suspense, lazy } from 'react';
+import { useRef, Suspense, lazy, useState } from 'react';
+import IntroLoader from './components/IntroLoader';
 import GKKPage from './components/GKKPage';
 import AboutSection from './components/AboutSection';
 import CallToAction from './components/CallToAction';
 import Footer from './components/Footer';
 import SkeletonLoader from './components/SkeletonLoader';
 import WorkshopModal from './components/WorkshopModal';
+import { PandaaBot } from './components/PandaaBot';
+import { MagneticCursor } from './components/MagneticCursor';
 
-// Lazy load heavy sections
 const ServicesPage = lazy(() => import('./components/ServicesPage'));
-const Portfolio = lazy(() => import('./components/Portfolio'));
 const AlumniSection = lazy(() => import('./components/AlumniSection'));
-const BlogPage = lazy(() => import('./components/BlogPage'));
+
 const AchievementSection = lazy(() => import('./components/AchievementSection'));
 const ContactSection = lazy(() => import('./components/ContactSection'));
 
 export default function App() {
     const containerRef = useRef<HTMLDivElement>(null);
+    const [introDone, setIntroDone] = useState(false);
 
     const scrollToSection = (index: number) => {
         if (containerRef.current) {
@@ -28,11 +30,16 @@ export default function App() {
     };
 
     return (
-        <div
-            ref={containerRef}
-            className="h-screen w-full overflow-y-auto overflow-x-hidden bg-[#E5E5E5] scroll-smooth"
-        >
+        <>
+            <MagneticCursor />
+            {!introDone && <IntroLoader onComplete={() => setIntroDone(true)} />}
+            <div
+                ref={containerRef}
+                className="relative h-screen w-full overflow-y-auto overflow-x-hidden bg-[var(--bg-primary)] scroll-smooth selection:bg-[var(--accent)] selection:text-white"
+            >
             <WorkshopModal />
+            
+
             <section className="min-h-screen w-full relative">
                 <GKKPage
                     onNavigate={scrollToSection}
@@ -52,13 +59,6 @@ export default function App() {
                 </Suspense>
             </section>
 
-            {/* Curation / Portfolio Page */}
-            <section className="h-[300vh] w-full relative">
-                <Suspense fallback={<SkeletonLoader />}>
-                    {/* @ts-ignore */}
-                    <Portfolio scrollContainerRef={containerRef} />
-                </Suspense>
-            </section>
 
             {/* Alumni Section */}
             <section className="h-[300vh] w-full relative">
@@ -68,12 +68,6 @@ export default function App() {
                 </Suspense>
             </section>
 
-            {/* Blog Page */}
-            <section className="min-h-screen w-full relative">
-                <Suspense fallback={<SkeletonLoader />}>
-                    <BlogPage />
-                </Suspense>
-            </section>
 
             <section className="min-h-screen w-full relative">
                 <Suspense fallback={<SkeletonLoader />}>
@@ -94,6 +88,8 @@ export default function App() {
             <section className="w-full relative">
                 <Footer />
             </section>
+            <PandaaBot />
         </div>
+        </>
     );
 }

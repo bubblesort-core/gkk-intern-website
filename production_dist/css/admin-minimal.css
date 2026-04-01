@@ -1529,3 +1529,73 @@ tr:hover td {
     display: flex;
     animation: fadeIn 0.2s ease-out;
 }
+
+/* ============================================
+   SweetAlert2 Premium Dark Theme Overrides
+   ============================================ */
+.admin-swal-container {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 2000 !important;
+}
+
+.admin-swal-popup {
+    background: var(--c-bg-card) !important;
+    border: 1px solid var(--c-border) !important;
+    border-radius: var(--radius-lg) !important;
+    color: var(--c-text-primary) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.admin-swal-popup .swal2-title {
+    color: var(--c-text-primary) !important;
+    padding: 24px 32px 16px 32px !important;
+    border-bottom: 1px solid var(--c-border);
+    margin: 0 !important;
+    font-size: 1.35rem !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    text-align: left !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+.admin-swal-popup .swal2-html-container {
+    margin: 0 !important;
+    padding: 24px 32px !important;
+    color: var(--c-text-secondary) !important;
+    text-align: left !important;
+}
+
+.admin-swal-popup .swal2-footer {
+    border-top: 1px solid var(--c-border) !important;
+    padding: 20px 32px !important;
+    margin: 0 !important;
+}
+
+.admin-swal-popup .swal2-close {
+    color: var(--c-text-muted) !important;
+}
+
+.admin-swal-popup .swal2-close:hover {
+    color: var(--c-error) !important;
+    background: transparent !important;
+}
+
+.admin-swal-popup .swal2-actions {
+    margin: 0 !important;
+    padding: 20px 32px !important;
+    border-top: 1px solid var(--c-border);
+    background: rgba(0, 0, 0, 0.2);
+    justify-content: flex-end !important;
+}
+
+.admin-swal-popup .swal2-confirm,
+.admin-swal-popup .swal2-cancel {
+    border-radius: var(--radius-md) !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    font-family: 'Inter', sans-serif !important;
+}

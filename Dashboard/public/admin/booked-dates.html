@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booked Dates | GKK Interns</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <style>
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .setting-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .setting-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--c-text-primary);
+        }
+
+        .setting-card h3 i {
+            color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .calendar-container {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--c-border);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .quick-action-btn {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--c-border);
+            color: var(--c-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--c-primary);
+            color: var(--c-primary);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .date-cell {
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            position: relative;
+        }
+
+        .date-cell:hover {
+            border-color: var(--c-primary);
+            transform: translateY(-2px);
+        }
+
+        .date-cell.past {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .date-cell.past:hover {
+            transform: none;
+            border-color: var(--c-border);
+        }
+
+        .date-cell.today {
+            border-color: var(--c-primary);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .date-number {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--c-text-primary);
+        }
+
+        .date-number.today-num {
+            color: var(--c-primary);
+        }
+
+        .booking-count {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: auto;
+            padding: 4px 6px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .booking-count.none {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--c-text-muted);
+        }
+
+        .booking-count.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .booking-count.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .booking-count.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .booking-count.full {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            font-weight: 700;
+        }
+
+        .capacity-bar {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .capacity-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--c-border);
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        .stat-pill .stat-val {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--c-text-primary);
+        }
+
+        .stat-pill .stat-lbl {
+            color: var(--c-text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Phase filter */
+        .phase-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .phase-filter label {
+            font-size: 0.85rem;
+            color: var(--c-text-secondary);
+            font-weight: 500;
+        }
+
+        .phase-filter select {
+            padding: 6px 12px;
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: 6px;
+            color: var(--c-text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 650px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .applicant-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .applicant-row:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .time-badge {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .open-btn {
+            background: var(--c-primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .open-btn:hover {
+            background: #059669;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-dot.pending {
+            background: #fbbf24;
+        }
+
+        .status-dot.approved {
+            background: #34d399;
+        }
+
+        .status-dot.rejected {
+            background: #f87171;
+        }
+
+        .time-slot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #60a5fa;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 6px;
+        }
+
+        .slot-capacity-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .slot-capacity-badge.available {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+        }
+
+        .slot-capacity-badge.full {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                gap: 4px;
+            }
+
+            .date-cell {
+                min-height: 60px;
+                padding: 4px;
+                font-size: 0.75rem;
+            }
+
+            .booking-count {
+                font-size: 0.65rem;
+                padding: 2px 4px;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Booked Dates</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshData()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Stats Bar -->
+                <div class="stats-bar" id="statsBar">
+                    <div class="stat-pill">
+                        <div>
+                            <div class="stat-val" id="statTotalBookings">-</div>
+                            <div class="stat-lbl">Total Bookings</div>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <div>
+                            <div class="stat-val" id="statTodayBookings" style="color: #60a5fa;">-</div>
+                            <div class="stat-lbl">Today</div>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <div>
+                            <div class="stat-val" id="statUpcomingBookings" style="color: #34d399;">-</div>
+                            <div class="stat-lbl">Upcoming</div>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <div>
+                            <div class="stat-val" id="statDatesWithBookings" style="color: #fbbf24;">-</div>
+                            <div class="stat-lbl">Active Dates</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+                            <h3><i class="fas fa-calendar-check"></i> Interview Schedule</h3>
+                            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                                <div class="phase-filter">
+                                    <label><i class="fas fa-filter" style="margin-right: 4px;"></i> Phase:</label>
+                                    <select id="phaseFilter" onchange="applyFilters()">
+                                        <option value="all">All Phases</option>
+                                    </select>
+                                </div>
+                                <div style="font-size: 0.85rem; color: var(--c-text-secondary);">
+                                    Max capacity per slot: <strong id="maxPerSlotDisplay">...</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="color: var(--c-text-muted); margin-bottom: 16px; font-size: 0.9rem;">View application interview bookings across the calendar. Click a date to see applicant details.</p>
+
+                        <div class="calendar-container">
+                            <div class="calendar-header"
+                                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                                <button class="quick-action-btn" onclick="prevMonth()"><i
+                                        class="fas fa-chevron-left"></i> Previous</button>
+                                <strong id="calendarMonthYear" style="font-size: 1.2rem;"></strong>
+                                <button class="quick-action-btn" onclick="nextMonth()">Next <i
+                                        class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-weekdays"
+                                style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 12px;">
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Sun</div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Mon</div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Tue</div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Wed</div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Thu</div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Fri</div>
+                                <div style="text-align: center; font-size: 0.8rem; color: var(--c-text-muted); font-weight: 600;">Sat</div>
+                            </div>
+                            <div id="calendarGrid" class="calendar-grid">
+                                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--c-text-muted);">
+                                    <i class="fas fa-circle-notch fa-spin text-2xl"></i> Loading data...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Date Details Modal -->
+    <div id="dateDetailsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size:1.2rem; font-weight:600;" id="modalTitle">Interviews for Date</h3>
+                <button onclick="closeModal()"
+                    style="background:none; border:none; color:var(--c-text-muted); font-size:1.2rem; cursor:pointer;"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Modal Stats -->
+            <div id="modalStats"
+                style="display: flex; gap: 12px; margin-bottom: 16px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--c-border);">
+            </div>
+
+            <div id="modalContent">
+                <!-- Applicants grouped by time -->
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; margin-top: 24px;">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
+
+        let calendarDate = new Date();
+        let allApplications = [];       // Raw data from DB
+        let filteredApplications = [];   // After phase filter
+        let applicationsMap = {};        // { 'YYYY-MM-DD': [apps...] }
+        let maxPerSlot = 1;
+        let timeSlots = [];              // Available time slots from settings
+        let phases = new Set();          // Unique phases
+
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+
+            try {
+                // 1. Fetch form settings for max slots and time slots
+                const { data: settings } = await supabaseClient
+                    .from('form_settings')
+                    .select('max_per_slot, time_slots, available_dates, specific_date_times')
+                    .eq('id', '00000000-0000-0000-0000-000000000001')
+                    .single();
+
+                if (settings) {
+                    maxPerSlot = settings.max_per_slot || 1;
+                    timeSlots = settings.time_slots || [];
+                    if (document.getElementById('maxPerSlotDisplay')) document.getElementById('maxPerSlotDisplay').textContent = maxPerSlot;
+                }
+
+                // 2. Fetch ALL applications that have a booked interview date
+                const { data: apps, error } = await supabaseClient
+                    .from('applications')
+                    .select('id, full_name, email, phone, preferred_interview_date, preferred_interview_time, status, batch_number, created_at')
+                    .not('preferred_interview_date', 'is', null)
+                    .order('preferred_interview_date', { ascending: true });
+
+                if (error) throw error;
+
+                allApplications = apps || [];
+
+                // Build phase filter options
+                allApplications.forEach(app => {
+                    if (app.batch_number) phases.add(app.batch_number);
+                });
+
+                const phaseSelect = document.getElementById('phaseFilter');
+                phases.forEach(phase => {
+                    const opt = document.createElement('option');
+                    opt.value = phase;
+                    opt.textContent = phase;
+                    phaseSelect.appendChild(opt);
+                });
+
+                applyFilters();
+
+            } catch (err) {
+                console.error("Error loading calendar data:", err);
+                if (document.getElementById('calendarGrid')) document.getElementById('calendarGrid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 40px;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>Failed to load data. Check console for details.</div>';
+            }
+        }
+
+        function applyFilters() {
+            const phaseVal = (document.getElementById('phaseFilter')?.value || '');
+
+            if (phaseVal === 'all') {
+                filteredApplications = [...allApplications];
+            } else {
+                filteredApplications = allApplications.filter(a => a.batch_number === phaseVal);
+            }
+
+            // Group by normalized YYYY-MM-DD date
+            applicationsMap = {};
+            filteredApplications.forEach(app => {
+                if (!app.preferred_interview_date) return;
+
+                // Normalize date to YYYY-MM-DD explicitly, because form saves them as "Mar 15, 2026"
+                const d = new Date(app.preferred_interview_date);
+                if (isNaN(d.getTime())) return; 
+
+                const normDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+                if (!applicationsMap[normDateStr]) {
+                    applicationsMap[normDateStr] = [];
+                }
+                applicationsMap[normDateStr].push(app);
+            });
+
+            updateStats();
+            renderCalendar();
+        }
+
+        function updateStats() {
+            const todayStr = getTodayStr();
+            const totalBookings = filteredApplications.length;
+            const todayBookings = (applicationsMap[todayStr] || []).length;
+
+            // Upcoming = dates today or in the future
+            let upcomingCount = 0;
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            Object.keys(applicationsMap).forEach(dateStr => {
+                const d = new Date(dateStr + 'T00:00:00');
+                if (d >= todayDate) upcomingCount += applicationsMap[dateStr].length;
+            });
+
+            const activeDates = Object.keys(applicationsMap).length;
+
+            if (document.getElementById('statTotalBookings')) document.getElementById('statTotalBookings').textContent = totalBookings;
+            if (document.getElementById('statTodayBookings')) document.getElementById('statTodayBookings').textContent = todayBookings;
+            if (document.getElementById('statUpcomingBookings')) document.getElementById('statUpcomingBookings').textContent = upcomingCount;
+            if (document.getElementById('statDatesWithBookings')) document.getElementById('statDatesWithBookings').textContent = activeDates;
+        }
+
+        function getTodayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            if (document.getElementById('calendarMonthYear')) document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayStr = getTodayStr();
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                grid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cellDate = new Date(year, month, day);
+                const isPast = cellDate < today;
+                const isToday = dateStr === todayStr;
+
+                const dayApps = applicationsMap[dateStr] || [];
+                const numBookings = dayApps.length;
+
+                // Calculate total capacity for this date
+                // Each time slot can hold maxPerSlot applicants
+                const numSlots = timeSlots.length || 1;
+                const totalCapacity = numSlots * maxPerSlot;
+                const capacityPct = totalCapacity > 0 ? Math.min((numBookings / totalCapacity) * 100, 100) : 0;
+
+                // Determine severity
+                let severityClass = 'none';
+                let bookingText = 'No bookings';
+                let capacityColor = 'transparent';
+
+                if (numBookings > 0) {
+                    bookingText = `${numBookings} booked`;
+                    if (capacityPct >= 100) {
+                        severityClass = 'full';
+                        capacityColor = '#ef4444';
+                    } else if (capacityPct >= 60) {
+                        severityClass = 'high';
+                        capacityColor = '#f87171';
+                    } else if (capacityPct >= 30) {
+                        severityClass = 'medium';
+                        capacityColor = '#fbbf24';
+                    } else {
+                        severityClass = 'low';
+                        capacityColor = '#34d399';
+                    }
+                }
+
+                const cell = document.createElement('div');
+                cell.className = `date-cell ${isPast ? 'past' : ''} ${isToday ? 'today' : ''}`;
+                cell.innerHTML = `
+                    <div class="date-number ${isToday ? 'today-num' : ''}">${day}</div>
+                    <div class="booking-count ${severityClass}">${bookingText}</div>
+                    ${numBookings > 0 ? `<div class="capacity-bar"><div class="capacity-fill" style="width:${capacityPct}%; background:${capacityColor};"></div></div>` : ''}
+                `;
+
+                if (numBookings > 0) {
+                    cell.onclick = () => openDayModal(dateStr, dayApps);
+                    if (severityClass === 'high' || severityClass === 'full') {
+                        cell.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.1)';
+                        cell.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    }
+                } else if (!isPast) {
+                    cell.style.cursor = 'default';
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function prevMonth() {
+            calendarDate.setMonth(calendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            calendarDate.setMonth(calendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        async function refreshData() {
+            allApplications = [];
+            filteredApplications = [];
+            applicationsMap = {};
+            phases.clear();
+
+            if (document.getElementById('calendarGrid')) document.getElementById('calendarGrid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--c-text-muted);"><i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i><br>Refreshing...</div>';
+
+            await init();
+        }
+
+        // Modal Logic
+        function openDayModal(dateStr, apps) {
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const formatted = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = formatted;
+
+            // Modal Stats
+            const modalStats = document.getElementById('modalStats');
+            const pendingCount = apps.filter(a => a.status === 'pending').length;
+            const approvedCount = apps.filter(a => a.status === 'approved' || a.status === 'accepted').length;
+            const rejectedCount = apps.filter(a => a.status === 'rejected').length;
+
+            modalStats.innerHTML = `
+                <div style="flex:1; text-align:center;">
+                    <div style="font-weight:700; font-size:1.1rem; color:var(--c-text-primary);">${apps.length}</div>
+                    <div style="font-size:0.75rem; color:var(--c-text-muted);">Total</div>
+                </div>
+                <div style="flex:1; text-align:center;">
+                    <div style="font-weight:700; font-size:1.1rem; color:#fbbf24;">${pendingCount}</div>
+                    <div style="font-size:0.75rem; color:var(--c-text-muted);">Pending</div>
+                </div>
+                <div style="flex:1; text-align:center;">
+                    <div style="font-weight:700; font-size:1.1rem; color:#34d399;">${approvedCount}</div>
+                    <div style="font-size:0.75rem; color:var(--c-text-muted);">Approved</div>
+                </div>
+                <div style="flex:1; text-align:center;">
+                    <div style="font-weight:700; font-size:1.1rem; color:#f87171;">${rejectedCount}</div>
+                    <div style="font-size:0.75rem; color:var(--c-text-muted);">Rejected</div>
+                </div>
+            `;
+
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = '';
+
+            // Group apps by time slot
+            const timeMap = {};
+            apps.forEach(app => {
+                const timeStr = app.preferred_interview_time || 'No Time Selected';
+                if (!timeMap[timeStr]) timeMap[timeStr] = [];
+                timeMap[timeStr].push(app);
+            });
+
+            // Sort times
+            const sortedTimes = Object.keys(timeMap).sort();
+
+            if (sortedTimes.length === 0) {
+                modalContent.innerHTML = '<p style="color:var(--c-text-muted);">No applications found for this date.</p>';
+            } else {
+                sortedTimes.forEach(time => {
+                    const timeBlock = document.createElement('div');
+                    timeBlock.style.marginBottom = '20px';
+
+                    // Convert 24h to 12h for display
+                    let displayTime = time;
+                    if (time.includes(':') && time !== 'No Time Selected') {
+                        const [h, m] = time.split(':');
+                        const hInt = parseInt(h);
+                        const suffix = hInt >= 12 ? 'PM' : 'AM';
+                        const h12 = hInt % 12 || 12;
+                        displayTime = `${h12}:${m} ${suffix}`;
+                    }
+
+                    const slotCount = timeMap[time].length;
+                    const isFull = slotCount >= maxPerSlot;
+
+                    const timeHeader = document.createElement('div');
+                    timeHeader.className = 'time-slot-header';
+                    timeHeader.innerHTML = `
+                        <div>
+                            <i class="fas fa-clock"></i> ${displayTime}
+                            <span style="font-size:0.75rem; color:var(--c-text-muted); font-weight:normal; margin-left:8px;">(${slotCount} applicant${slotCount !== 1 ? 's' : ''})</span>
+                        </div>
+                        <span class="slot-capacity-badge ${isFull ? 'full' : 'available'}">
+                            ${slotCount}/${maxPerSlot} ${isFull ? 'FULL' : 'slots'}
+                        </span>
+                    `;
+                    timeBlock.appendChild(timeHeader);
+
+                    timeMap[time].forEach(app => {
+                        const statusClass = app.status === 'approved' || app.status === 'accepted' ? 'approved' : app.status === 'rejected' ? 'rejected' : 'pending';
+
+                        const row = document.createElement('div');
+                        row.className = 'applicant-row';
+                        row.innerHTML = `
+                            <div style="flex: 1;">
+                                <div style="font-weight:600; font-size:0.95rem; display: flex; align-items: center;">
+                                    <span class="status-dot ${statusClass}"></span>
+                                    ${app.full_name || 'Anonymous'}
+                                </div>
+                                <div style="font-size:0.8rem; color:var(--c-text-muted); margin-top: 2px;">
+                                    ${app.email || ''}
+                                    ${app.batch_number ? ` · <span style="color: var(--c-primary);">${app.batch_number}</span>` : ''}
+                                </div>
+                            </div>
+                            <a href="applications.html?search=${encodeURIComponent(app.email || app.full_name)}" class="open-btn"><i class="fas fa-external-link-alt" style="font-size: 0.7rem; margin-right: 4px;"></i>View</a>
+                        `;
+                        timeBlock.appendChild(row);
+                    });
+
+                    modalContent.appendChild(timeBlock);
+                });
+            }
+
+            const modal = document.getElementById('dateDetailsModal');
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('dateDetailsModal').classList.remove('active');
+        }
+
+        // Close modal when clicking on overlay backdrop (not the content)
+        document.getElementById('dateDetailsModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Init
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

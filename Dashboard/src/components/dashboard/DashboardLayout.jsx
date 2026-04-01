@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useDashboard } from '../../contexts/DashboardContext';
 import '../../styles/dashboard.css';
 import '../../styles/payment-animation.css';
+import '../../../public/css/professional-design.css';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    FiCreditCard, FiGrid, FiUser, FiLayers, FiUsers, 
+    FiBell, FiVideo, FiPlayCircle, FiBookOpen, FiGift, FiSmartphone,
+    FiRefreshCcw, FiLogOut, FiLock, FiX, FiMenu
+} from 'react-icons/fi';
+import { PandaaBot } from '../PandaaBot';
 
 const GEAR_PATH = 'M20,0 L22,4 L24,0.5 L25.5,4.8 L28,2 L28.5,6.5 L32,5 L31,9.2 L34.5,9 L32.5,12.5 L36,13.5 L33.5,16 L37,18 L33.5,20 L36,22.5 L32.5,23.5 L34.5,27 L31,26.8 L32,31 L28.5,29.5 L28,34 L25.5,31.2 L24,35.5 L22,32 L20,36 L18,32 L16,35.5 L14.5,31.2 L12,34 L11.5,29.5 L8,31 L9,26.8 L5.5,27 L7.5,23.5 L4,22.5 L6.5,20 L3,18 L6.5,16 L4,13.5 L7.5,12.5 L5.5,9 L9,9.2 L8,5 L11.5,6.5 L12,2 L14.5,4.8 L16,0.5 L18,4 Z';
 
@@ -87,21 +95,32 @@ function PaymentSuccessOverlay({ active, onComplete }) {
     );
 }
 
-const NAV_ITEMS = [
-    { id: 'payment', icon: 'fas fa-credit-card', label: 'Training Fee', path: 'payment', paymentOnly: true },
-    { id: 'overview', icon: 'fas fa-home', label: 'Overview', path: 'overview' },
-    { id: 'profile', icon: 'fas fa-user-circle', label: 'Profile', path: 'profile' },
-    { id: 'projects', icon: 'fas fa-project-diagram', label: 'Projects', path: 'projects' },
-    { id: 'team', icon: 'fas fa-users', label: 'Team', path: 'team' },
-    { id: 'announcements', icon: 'fas fa-bullhorn', label: 'Updates', path: 'announcements' },
-    { id: 'meetings', icon: 'fas fa-video', label: 'Meetings', path: 'meetings' },
-    { id: 'recordings', icon: 'fas fa-play-circle', label: 'Recordings', path: 'recordings' },
-    { id: 'divider' },
-    { id: 'leaderboard', icon: 'fas fa-trophy', label: 'Leaderboard', path: 'leaderboard' },
-    { id: 'resources', icon: 'fas fa-book-reader', label: 'Resources', path: 'resources' },
-    { id: 'rewards', icon: 'fas fa-gift', label: 'Rewards', path: 'rewards' },
-    { id: 'referrals', icon: 'fas fa-user-plus', label: 'Invite Friends', path: 'referrals' },
-    { id: 'mobileapp', icon: 'fas fa-mobile-alt', label: 'Mobile App', path: 'mobileapp' },
+const NAV_GROUPS = [
+    {
+        label: 'WORKSPACE',
+        items: [
+            { id: 'payment', icon: <FiCreditCard />, label: 'Training Fee', path: 'payment', paymentOnly: true },
+            { id: 'overview', icon: <FiGrid />, label: 'Overview', path: 'overview' },
+            { id: 'profile', icon: <FiUser />, label: 'Profile', path: 'profile' },
+        ]
+    },
+    {
+        label: 'COLLABORATE',
+        items: [
+            { id: 'projects', icon: <FiLayers />, label: 'Projects', path: 'projects' },
+            { id: 'team', icon: <FiUsers />, label: 'Team', path: 'team' },
+            { id: 'announcements', icon: <FiBell />, label: 'Updates', path: 'announcements' },
+            { id: 'meetings', icon: <FiVideo />, label: 'Meetings', path: 'meetings' },
+            { id: 'recordings', icon: <FiPlayCircle />, label: 'Recordings', path: 'recordings' },
+        ]
+    },
+    {
+        label: 'GROW',
+        items: [
+            { id: 'resources', icon: <FiBookOpen />, label: 'Resources', path: 'resources' },
+            { id: 'rewards', icon: <FiGift />, label: 'Rewards', path: 'rewards' },
+        ]
+    }
 ];
 
 const SECTION_TITLES = {
@@ -116,14 +135,13 @@ const SECTION_TITLES = {
     'leaderboard': 'Intern Leaderboard',
     'resources': 'Learning Resources',
     'rewards': 'Rewards & Coupons',
-    'referrals': 'Invite Friends',
-    'mobileapp': 'Mobile App',
 };
 
-const LOCKED_SECTIONS = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards', 'leaderboard', 'referrals', 'mobileapp'];
+const LOCKED_SECTIONS = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards'];
 
 export default function DashboardLayout() {
-    const { currentUser, currentProfile, currentTeam, isLocked, loading, signOut, getProxiedUrl, supabase } = useDashboard();
+    const { currentUser, currentProfile, currentTeam, isLocked, loading, signOut, getProxiedUrl, profileSlug, supabase } = useDashboard();
+    const { slug } = useParams();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [notifications, setNotifications] = useState({});
     const [refreshing, setRefreshing] = useState(false);
@@ -155,6 +173,14 @@ export default function DashboardLayout() {
     const pathSegments = location.pathname.split('/');
     const activeSection = pathSegments[pathSegments.length - 1] || '';
     const activePath = activeSection === 'dashboard' ? 'overview' : activeSection;
+
+    // Enforcement: Redirect to correct slug if mismatch
+    useEffect(() => {
+        if (!loading && profileSlug && slug !== profileSlug) {
+            console.log(`Slug mismatch: expected ${profileSlug}, got ${slug}. Redirecting...`);
+            navigate(`/${profileSlug}/${activePath}`, { replace: true });
+        }
+    }, [slug, profileSlug, loading, activePath, navigate]);
 
     const headerTitle = SECTION_TITLES[activePath] || 'Dashboard';
 
@@ -279,21 +305,25 @@ export default function DashboardLayout() {
         };
     }, [isLocked, currentTeam, supabase]);
 
-    // Show streak help modal
     const showStreakHelp = async () => {
         const Swal = (await import('sweetalert2')).default;
+        const streak = currentProfile?.current_streak || 0;
+        const currentLevel = calculateLevel(streak);
+        const nextLevelStreak = (currentLevel) * 5;
+        const daysToNext = Math.max(0, nextLevelStreak - streak);
+
         Swal.fire({
             title: '🔥 How Streaks Work',
             html: `
                 <div style="text-align:left; font-size:0.9rem; line-height:1.6;">
                     <p><strong>Daily Check-In:</strong> Visit the dashboard every day to build your streak.</p>
-                    <p><strong>XP Bonuses:</strong></p>
+                    <p><strong>Leveling Up:</strong></p>
                     <ul style="padding-left:1.5rem;">
-                        <li>Daily: +10 XP</li>
-                        <li>3-day streak: +15 XP</li>
-                        <li>7-day streak: +25 XP</li>
+                        <li>You gain 1 Level for every 5 days of your streak.</li>
+                        <li>Current Level: <strong>${currentLevel}</strong></li>
+                        ${daysToNext > 0 ? `<li>Next Level in: <strong>${daysToNext} days</strong></li>` : ''}
                     </ul>
-                    <p><strong>Tip:</strong> Don't miss a day or your streak resets!</p>
+                    <p><strong>Tip:</strong> Don't miss a day or your streak resets and your Level will reflect your new current streak!</p>
                 </div>`,
             confirmButtonText: 'Got it!',
             confirmButtonColor: '#6366f1',
@@ -327,50 +357,72 @@ export default function DashboardLayout() {
     const userName = currentProfile?.full_name || currentProfile?.email?.split('@')[0] || 'Intern';
     const userEmail = currentProfile?.email || '';
     const userInitial = userName[0]?.toUpperCase() || 'I';
+    const mobileNavItems = NAV_GROUPS.flatMap(group => group.items)
+        .filter(item => !item.paymentOnly || isLocked)
+        .filter(item => ['overview', 'projects', 'meetings', 'profile', 'payment'].includes(item.path));
 
     return (
         <>
             <PaymentSuccessOverlay active={showUnlockAnimation} onComplete={handleUnlockAnimationComplete} />
             <div className="dash-container">
-                {/* Mobile Toggle */}
-                <button className="dash-mobile-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                    <span /><span /><span />
-                </button>
-
                 {/* Mobile Overlay */}
-                {sidebarOpen && (
-                    <div className={`dash-mobile-overlay open`} onClick={() => setSidebarOpen(false)} />
-                )}
+                <div className={`dash-mobile-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
 
                 {/* Sidebar */}
-                <aside className={`dash-sidebar ${sidebarOpen ? 'open' : ''}`}>
+                <aside className={`dash-sidebar ${sidebarOpen ? 'open' : ''} cinematic-entry entry-1`}>
                     <div className="dash-sidebar-logo">
-                        <img src="/assets/gkk-intern-logo.png" alt="GKK Intern Logo" />
+                        <img src="/assets/gkk-intern-logo.png" alt="GKK Intern Logo" className="dash-logo-img" />
+                        {sidebarOpen && (
+                            <button 
+                                className="dash-mobile-toggle" 
+                                style={{ position: 'absolute', right: '10px', top: '10px' }} 
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <FiX />
+                            </button>
+                        )}
                     </div>
 
                     <nav className="dash-nav">
-                        {NAV_ITEMS.map(item => {
-                            if (item.id === 'divider') return <div key="divider" className="dash-nav-divider" />;
-                            if (item.paymentOnly && !isLocked) return null;
+                        <div className="sidebar-noise" />
+                        {NAV_GROUPS.map((group, gIdx) => (
+                            <div key={group.label} className={`dash-nav-group cinematic-entry entry-${gIdx + 2}`}>
+                                <span className="dash-nav-group-label">{group.label}</span>
+                                {group.items.map((item) => {
+                                    if (item.paymentOnly && !isLocked) return null;
 
-                            const isActive = activePath === item.path || (activePath === '' && item.path === '');
-                            const isLockedItem = isLocked && LOCKED_SECTIONS.includes(item.path);
-                            const hasNotif = notifications[item.path];
+                                    const isActive = activePath === item.path || (activePath === '' && item.path === '');
+                                    const isLockedItem = isLocked && LOCKED_SECTIONS.includes(item.path);
+                                    const hasNotif = notifications[item.path];
 
-
-                            return (
-                                <button
-                                    key={item.id}
-                                    className={`dash-nav-item ${isActive ? 'active' : ''} ${isLockedItem ? 'locked' : ''}`}
-                                    onClick={() => goTo(item.path)}
-                                >
-                                    <i className={item.icon} />
-                                    <span>{item.label}</span>
-                                    {hasNotif && <span className="dash-nav-notif" />}
-                                </button>
-                            );
-                        })}
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            className={`dash-nav-item group ${isActive ? 'active' : ''} ${isLockedItem ? 'locked' : ''}`}
+                                            onClick={() => goTo(item.path)}
+                                            title={item.label}
+                                        >
+                                            <div className="nav-item-active-bar" />
+                                            <div className="nav-item-liquid" />
+                                            <motion.div 
+                                                className="nav-item-icon-wrapper"
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                            >
+                                                {item.icon}
+                                                {isLockedItem && <i className="fas fa-lock lock-icon" />}
+                                            </motion.div>
+                                            <span className="nav-item-label">{item.label}</span>
+                                            {hasNotif && <span className="dash-nav-notif" />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ))}
                     </nav>
+
+                    <div className="sidebar-fog-fade" />
 
                     <div className="dash-sidebar-footer">
                         <div className="dash-sidebar-user">
@@ -389,37 +441,77 @@ export default function DashboardLayout() {
 
                 {/* Main Content */}
                 <div className="dash-main" ref={mainRef}>
-                    <header className="dash-header">
-                        <h1 className="dash-header-title">{headerTitle}</h1>
+                    <header className="dash-header cinematic-entry entry-2">
+                        <div className="dash-header-left">
+                            {/* Mobile Toggle inside Header */}
+                            <button className="dash-mobile-toggle" onClick={() => setSidebarOpen(true)}>
+                                <FiMenu />
+                            </button>
+                            <h1 className="dash-header-title">{headerTitle}</h1>
+                        </div>
                         <div className="dash-header-actions">
+                            <div className="dash-header-user">
+                                <div className="dash-header-avatar">
+                                    {currentProfile?.avatar_url
+                                        ? <img src={getProxiedUrl(currentProfile.avatar_url)} alt="Avatar" />
+                                        : userInitial}
+                                </div>
+                                <div className="dash-header-user-meta">
+                                    <div className="dash-header-user-name">{userName}</div>
+                                    <span className={`dash-status-badge ${isLocked ? 'pending' : 'active'}`}>
+                                        {isLocked ? 'Pending' : 'Active'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {isLocked && (
+                                <div className="dash-header-pill amber-shimmer">
+                                    <FiLock /> Locked
+                                </div>
+                            )}
+
                             <button
                                 className="dash-btn-icon"
                                 onClick={handleRefresh}
                                 title="Check for updates"
                             >
-                                <i className={`fas fa-sync-alt ${refreshing ? 'fa-spin' : ''}`} />
+                                <FiRefreshCcw className={refreshing ? 'nav-icon-spin' : ''} />
                             </button>
-
-                            <div className="dash-streak" onClick={showStreakHelp} title="Daily Login Streak">
-                                <span className={`dash-streak-fire ${streak > 0 ? 'streak-active' : ''}`}>🔥</span>
-                                <div className="dash-streak-info">
-                                    <div className="dash-streak-count">{isLocked ? 'Locked' : streak}</div>
-                                    <div className="dash-streak-status">{isLocked ? '' : 'day streak'}</div>
-                                </div>
-                            </div>
 
                             <button className="dash-signout-btn" onClick={signOut} title="Sign Out">
-                                <i className="fas fa-sign-out-alt" />
                                 <span>Sign Out</span>
+                                <FiLogOut />
                             </button>
+                        </div>
+                        <div className="dash-header-progress">
+                            <div className="progress-bar-fill" style={{ width: isLocked ? '40%' : '100%' }} />
                         </div>
                     </header>
 
                     <div className="dash-content">
                         <Outlet />
                     </div>
+
+                    <nav className="dash-mobile-bottom-nav" aria-label="Mobile navigation">
+                        {mobileNavItems.map((item) => {
+                            const isActive = activePath === item.path || (activePath === '' && item.path === 'overview');
+                            const isLockedItem = isLocked && LOCKED_SECTIONS.includes(item.path);
+                            return (
+                                <button
+                                    key={`mobile-${item.id}`}
+                                    className={`dash-mobile-nav-item ${isActive ? 'active' : ''} ${isLockedItem ? 'locked' : ''}`}
+                                    onClick={() => goTo(item.path)}
+                                    aria-label={item.label}
+                                >
+                                    <span className="dash-mobile-nav-icon">{item.icon}</span>
+                                    <span className="dash-mobile-nav-label">{item.label}</span>
+                                </button>
+                            );
+                        })}
+                    </nav>
                 </div>
             </div>
+            <PandaaBot />
         </>
     );
 }

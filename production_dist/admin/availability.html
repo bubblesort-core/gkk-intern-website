@@ -436,9 +436,9 @@
 
                     <!-- Slot Capacity Card -->
                     <div class="setting-card" style="grid-column: 1 / -1;">
-                        <h3><i class="fas fa-users"></i> Slot Capacity & Batch Settings</h3>
+                        <h3><i class="fas fa-users"></i> Slot Capacity & Phase Settings</h3>
                         <p>Set how many applicants can book the same time slot, and manage the current recruitment
-                            batch.</p>
+                            phase.</p>
 
                         <div style="display: flex; gap: 24px; flex-wrap: wrap;">
                             <!-- Slot Capacity -->
@@ -461,17 +461,17 @@
                                 </div>
                             </div>
 
-                            <!-- Application Batch -->
+                            <!-- Application Phase -->
                             <div
                                 style="flex: 1; display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: var(--radius-md);">
                                 <div style="flex: 1;">
-                                    <strong style="font-size: 0.95rem;">Active Recruitment Batch</strong>
+                                    <strong style="font-size: 0.95rem;">Active Recruitment Phase</strong>
                                     <div style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 4px;">
-                                        Current batch parameter applied to incoming applications (e.g. "Batch 3")
+                                        Current phase parameter applied to incoming applications (e.g. "Phase 3")
                                     </div>
                                 </div>
                                 <div>
-                                    <input type="text" id="activeBatch" value="Batch 1"
+                                    <input type="text" id="activeBatch" value="Phase 1"
                                         style="width: 140px; padding: 10px; border: 1px solid var(--c-border); border-radius: 8px; background: rgba(0,0,0,0.2); color: var(--c-text-primary); font-size: 1rem; font-weight: 600;"
                                         onchange="markUnsaved()">
                                 </div>
@@ -556,6 +556,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
 
     <script>
@@ -566,7 +567,7 @@
             sidebar.classList.toggle('open');
             overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
         // State
         let selectedDays = [0, 1, 6]; // Default: Sun, Mon, Sat
@@ -682,7 +683,7 @@
 
             // Update header
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
+            if (document.getElementById('calendarMonthYear')) document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
 
             // Get first day and days in month
             const firstDay = new Date(year, month, 1).getDay();
@@ -765,7 +766,7 @@
 
         function renderSelectedDatesList() {
             const list = document.getElementById('selectedDatesList');
-            document.getElementById('selectedDatesCount').textContent = selectedDates.length;
+            if (document.getElementById('selectedDatesCount')) document.getElementById('selectedDatesCount').textContent = selectedDates.length;
 
             if (selectedDates.length === 0) {
                 list.innerHTML = '<p style="color: var(--c-text-muted); font-size: 0.85rem;">No dates selected</p>';
@@ -814,14 +815,14 @@
 
             const dateObj = new Date(dateStr + 'T00:00:00');
             const formatted = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-            document.getElementById('specificTimesModalTitle').textContent = `Custom Times: ${formatted}`;
+            if (document.getElementById('specificTimesModalTitle')) document.getElementById('specificTimesModalTitle').textContent = `Custom Times: ${formatted}`;
 
             renderSpecificTimeSlots();
-            document.getElementById('specificTimesModal').style.display = 'flex';
+            if (document.getElementById('specificTimesModal')) document.getElementById('specificTimesModal').style.display = 'flex';
         }
 
         function closeSpecificTimesModal() {
-            document.getElementById('specificTimesModal').style.display = 'none';
+            if (document.getElementById('specificTimesModal')) document.getElementById('specificTimesModal').style.display = 'none';
             activeModalDate = null;
             activeModalTimes = [];
         }
@@ -901,13 +902,13 @@
         // Lock status
         function updateLockStatus() {
             isFormLocked = document.getElementById('formLockToggle').checked;
-            document.getElementById('lockStatusText').textContent = isFormLocked ? 'Form is LOCKED' : 'Form is Open';
-            document.getElementById('lockStatusText').style.color = isFormLocked ? '#ef4444' : 'inherit';
+            if (document.getElementById('lockStatusText')) document.getElementById('lockStatusText').textContent = isFormLocked ? 'Form is LOCKED' : 'Form is Open';
+            if (document.getElementById('lockStatusText')) document.getElementById('lockStatusText').style.color = isFormLocked ? '#ef4444' : 'inherit';
             markUnsaved();
         }
 
         function markUnsaved() {
-            document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> <span style="color:#f59e0b;">Unsaved changes</span>';
+            if (document.getElementById('saveStatus')) document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> <span style="color:#f59e0b;">Unsaved changes</span>';
         }
 
         // Load settings from Supabase
@@ -943,7 +944,7 @@
                     updateLockStatus();
 
                     // Message
-                    document.getElementById('lockMessage').value = data.lock_message || '';
+                    if (document.getElementById('lockMessage')) document.getElementById('lockMessage').value = data.lock_message || '';
 
                     // Specific Dates
                     selectedDates = data.available_dates || [];
@@ -951,25 +952,25 @@
                     // Specific Date Times
                     specificDateTimes = data.specific_date_times || {};
 
-                    // Slot capacity and Batch Tracking
+                    // Slot capacity and Phase Tracking
                     maxPerSlot = data.max_per_slot || 1;
-                    document.getElementById('maxPerSlot').value = maxPerSlot;
+                    if (document.getElementById('maxPerSlot')) document.getElementById('maxPerSlot').value = maxPerSlot;
 
                     // Support the new DB field (graceful fallback if missing)
                     if (document.getElementById('activeBatch')) {
-                        document.getElementById('activeBatch').value = data.active_batch || 'Batch 1';
+                        if (document.getElementById('activeBatch')) document.getElementById('activeBatch').value = data.active_batch || 'Phase 1';
                     }
 
-                    document.getElementById('activeBatch').value = data.active_batch || 'Batch 1';
+                    if (document.getElementById('activeBatch')) document.getElementById('activeBatch').value = data.active_batch || 'Phase 1';
 
                     renderCalendar();
                     renderSelectedDatesList();
 
-                    document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> <span>Settings loaded</span>';
+                    if (document.getElementById('saveStatus')) document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> <span>Settings loaded</span>';
                 }
             } catch (err) {
                 console.error('Error loading settings:', err);
-                document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> <span style="color:#ef4444;">Error loading settings</span>';
+                if (document.getElementById('saveStatus')) document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> <span style="color:#ef4444;">Error loading settings</span>';
             }
         }
 
@@ -980,11 +981,11 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
             try {
-                maxPerSlot = parseInt(document.getElementById('maxPerSlot').value) || 1;
+                maxPerSlot = parseInt((document.getElementById('maxPerSlot')?.value || '')) || 1;
 
-                let activeBatch = 'Batch 1';
+                let activeBatch = 'Phase 1';
                 if (document.getElementById('activeBatch')) {
-                    activeBatch = document.getElementById('activeBatch').value || 'Batch 1';
+                    activeBatch = (document.getElementById('activeBatch')?.value || '') || 'Phase 1';
                 }
 
                 const { error } = await supabaseClient
@@ -997,16 +998,16 @@
                         max_per_slot: maxPerSlot,
                         active_batch: activeBatch,
                         is_form_locked: isFormLocked,
-                        lock_message: document.getElementById('lockMessage').value
+                        lock_message: (document.getElementById('lockMessage')?.value || '')
                     })
                     .eq('id', '00000000-0000-0000-0000-000000000001');
 
                 if (error) throw error;
 
-                document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> <span style="color:#10b981;">Settings saved successfully!</span>';
+                if (document.getElementById('saveStatus')) document.getElementById('saveStatus').innerHTML = '<i class="fas fa-check-circle" style="color:#10b981;"></i> <span style="color:#10b981;">Settings saved successfully!</span>';
             } catch (err) {
                 console.error('Error saving settings:', err);
-                document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> <span style="color:#ef4444;">Error: ' + err.message + '</span>';
+                if (document.getElementById('saveStatus')) document.getElementById('saveStatus').innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> <span style="color:#ef4444;">Error: ' + err.message + '</span>';
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save"></i> Save Settings';

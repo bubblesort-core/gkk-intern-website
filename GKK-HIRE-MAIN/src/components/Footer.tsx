@@ -1,8 +1,9 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import SectionCanvas from './SectionCanvas';
 
 export default function Footer() {
     return (
-        <footer className="relative bg-black text-white py-16 md:py-40 min-h-[60vh] md:min-h-[80vh] flex flex-col justify-center">
+        <footer className="relative bg-[var(--bg-primary)] text-[var(--text-primary)] border-t border-[var(--border)] py-16 md:py-40 min-h-[60vh] md:min-h-[80vh] flex flex-col justify-center">
             <div className="max-w-[1600px] mx-auto px-4 md:px-8 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
                     {/* Brand */}
@@ -21,7 +22,7 @@ export default function Footer() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.1, duration: 0.6 }}
-                            className="text-sm font-cormorant italic text-white/60"
+                            className="text-sm font-cormorant italic text-[var(--text-muted)]"
                         >
                             Learn. Build. Ship.
                             <br />
@@ -60,9 +61,9 @@ export default function Footer() {
                                         href={item.url}
                                         target={item.name === 'Email' ? '_self' : '_blank'}
                                         rel={item.name === 'Email' ? undefined : "noopener noreferrer"}
-                                        className="text-white/60 hover:text-white transition-colors inline-flex items-center gap-2"
+                                        className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors inline-flex items-center gap-2"
                                     >
-                                        <span className="w-4 h-[1px] bg-white/60"></span>
+                                        <span className="w-4 h-[1px] bg-[var(--bg-primary)]/60"></span>
                                         {item.name}
                                     </motion.a>
                                 </li>
@@ -86,11 +87,11 @@ export default function Footer() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.1, duration: 0.6 }}
-                            className="space-y-2 text-white/60 text-sm"
+                            className="space-y-2 text-[var(--text-muted)] text-sm"
                         >
                             <p>noreplay.gkk26@gmail.com</p>
                             <p>+91 9477564633</p>
-                            <p>Bengaluru, India</p>
+                            <p>India</p>
                         </motion.div>
                     </div>
                 </div>
@@ -101,17 +102,17 @@ export default function Footer() {
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/40"
+                    className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[var(--text-primary)]/40"
                 >
                     <div className="flex flex-col gap-1">
                         <p>© 2025 GKK Interns. All rights reserved.</p>
                         <p className="text-[10px] uppercase tracking-wider opacity-60">
-                            A venture of <a href="https://bubblesort.in" target="_blank" rel="noopener noreferrer" className="hover:text-white underline decoration-white/30 underline-offset-2">Bubblesort</a>.
+                            A venture of <a href="https://bubblesort.in" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] underline decoration-white/30 underline-offset-2">Bubblesort</a>.
                         </p>
                     </div>
                     <div className="flex gap-6">
-                        <a href="/privacy.html" className="hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="/terms.html" className="hover:text-white transition-colors">Terms of Service</a>
+                        <a href="/privacy.html" className="hover:text-[var(--text-primary)] transition-colors">Privacy Policy</a>
+                        <a href="/terms.html" className="hover:text-[var(--text-primary)] transition-colors">Terms of Service</a>
                     </div>
                 </motion.div>
             </div>

@@ -1,48 +1,57 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { motion } from 'framer-motion';
 import NavigationMenu from './NavigationMenu';
+import SectionCanvas from './SectionCanvas';
 import TransitionOverlay from './TransitionOverlay';
-import { useState } from 'react';
+import anime from 'animejs/lib/anime.es.js';
+import HeroTitle from './HeroTitle';
+import InternsMask from './InternsMask';
+import Marquee from './Marquee';
+import { MagneticButton } from './MagneticButton';
 
 const StaggerButton = ({ onClick }: { onClick: (e: React.MouseEvent) => void }) => {
     return (
-        <motion.a
-            href="/dashboard/apply/"
+        <motion.div
             onClick={onClick}
-            className="relative overflow-hidden bg-black text-white px-16 py-6 rounded-full uppercase font-black text-base tracking-[0.2em] group no-underline inline-block"
-            initial="initial"
+            className="group cursor-pointer relative"
             whileHover="hovered"
-            style={{ textDecoration: 'none' }}
+            initial="initial"
         >
-            <div className="relative block overflow-hidden">
-                <motion.div
-                    variants={{
-                        initial: { y: 0 },
-                        hovered: { y: "-100%" }
-                    }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                >
-                    APPLY NOW
-                </motion.div>
-                <motion.div
-                    className="absolute top-0 left-0 w-full"
-                    variants={{
-                        initial: { y: "100%" },
-                        hovered: { y: 0 }
-                    }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                >
-                    APPLY NOW
-                </motion.div>
+            <div className="relative overflow-hidden bg-black text-white px-16 py-6 rounded-full uppercase font-black text-base tracking-[0.2em] no-underline inline-block border border-white/10 shadow-[0_0_20px_rgba(34,216,122,0.2)]">
+                <div className="relative block overflow-hidden">
+                    <motion.div
+                        variants={{
+                            initial: { y: 0 },
+                            hovered: { y: "-100%" }
+                        }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                        APPLY NOW
+                    </motion.div>
+                    <motion.div
+                        className="absolute top-0 left-0 w-full"
+                        variants={{
+                            initial: { y: "100%" },
+                            hovered: { y: 0 }
+                        }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                        APPLY NOW
+                    </motion.div>
+                </div>
             </div>
-        </motion.a>
+            {/* Simple glow instead of magnetic blur */}
+            <div className="absolute inset-0 bg-[#22d87a] opacity-0 group-hover:opacity-10 blur-2xl rounded-full transition-opacity duration-500" />
+        </motion.div>
     );
 };
 
 const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [transitionType, setTransitionType] = useState<'login' | 'apply' | 'register' | 'dashboard'>('dashboard');
+
+
 
     React.useEffect(() => {
         const handlePageShow = (event: PageTransitionEvent) => {
@@ -53,6 +62,8 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
         window.addEventListener('pageshow', handlePageShow);
         return () => window.removeEventListener('pageshow', handlePageShow);
     }, []);
+
+
 
     // Animation Variants
     const containerVariants = {
@@ -97,9 +108,10 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            style={styles.containerMotion as any}
+            style={{ ...styles.containerMotion as any, backgroundColor: '#0c0c0f' }}
         >
             <View style={styles.container}>
+                <SectionCanvas dotColor="rgba(240,239,233,0.08)" accentColor="rgba(34,216,122,0.4)" />
                 {/* Background Grain Overlay */}
                 <View style={styles.noiseOverlay} />
 
@@ -129,28 +141,22 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
                             style={styles.titleContainerMotion as any}
                         >
                             <View style={styles.titleContainer}>
-                                <h1 style={{ ...styles.mainTitle, margin: 0 } as any}>GKK</h1>
-                                <Text style={[styles.subTitle, styles.italicCormoram]}>INTERNS</Text>
+                                <HeroTitle />
+                                <InternsMask />
                             </View>
                         </motion.div>
 
                         <motion.div variants={elementVariants} className="flex flex-col items-center relative z-50 px-4">
-                            <p className="mt-16 md:mt-32 text-xs md:text-lg text-neutral-800 max-w-[90%] md:max-w-xl text-center font-medium leading-relaxed backdrop-blur-sm bg-white/40 p-4 md:p-6 rounded-2xl border border-white/20 shadow-lg">
-                                Launch your career in 3 simple steps: <br className="hidden md:block" />
-                                <span className="font-bold text-black">1. Apply Now</span> &rarr;
-                                <span className="font-bold text-black"> 2. Get Approved</span> &rarr;
-                                <span className="font-bold text-black"> 3. Join.</span>
-                                <br /> Start by clicking Apply below.
-                            </p>
 
-                            <div className="mt-4 md:mt-8 relative z-50 transform scale-75 md:scale-100 origin-top flex flex-col items-center gap-3 md:gap-4">
+
+                            <div className="mt-24 md:mt-48 relative z-50 transform scale-75 md:scale-100 origin-top flex flex-col items-center gap-3 md:gap-4">
                                 <StaggerButton onClick={(e) => { e.preventDefault(); setTransitionType('apply'); setIsTransitioning(true); }} />
-                                <a href="/dashboard/user/signup" className="text-neutral-500 text-sm font-medium hover:text-black transition-colors border-b border-transparent hover:border-black pb-0.5">
-                                    Already Approved? <span className="text-black font-bold">Register Here</span>
+                                <a href="/dashboard/user/signup" className="text-[#f0efe9] text-sm font-medium hover:opacity-80 transition-opacity border-b border-transparent hover:border-[rgba(255,255,255,0.07)] pb-0.5">
+                                    Already Approved? <span className="text-[#22d87a] font-bold">Register Here</span>
                                 </a>
 
                                 <motion.button
-                                    className="mt-1 px-6 py-2 bg-transparent border border-black text-black text-xs font-bold uppercase tracking-widest rounded-full hover:bg-black hover:text-white transition-all flex items-center gap-2"
+                                    className="mt-1 px-6 py-2 bg-transparent border border-[rgba(255,255,255,0.07)] text-[#f0efe9] text-xs font-bold uppercase tracking-widest rounded-full hover:bg-[#13131a] hover:text-[#f0efe9] transition-all flex items-center gap-2"
                                     onClick={() => { setTransitionType('dashboard'); setIsTransitioning(true); }}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
@@ -167,86 +173,13 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
                     isVisible={isTransitioning}
                     type={transitionType}
                     onComplete={() => {
-                        if (transitionType === 'dashboard') window.location.href = 'https://gkkintern.in/dashboard';
+                        if (transitionType === 'dashboard') window.location.href = 'https://www.gkkintern.in/dashboard';
                         if (transitionType === 'apply') window.location.href = '/dashboard/apply/';
                     }}
                 />
 
-                {/* Floating Cards - Hidden on very small screens or scaled way down */}
-                <div className="hidden md:block">
-                    <motion.div
-                        variants={elementVariants}
-                        initial={{ y: 800, opacity: 0 }}
-                        animate={{
-                            y: [-10, 10, -10],
-                            opacity: 1,
-                            rotate: [-11, -13, -11]
-                        }}
-                        transition={{
-                            y: { duration: 6, repeat: Infinity, ease: "easeInOut" as const },
-                            rotate: { duration: 6, repeat: Infinity, ease: "easeInOut" as const },
-                            default: { duration: 1.5, ease: "easeOut" as const, delay: 1.2 }
-                        }}
-                        style={styles.card1Motion as any}
-                    >
-                        <View style={[styles.diamondCard, styles.glowDiamond]}>
-                            <motion.div
-                                animate={{ x: ['-200%', '200%'] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" as const, repeatDelay: 2 }}
-                                style={styles.shineEffect as any}
-                            />
-                            <View style={styles.blurEffectDiamond} />
-                        </View>
-                    </motion.div>
-
-                    <motion.div
-                        variants={elementVariants}
-                        initial={{ y: 800, opacity: 0 }}
-                        animate={{
-                            y: [10, -10, 10],
-                            rotate: [4, 6, 4],
-                            opacity: 1
-                        }}
-                        transition={{
-                            y: { duration: 7, repeat: Infinity, ease: "easeInOut" as const },
-                            rotate: { duration: 7, repeat: Infinity, ease: "easeInOut" as const },
-                            default: { duration: 1.8, ease: "easeOut" as const, delay: 1.4 }
-                        }}
-                        style={styles.card2Motion as any}
-                    >
-                        <View style={[styles.diamondCard, styles.glowCyan]}>
-                            <motion.div
-                                animate={{ x: ['-200%', '200%'] }}
-                                transition={{ duration: 3.5, repeat: Infinity, ease: "linear" as const, repeatDelay: 3 }}
-                                style={styles.shineEffect as any}
-                            />
-                            <View style={styles.cornerMarkerDiamond} />
-                        </View>
-                    </motion.div>
-
-                    <motion.div
-                        variants={elementVariants}
-                        initial={{ y: 1000, opacity: 0 }}
-                        animate={{
-                            y: [15, -15, 15],
-                            rotate: [-1, 1, -1],
-                            opacity: 1
-                        }}
-                        transition={{
-                            y: { duration: 8, repeat: Infinity, ease: "easeInOut" as const },
-                            rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" as const },
-                            default: { duration: 2, ease: "easeOut" as const, delay: 1.6 }
-                        }}
-                        style={styles.card3Motion as any}
-                    >
-                        <View style={[styles.diamondCard, styles.glowSoftDiamond]}>
-                            <motion.div
-                                animate={{ x: ['-200%', '200%'] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "linear" as const, repeatDelay: 1 }}
-                                style={styles.shineEffect as any}
-                            />
-                        </View>
-                    </motion.div>
+                <div className="absolute bottom-0 left-0 w-full z-[40] border-t border-[rgba(255,255,255,0.05)] bg-[#0c0c0f]">
+                    <Marquee />
                 </div>
             </View >
         </motion.div >
@@ -261,7 +194,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#E5E5E5',
+        backgroundColor: '#0c0c0f',
         width: '100%' as any,
         minHeight: '100vh' as any,
         overflow: 'visible' as any,
@@ -270,7 +203,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 12, // Reduced for mobile
         paddingHorizontal: 12,
-        zIndex: 10,
+        zIndex: 50,
     },
     noiseOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -278,7 +211,7 @@ const styles = StyleSheet.create({
         zIndex: -1,
     },
     headerMotion: {
-        zIndex: 20,
+        zIndex: 60,
         width: '100%',
     },
     header: {
@@ -293,12 +226,12 @@ const styles = StyleSheet.create({
     logoText: {
         fontSize: 24, // Smaller on mobile
         fontWeight: '900',
-        color: '#000',
+        color: '#f0efe9',
     },
     logoUnderline: {
         height: 3,
         width: '100%',
-        backgroundColor: '#000',
+        backgroundColor: 'rgba(255,255,255,0.07)',
         marginTop: 2,
     },
     mainContent: {
@@ -319,116 +252,32 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     mainTitle: {
-        // @ts-ignore
-        fontSize: 'clamp(50px, 15vw, 220px)', // Smaller minimum size
+        fontSize: 'clamp(50px, 10vw, 180px)', // Smaller minimum size
         fontWeight: '900',
-        color: '#1A1A1A',
+        color: '#f0efe9',
         textShadow: '0 0 30px rgba(0, 0, 0, 0.15), 0 0 60px rgba(0, 0, 0, 0.1)', // Subtle glow
         lineHeight: 1, // Let it flow naturally or use a relative unit
         letterSpacing: -2, // Less aggressive spacing on mobile
         textAlign: 'center',
         position: 'relative',
         zIndex: 10,
-    },
+    } as any,
     subTitle: {
-        // @ts-ignore
-        fontSize: 'clamp(40px, 12vw, 180px)', // Smaller minimum
-        color: '#C0C0C0',
+        fontSize: 'clamp(30px, 8vw, 120px)', // Smaller minimum
+        color: 'rgba(240,239,233,0.45)',
         position: 'absolute',
-        bottom: -50, // Adjust overlap for mobile
+        bottom: -30, // Adjust overlap for mobile
         lineHeight: 1,
         zIndex: -1,
         letterSpacing: -2,
         textAlign: 'center',
-    },
+    } as any,
     italicCormoram: {
         fontFamily: 'Cormorant Garamond',
         fontStyle: 'italic',
         fontWeight: '400',
     },
-    diamondCard: {
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'transparent',
-        borderWidth: 1.5,
-        borderColor: 'rgba(255, 255, 255, 0.8)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-        // @ts-ignore
-        backdropFilter: 'blur(30px) saturate(150%)',
-        borderRadius: 2,
-    },
-    shineEffect: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '50%',
-        height: '100%',
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        transform: [{ skewX: '-25deg' } as any],
-        // @ts-ignore
-        backgroundImage: 'linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)' as any,
-        zIndex: 2,
-    },
-    card1Motion: {
-        position: 'absolute',
-        width: 250,
-        height: 280,
-        top: '15%',
-        left: '15%',
-        zIndex: 1,
-    },
-    card2Motion: {
-        position: 'absolute',
-        width: 320,
-        height: 220,
-        bottom: '20%',
-        right: '10%',
-        zIndex: 1,
-    },
-    card3Motion: {
-        position: 'absolute',
-        width: 300,
-        height: 400,
-        bottom: -100,
-        right: '5%',
-        zIndex: 1,
-    },
-    blurEffectDiamond: {
-        position: 'absolute',
-        width: 140,
-        height: 140,
-        borderRadius: 70,
-        backgroundColor: 'rgba(255,255,255,0.6)',
-        right: -50,
-        top: '20%',
-        // @ts-ignore
-        filter: 'blur(30px)',
-        opacity: 0.3,
-    },
-    cornerMarkerDiamond: {
-        position: 'absolute',
-        bottom: 25,
-        right: 25,
-        width: 20,
-        height: 20,
-        borderBottomWidth: 2,
-        borderRightWidth: 2,
-        borderColor: 'rgba(255,255,255,0.8)',
-    },
-    glowDiamond: {
-        // @ts-ignore
-        boxShadow: '0 0 30px rgba(255, 255, 255, 0.8), 0 20px 60px rgba(0, 0, 0, 0.15), inset 0 0 20px rgba(255,255,255,0.4)' as any,
-    },
-    glowCyan: {
-        // @ts-ignore
-        boxShadow: '0 0 40px rgba(200, 230, 255, 0.4), 0 30px 80px rgba(0, 0, 0, 0.1), inset 0 0 30px rgba(255,255,255,0.5)' as any,
-    },
-    glowSoftDiamond: {
-        // @ts-ignore
-        boxShadow: '0 0 50px rgba(255, 255, 255, 0.6), 0 40px 100px rgba(0, 0, 0, 0.08), inset 0 0 40px rgba(255,255,255,0.3)' as any,
-    }
+
 });
 
 export default GKKPage;

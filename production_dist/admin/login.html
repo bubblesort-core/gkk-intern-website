@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -248,7 +248,7 @@
                 // 1. Verify against admin_credentials (DB)
                 const { data: admin, error } = await supabaseClient
                     .from('admin_credentials')
-                    // ADDED auth_email to selection
+                    // Corrected: Removed double quotes which PostgREST interprets as identifiers
                     .select('id, username, password_hash, display_name, is_active, auth_email')
                     .or(`username.eq."${username}",auth_email.eq."${username}"`)
                     .eq('is_active', true)
@@ -323,7 +323,7 @@
             }
         });
 
-        document.getElementById('togglePassword').addEventListener('click', () => {
+        document.getElementById('togglePassword')?.addEventListener('click', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
             document.getElementById('eyeIcon').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -256,7 +256,7 @@
                             <option value="all">All Interns</option>
                             <option value="interns">Specific Interns</option>
                             <option value="teams">Specific Teams</option>
-                            <option value="batches">Specific Batches</option>
+                            <option value="batches">Specific Phases</option>
                         </select>
                     </div>
 
@@ -285,6 +285,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script src="../js/supabase-client.js"></script>
         <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
         <script src="../js/admin-identity.js"></script>
 
         <script>
@@ -371,8 +372,8 @@
             };
 
             window.filterTargets = function () {
-                const type = document.getElementById('targetType').value;
-                const filter = document.getElementById('targetSearch').value;
+                const type = (document.getElementById('targetType')?.value || '');
+                const filter = (document.getElementById('targetSearch')?.value || '');
                 renderTargetList(type, filter);
             };
 
@@ -381,8 +382,8 @@
                 else selectedTargetIds.add(id);
 
                 // Re-render
-                const type = document.getElementById('targetType').value;
-                const filter = document.getElementById('targetSearch').value;
+                const type = (document.getElementById('targetType')?.value || '');
+                const filter = (document.getElementById('targetSearch')?.value || '');
                 renderTargetList(type, filter);
                 updateSelectedCount();
             };
@@ -532,12 +533,12 @@
                 saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
                 try {
-                    const title = document.getElementById('resTitle').value;
-                    const type = document.getElementById('resType').value;
-                    const desc = document.getElementById('resDesc').value;
-                    const targetType = document.getElementById('targetType').value;
+                    const title = (document.getElementById('resTitle')?.value || '');
+                    const type = (document.getElementById('resType')?.value || '');
+                    const desc = (document.getElementById('resDesc')?.value || '');
+                    const targetType = (document.getElementById('targetType')?.value || '');
 
-                    let url = document.getElementById('resUrl').value;
+                    let url = (document.getElementById('resUrl')?.value || '');
 
                     // Handle File Upload
                     if (type === 'pdf' || type === 'doc') {

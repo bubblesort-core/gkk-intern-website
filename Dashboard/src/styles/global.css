@@ -1,10 +1,57 @@
-﻿/* ============================================
-   GKK INTERNS REACT - GLOBAL STYLES
-   Imports the design system + adds landing page overrides
-   ============================================ */
+/* Global Styles */
 
 /* Design System */
-/* Design System moved to index.html links */
+:root {
+  /* Fonts */
+  --font-sans: 'Space Grotesk', 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', 'Cormorant Garamond', serif;
+  --font-display: 'Syne', sans-serif;
+
+  /* Theme: Dark (Default) */
+  --bg-primary: #0a0a0f;
+  --bg-surface: #12121e;
+  --bg-elevated: #1a1a2e;
+  --text-primary: #f0efe9;
+  --text-muted: rgba(240, 239, 233, 0.6);
+  --text-faint: rgba(240, 239, 233, 0.3);
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #2c2cf3;
+  --accent-glow: #06e4f9;
+  --accent-secondary: #06e4f9;
+  
+  --glass-bg: rgba(10, 10, 15, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='light'] {
+  --bg-primary: #FFF8F0;
+  --bg-surface: #fdf6ee;
+  --bg-elevated: #f5ece1;
+  --text-primary: #121212;
+  --text-muted: rgba(18, 18, 18, 0.6);
+  --text-faint: rgba(18, 18, 18, 0.3);
+  --border: rgba(18, 18, 18, 0.1);
+  --accent: #E85D04;
+  --accent-glow: #FAA307;
+  --accent-secondary: #DC2F02;
+  
+  --glass-bg: rgba(255, 248, 240, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: var(--font-sans) !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: var(--font-display) !important;
+}
+
+.font-serif {
+    font-family: var(--font-serif) !important;
+}
 
 /* ==========================================
    HERO VISUAL OVERRIDES
@@ -152,10 +199,10 @@
     left: 0;
     height: 100vh;
     width: 64px;
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(148, 163, 184, 0.1);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
     z-index: 1100;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
@@ -172,7 +219,7 @@
     align-items: center;
     justify-content: center;
     padding: 12px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
     min-height: 64px;
     overflow: hidden;
@@ -207,7 +254,7 @@
     gap: 14px;
     padding: 12px 12px;
     border-radius: 10px;
-    color: #94a3b8;
+    color: #4b5563; /* Gray-600 */
     text-decoration: none;
     transition: all 0.2s ease;
     white-space: nowrap;
@@ -215,13 +262,13 @@
 }
 
 .sidebar-link:hover {
-    background: rgba(59, 130, 246, 0.1);
-    color: #e2e8f0;
+    background: rgba(0, 0, 0, 0.05); /* Subtle dark highlight */
+    color: #000000;
 }
 
 .sidebar-link.active {
-    background: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
+    background: rgba(0, 0, 0, 0.08); /* Slightly stronger */
+    color: #000000;
 }
 
 .sidebar-icon {
@@ -246,7 +293,7 @@
 
 .sidebar-divider {
     height: 1px;
-    background: rgba(148, 163, 184, 0.1);
+    background: rgba(0, 0, 0, 0.1);
     margin: 8px 12px;
 }
 
@@ -290,10 +337,10 @@
         z-index: 1200;
         width: 40px;
         height: 40px;
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(148, 163, 184, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.2);
         border-radius: 10px;
         cursor: pointer;
         padding: 0;
@@ -301,14 +348,14 @@
     }
 
     .sidebar-mobile-toggle:hover {
-        background: rgba(30, 41, 59, 0.95);
+        background: rgba(255, 255, 255, 0.95);
     }
 
     .sidebar-mobile-toggle span {
         display: block;
         width: 20px;
         height: 2px;
-        background: #94a3b8;
+        background: #1a1a1a;
         border-radius: 2px;
         transition: all 0.3s ease;
     }
@@ -379,13 +426,13 @@
     }
 
     .sidebar {
-        transform: translateX(-100%);
+        transform: translateX(-100%) !important;
         width: 240px;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .sidebar.sidebar-mobile-open {
-        transform: translateX(0);
+        transform: translateX(0) !important;
     }
 
     .sidebar.sidebar-mobile-open .sidebar-link-label {

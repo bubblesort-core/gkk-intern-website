@@ -10,16 +10,5 @@ export const supabase = createClient(supabaseDirectUrl, supabaseAnonKey, {
         persistSession: true,
         detectSessionInUrl: true,
         flowType: 'pkce'
-    },
-    global: {
-        fetch: async (url, options) => {
-            // Re-route REST/Auth calls through the proxy
-            const fetchUrl = url.toString().replace(supabaseDirectUrl, supabaseUrl);
-            const response = await fetch(fetchUrl, options);
-            if (response.status === 429) {
-                console.error('⚠️ SUPABASE RATE LIMIT EXCEEDED (429):', fetchUrl);
-            }
-            return response;
-        }
     }
 });

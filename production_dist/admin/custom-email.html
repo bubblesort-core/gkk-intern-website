@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -443,9 +443,9 @@
                             <label class="form-label">Load Template</label>
                             <select id="templateSelect" class="form-select" onchange="loadTemplate()">
                                 <option value="">-- Start from Blank --</option>
-                                <option value="meeting">📅 Meeting Invitation (Google Meet)</option>
-                                <option value="urgent">🚨 Urgent / Action Required</option>
-                                <option value="update">ℹ️ General Update</option>
+                                <option value="meeting">?? Meeting Invitation (Google Meet)</option>
+                                <option value="urgent">?? Urgent / Action Required</option>
+                                <option value="update">?? General Update</option>
                             </select>
                         </div>
 
@@ -525,6 +525,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
 
     <script>
@@ -536,7 +537,7 @@
             if (sidebar.classList.contains('open')) overlay.style.display = 'block';
             else overlay.style.display = 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', () => toggleSidebar());
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
 
         // Global State
         let allInterns = [];
@@ -545,7 +546,7 @@
         const templates = {
             meeting: {
                 subject: "Invitation: GKK Hire Team Meeting",
-                body: "Dear Candidate,\n\nWe would like to invite you to a meeting to discuss your progress.\n\n📅 Date: [Insert Date]\n⏰ Time: [Insert Time]\n\n🔗 Google Meet Link:\n[PASTE LINK HERE]\n\nPlease make sure to join 5 minutes early. We look forward to speaking with you."
+                body: "Dear Candidate,\n\nWe would like to invite you to a meeting to discuss your progress.\n\n?? Date: [Insert Date]\n? Time: [Insert Time]\n\n?? Google Meet Link:\n[PASTE LINK HERE]\n\nPlease make sure to join 5 minutes early. We look forward to speaking with you."
             },
             urgent: {
                 subject: "Action Required: Urgent Update Regarding Your Application",
@@ -558,7 +559,7 @@
         };
 
         function loadTemplate() {
-            const type = document.getElementById('templateSelect').value;
+            const type = (document.getElementById('templateSelect')?.value || '');
             const subjectInput = document.getElementById('emailSubject');
             const bodyInput = document.getElementById('emailBody');
             const interviewFields = document.getElementById('interviewFields');
@@ -606,7 +607,7 @@
                 if (allInterns.length === 0) {
                     await fetchInterns();
                 } else {
-                    document.getElementById('listTotalCount').textContent = `${allInterns.length} total`;
+                    if (document.getElementById('listTotalCount')) document.getElementById('listTotalCount').textContent = `${allInterns.length} total`;
                 }
             }
         }
@@ -630,12 +631,12 @@
 
                 allInterns = Array.from(unique.values());
                 updateFilterCounts();
-                document.getElementById('listTotalCount').textContent = `${allInterns.length} total`;
+                if (document.getElementById('listTotalCount')) document.getElementById('listTotalCount').textContent = `${allInterns.length} total`;
                 renderInterns(getVisibleInterns());
 
             } catch (err) {
                 console.error('Error fetching interns:', err);
-                document.getElementById('internList').innerHTML = `
+                if (document.getElementById('internList')) document.getElementById('internList').innerHTML = `
                     <div style="text-align:center; padding:30px; color:#ef4444;">
                         <i class="fas fa-exclamation-circle fa-2x"></i>
                         <p style="margin-top:10px">Failed to load intern database.</p>
@@ -721,7 +722,7 @@
         }
 
         function updateSelectedCount() {
-            document.getElementById('selectedCount').textContent = selectedEmails.size;
+            if (document.getElementById('selectedCount')) document.getElementById('selectedCount').textContent = selectedEmails.size;
         }
 
         function toggleSelectAll() {
@@ -743,11 +744,11 @@
         function filterInterns() {
             const visible = getVisibleInterns();
             renderInterns(visible);
-            document.getElementById('listTotalCount').textContent = `${visible.length} shown`;
+            if (document.getElementById('listTotalCount')) document.getElementById('listTotalCount').textContent = `${visible.length} shown`;
         }
 
         function getVisibleInterns() {
-            const term = document.getElementById('internSearch').value.toLowerCase();
+            const term = (document.getElementById('internSearch')?.value || '').toLowerCase();
             return allInterns.filter(i => {
                 const matchesSearch =
                     (i.full_name && i.full_name.toLowerCase().includes(term)) ||
@@ -810,9 +811,9 @@
             e.preventDefault();
 
             const btn = document.getElementById('sendBtn');
-            const email = document.getElementById('recipientEmail').value;
-            const subject = document.getElementById('emailSubject').value;
-            const bodyContent = document.getElementById('emailBody').value;
+            const email = (document.getElementById('recipientEmail')?.value || '');
+            const subject = (document.getElementById('emailSubject')?.value || '');
+            const bodyContent = (document.getElementById('emailBody')?.value || '');
 
             // Basic Validation
             if (!email || !subject || !bodyContent) {
@@ -826,7 +827,7 @@
 
             try {
                 // Gather interview details if present
-                const templateType = document.getElementById('templateSelect').value;
+                const templateType = (document.getElementById('templateSelect')?.value || '');
                 let requestType = 'custom';
                 let meetLink = null;
                 let interviewDate = null;
@@ -834,9 +835,9 @@
 
                 if (templateType === 'meeting') {
                     requestType = 'interview';
-                    meetLink = document.getElementById('meetLink').value;
-                    interviewDate = document.getElementById('interviewDate').value;
-                    interviewTime = document.getElementById('interviewTime').value;
+                    meetLink = (document.getElementById('meetLink')?.value || '');
+                    interviewDate = (document.getElementById('interviewDate')?.value || '');
+                    interviewTime = (document.getElementById('interviewTime')?.value || '');
 
                     if (!meetLink) {
                         Swal.fire('Missing Link', 'Please provide a Google Meet link for the interview.', 'warning');
@@ -875,7 +876,8 @@
                 resetForm();
 
             } catch (err) {
-                console.error('Send Error:', err);
+                if (err instanceof TypeError && err.message.includes('null')) return; // SPA detachment safe abort
+                console.error('Database Error:', err);
                 Swal.fire('Failed', 'Could not send email: ' + (err.message || 'Unknown error'), 'error');
             } finally {
                 btn.disabled = false;

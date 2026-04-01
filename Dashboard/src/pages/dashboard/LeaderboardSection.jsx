@@ -22,12 +22,13 @@ export default function LeaderboardSection() {
                         const userIds = [...new Set(members.map(m => m.user_id))];
                         const { data } = await supabase
                             .from('profiles')
-                            .select('full_name, xp, level, avatar_url')
+                            .select('full_name, level, current_streak, avatar_url')
                             .in('id', userIds)
                             .not('full_name', 'ilike', '%Test%')
                             .neq('full_name', 'GKK Admin')
-                            .order('xp', { ascending: false })
-                            .limit(4);
+                            .order('level', { ascending: false })
+                            .order('current_streak', { ascending: false })
+                            .limit(10);
                         if (data) users = data;
                     }
                 }
@@ -37,11 +38,12 @@ export default function LeaderboardSection() {
             if (users.length === 0) {
                 const { data } = await supabase
                     .from('profiles')
-                    .select('full_name, xp, level, avatar_url')
+                    .select('full_name, level, current_streak, avatar_url')
                     .not('full_name', 'ilike', '%Test%')
                     .neq('full_name', 'GKK Admin')
-                    .order('xp', { ascending: false })
-                    .limit(4);
+                    .order('level', { ascending: false })
+                    .order('current_streak', { ascending: false })
+                    .limit(10);
                 if (data) users = data;
             }
 
@@ -70,7 +72,7 @@ export default function LeaderboardSection() {
             <div className="dash-empty">
                 <i className="fas fa-trophy" />
                 <h3>No Interns Found</h3>
-                <p>The leaderboard will populate as interns earn XP.</p>
+                <p>The leaderboard will populate as interns build their streaks.</p>
             </div>
         );
     }
@@ -78,23 +80,23 @@ export default function LeaderboardSection() {
     return (
         <div className="dash-section-ready" style={{ maxWidth: 600 }}>
             {/* Header Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 80px', padding: '0.75rem 1rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dash-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 100px', padding: '0.75rem 1rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--dash-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 <span>Rank</span>
                 <span>Intern</span>
-                <span style={{ textAlign: 'right' }}>XP</span>
+                <span style={{ textAlign: 'right' }}>Streak</span>
             </div>
 
             {/* Rows */}
             {topUsers.map((user, index) => {
                 const rank = index + 1;
                 const name = user.full_name || 'Anonymous User';
-                const xp = user.xp || 0;
-                const level = calculateLevel(xp);
+                const level = user.level || 1;
+                const streak = user.current_streak || 0;
                 const color = rankColors[index] || rankColors[3];
 
                 return (
                     <div key={index} className="dash-card" style={{
-                        display: 'grid', gridTemplateColumns: '60px 1fr 80px', alignItems: 'center',
+                        display: 'grid', gridTemplateColumns: '60px 1fr 100px', alignItems: 'center',
                         marginBottom: '0.5rem', padding: '1rem',
                         borderLeft: rank <= 3 ? `3px solid ${color}` : 'none'
                     }}>
@@ -120,7 +122,7 @@ export default function LeaderboardSection() {
                             </div>
                         </div>
                         <div style={{ textAlign: 'right', fontWeight: 600, color: 'var(--dash-accent)' }}>
-                            {xp} XP
+                            {streak} Days
                         </div>
                     </div>
                 );

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -103,7 +103,7 @@
                     <h1 class="page-title">Invitations</h1>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()" title="Refresh Data">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     <button class="btn btn-primary" onclick="openInviteModal()"><i class="fas fa-paper-plane"></i> Send
@@ -155,6 +155,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <script>
@@ -172,7 +173,7 @@
         }
 
         // Close sidebar when clicking overlay
-        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
             toggleSidebar(); // Close it
         });
 
@@ -207,7 +208,7 @@
                         <div>
                             <div style="font-weight:500;">${i.email}</div>
                             <div style="font-size:0.85rem; color:var(--c-text-muted);">
-                                ${i.teams ? `Team: ${i.teams.name} • ` : ''} ${new Date(i.created_at).toLocaleDateString()}
+                                ${i.teams ? `Team: ${i.teams.name} � ` : ''} ${new Date(i.created_at).toLocaleDateString()}
                             </div>
                         </div>
                     </div>
@@ -222,7 +223,7 @@
         async function loadTeams() {
             const { data } = await supabaseClient.from('teams').select('id, name');
             if (data) {
-                document.getElementById('inviteTeam').innerHTML = '<option value="">-- No Team --</option>' +
+                if (document.getElementById('inviteTeam')) document.getElementById('inviteTeam').innerHTML = '<option value="">-- No Team --</option>' +
                     data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
             }
         }
@@ -230,12 +231,12 @@
         async function loadCandidates() {
             const { data } = await supabaseClient.from('applications').select('email').in('status', ['approved', 'shortlisted']);
             if (data) {
-                document.getElementById('candidateEmails').innerHTML = data.map(c => `<option value="${c.email}">`).join('');
+                if (document.getElementById('candidateEmails')) document.getElementById('candidateEmails').innerHTML = data.map(c => `<option value="${c.email}">`).join('');
             }
         }
 
         async function sendInvitation() {
-            const email = document.getElementById('inviteEmail').value;
+            const email = (document.getElementById('inviteEmail')?.value || '');
             if (!email) return;
 
             const saveBtn = document.querySelector('#inviteModal .btn-primary');
@@ -247,7 +248,7 @@
 
                 const { error } = await supabaseClient.from('invitations').insert([{
                     email,
-                    team_id: document.getElementById('inviteTeam').value || null,
+                    team_id: (document.getElementById('inviteTeam')?.value || '') || null,
                     status: 'sent'
                 }]);
 

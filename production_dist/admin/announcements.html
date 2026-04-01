@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -189,7 +189,7 @@
                     <h1 class="page-title">Announcements</h1>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="window.location.reload()" title="Refresh Data">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()" title="Refresh Data">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     <button class="btn btn-primary" onclick="openCreateModal()"><i class="fas fa-plus"></i> New
@@ -233,7 +233,7 @@
                         <option value="all">All Interns</option>
                         <option value="interns">Specific Interns</option>
                         <option value="teams">Specific Teams</option>
-                        <option value="batches">Specific Batches</option>
+                        <option value="batches">Specific Phases</option>
                     </select>
 
                     <div id="targetSelectionArea" style="display:none; margin-top:12px;">
@@ -264,6 +264,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <script>
@@ -281,7 +282,7 @@
         }
 
         // Close sidebar when clicking overlay
-        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
             toggleSidebar(); // Close it
         });
 
@@ -290,7 +291,7 @@
         let selectedTargetIds = new Set();
 
         async function handleTargetTypeChange() {
-            const type = document.getElementById('annTargetType').value;
+            const type = (document.getElementById('annTargetType')?.value || '');
             const area = document.getElementById('targetSelectionArea');
             const list = document.getElementById('targetList');
             const search = document.getElementById('targetSearch');
@@ -327,7 +328,7 @@
 
         function renderTargets() {
             const list = document.getElementById('targetList');
-            const term = document.getElementById('targetSearch').value.toLowerCase();
+            const term = (document.getElementById('targetSearch')?.value || '').toLowerCase();
 
             const filtered = currentTargets.filter(t => t.name.toLowerCase().includes(term));
 
@@ -358,14 +359,14 @@
         }
 
         function updateSelectedCount() {
-            document.getElementById('selectedCount').textContent = selectedTargetIds.size;
+            if (document.getElementById('selectedCount')) document.getElementById('selectedCount').textContent = selectedTargetIds.size;
         }
 
         async function createAnnouncement() {
-            const title = document.getElementById('annTitle').value;
-            const content = document.getElementById('annContent').value;
-            const type = document.getElementById('annType').value;
-            const targetType = document.getElementById('annTargetType').value;
+            const title = (document.getElementById('annTitle')?.value || '');
+            const content = (document.getElementById('annContent')?.value || '');
+            const type = (document.getElementById('annType')?.value || '');
+            const targetType = (document.getElementById('annTargetType')?.value || '');
 
             if (!title || !content) return Swal.fire('Error', 'Title and Content are required', 'warning');
 
@@ -458,7 +459,7 @@
                     }
                 }
                 if (a.target_type === 'batches') {
-                    targetBadge = '<span class="badge" style="background:#10b981; color:white; font-size:0.75rem; margin-left:8px;">Specific Batches</span>';
+                    targetBadge = '<span class="badge" style="background:#10b981; color:white; font-size:0.75rem; margin-left:8px;">Specific Phases</span>';
                     const ids = typeof a.target_ids === 'string' ? JSON.parse(a.target_ids) : a.target_ids;
                     if (ids && ids.length) {
                         const names = ids.join(', ');
@@ -528,10 +529,10 @@
 
         // Modified Open to reset state
         function openCreateModal() {
-            document.getElementById('annTitle').value = '';
-            document.getElementById('annContent').value = '';
-            document.getElementById('annTargetType').value = 'all';
-            document.getElementById('targetSelectionArea').style.display = 'none';
+            if (document.getElementById('annTitle')) document.getElementById('annTitle').value = '';
+            if (document.getElementById('annContent')) document.getElementById('annContent').value = '';
+            if (document.getElementById('annTargetType')) document.getElementById('annTargetType').value = 'all';
+            if (document.getElementById('targetSelectionArea')) document.getElementById('targetSelectionArea').style.display = 'none';
             selectedTargetIds.clear();
 
             document.getElementById('createModal').classList.add('open');

@@ -259,7 +259,7 @@ const Mascot: React.FC<MascotProps> = ({ eyesClosed, eyePosition, isTyping = fal
     const boxGlow = isAngry ? 'ring-2 ring-red-500 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'border-border focus-within:ring-2 focus-within:border-primary/50';
 
     return (
-        <div className={`flex flex-col items-center justify-center gap-4 mascot-tile h-full min-h-87.5 transition-all duration-500 w-full bento-card glass-hub border rounded-xl shadow-sm p-8 ${boxGlow}`}>
+        <div className={`flex flex-col items-center justify-center gap-4 mascot-tile h-full min-h-87.5 transition-all duration-500 w-full apply-card glass-hub border rounded-xl shadow-sm p-8 ${boxGlow}`}>
             <div className={`relative w-44 h-44 mascot-container flex items-center justify-center transition-transform duration-300 ${isAngry ? 'animate-shake' : 'animate-cloudy-float'}`}>
                 {/* Aura glow */}
                 {!isAngry && (

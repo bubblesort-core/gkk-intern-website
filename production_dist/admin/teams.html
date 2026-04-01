@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -545,7 +545,7 @@
                             <thead>
                                 <tr>
                                     <th>Team Name</th>
-                                    <th>Batch</th>
+                                    <th>Phase</th>
                                     <th>Project</th>
                                     <th>Members</th>
                                     <th>Status</th>
@@ -585,9 +585,9 @@
                     <input type="text" id="teamName" class="form-input" placeholder="e.g. Alpha Squad">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Assign Batch (Optional)</label>
+                    <label class="form-label">Assign Phase (Optional)</label>
                     <select id="teamBatch" class="form-select">
-                        <option value="">-- No Batch --</option>
+                        <option value="">-- No Phase --</option>
                     </select>
                 </div>
                 <!-- Logic for max members simplified to 4 default -->
@@ -700,6 +700,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
 
@@ -718,7 +719,7 @@
         }
 
         // Close sidebar when clicking overlay
-        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
             toggleSidebar(); // Close it
         });
 
@@ -733,19 +734,19 @@
             currentView = view;
 
             // Hide all views
-            document.getElementById('view-list').style.display = 'none';
-            document.getElementById('teamsGrid').style.display = 'none';
+            if (document.getElementById('view-list')) document.getElementById('view-list').style.display = 'none';
+            if (document.getElementById('teamsGrid')) document.getElementById('teamsGrid').style.display = 'none';
 
             // Remove active class
             document.querySelectorAll('.btn-view').forEach(btn => btn.classList.remove('active'));
 
             // Show selected
             if (view === 'list') {
-                document.getElementById('view-list').style.display = 'block';
+                if (document.getElementById('view-list')) document.getElementById('view-list').style.display = 'block';
                 document.getElementById('btn-view-list').classList.add('active');
                 renderTeamsList();
             } else if (view === 'grid') {
-                document.getElementById('teamsGrid').style.display = 'grid';
+                if (document.getElementById('teamsGrid')) document.getElementById('teamsGrid').style.display = 'grid';
                 document.getElementById('btn-view-grid').classList.add('active');
                 renderTeams();
             }
@@ -858,7 +859,7 @@
             const { data, error } = await supabaseClient.from('batches').select('id, name').eq('is_active', true).order('created_at', { ascending: false });
             if (data) {
                 const sel = document.getElementById('teamBatch');
-                sel.innerHTML = '<option value="">-- No Batch --</option>' +
+                sel.innerHTML = '<option value="">-- No Phase --</option>' +
                     data.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
             }
         }
@@ -1089,16 +1090,16 @@
             if (project) {
                 // Mock match score for visualization
                 const score = Math.floor(Math.random() * 40) + 60;
-                document.getElementById('matchScoreVal').textContent = score + '%';
-                document.getElementById('matchScoreBar').style.width = score + '%';
-                document.getElementById('projectDetails').style.display = 'block';
-                document.getElementById('projectTitle').textContent = project.title;
+                if (document.getElementById('matchScoreVal')) document.getElementById('matchScoreVal').textContent = score + '%';
+                if (document.getElementById('matchScoreBar')) document.getElementById('matchScoreBar').style.width = score + '%';
+                if (document.getElementById('projectDetails')) document.getElementById('projectDetails').style.display = 'block';
+                if (document.getElementById('projectTitle')) document.getElementById('projectTitle').textContent = project.title;
             }
         });
 
         async function confirmAssignProject() {
-            const tid = document.getElementById('assignProjectTeamId').value;
-            const pid = document.getElementById('projectSelect').value;
+            const tid = (document.getElementById('assignProjectTeamId')?.value || '');
+            const pid = (document.getElementById('projectSelect')?.value || '');
             if (!tid || !pid) return;
 
             try {
@@ -1121,7 +1122,7 @@
         // Modals
         function openCreateTeamModal() { document.getElementById('createTeamModal').classList.add('open'); }
         function openAssignProjectModal(id) {
-            document.getElementById('assignProjectTeamId').value = id;
+            if(document.getElementById('assignProjectTeamId')) document.getElementById('assignProjectTeamId').value = id;
             const sel = document.getElementById('projectSelect');
             sel.innerHTML = '<option value="">-- Select --</option>' + allProjects.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
             document.getElementById('assignProjectModal').classList.add('open');
@@ -1150,7 +1151,7 @@
         }
 
         function openAddCandidateModal(id) {
-            document.getElementById('targetTeamId').value = id;
+            if(document.getElementById('targetTeamId')) document.getElementById('targetTeamId').value = id;
             selectedCandidates.clear();
             updateCandSelectedCount();
             toggleCandPanel();
@@ -1172,7 +1173,7 @@
                 renderCandidateList();
             } catch (e) {
                 console.error('Error fetching applications:', e);
-                document.getElementById('candidateSelectList').innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle fa-2x"></i><p style="margin-top:10px">Failed to load candidates.</p></div>';
+                if (document.getElementById('candidateSelectList')) document.getElementById('candidateSelectList').innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle fa-2x"></i><p style="margin-top:10px">Failed to load candidates.</p></div>';
             }
         }
 
@@ -1195,7 +1196,7 @@
         function filterCandidates() {
             const visible = getVisibleCandidates();
             renderCandidateList(visible);
-            document.getElementById('candListCount').textContent = `${visible.length} shown`;
+            if (document.getElementById('candListCount')) document.getElementById('candListCount').textContent = `${visible.length} shown`;
         }
 
         function updateCandFilterCounts() {
@@ -1214,7 +1215,7 @@
         function renderCandidateList(list) {
             if (!list) list = getVisibleCandidates();
             const container = document.getElementById('candidateSelectList');
-            document.getElementById('candListCount').textContent = `${list.length} shown`;
+            if (document.getElementById('candListCount')) document.getElementById('candListCount').textContent = `${list.length} shown`;
 
             if (list.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:30px; color:var(--c-text-muted);"><i class="fas fa-search" style="font-size:1.5rem; opacity:0.3; margin-bottom:8px;"></i><p>No candidates found.</p></div>';
@@ -1260,7 +1261,7 @@
         }
 
         function updateCandSelectedCount() {
-            document.getElementById('candSelectedCount').textContent = selectedCandidates.size;
+            if (document.getElementById('candSelectedCount')) document.getElementById('candSelectedCount').textContent = selectedCandidates.size;
         }
 
         function toggleCandSelectAll() {
@@ -1277,8 +1278,8 @@
         }
 
         async function createNewTeam() {
-            const name = document.getElementById('teamName').value;
-            const batchId = document.getElementById('teamBatch').value || null;
+            const name = (document.getElementById('teamName')?.value || '');
+            const batchId = (document.getElementById('teamBatch')?.value || '') || null;
             if (!name) return Swal.fire('Error', 'Team name required', 'error');
 
             const saveBtn = document.querySelector('#createTeamModal .btn-primary');
@@ -1304,7 +1305,7 @@
         }
 
         async function confirmAddCandidates() {
-            const tid = document.getElementById('targetTeamId').value;
+            const tid = (document.getElementById('targetTeamId')?.value || '');
             if (selectedCandidates.size === 0) {
                 Swal.fire('No selection', 'Please select at least one candidate.', 'warning');
                 return;

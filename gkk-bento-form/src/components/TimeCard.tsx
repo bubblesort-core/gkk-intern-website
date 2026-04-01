@@ -57,6 +57,18 @@ const TimeCard: React.FC = () => {
         return `${h}:${minStr} ${suffix}`;
     };
 
+    // Check if a time slot is at least 12 hours from now
+    const isSlotWithin12Hours = (time24: string): boolean => {
+        if (!formData.interview_date) return false;
+        const slotDate = new Date(formData.interview_date);
+        const [hourStr, minStr] = time24.split(':');
+        slotDate.setHours(parseInt(hourStr), parseInt(minStr), 0, 0);
+        const now = new Date();
+        const diffMs = slotDate.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        return diffHours < 12; // true means too close / expired
+    };
+
     // Fetch booked slots for the selected date
     const refreshBookedSlots = useCallback(async () => {
         if (!formData.interview_date) return;
@@ -270,7 +282,7 @@ const TimeCard: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="w-full h-full bento-card border border-border p-8 rounded-xl shadow-sm">
+            <div className="w-full h-full apply-card border border-border p-8 rounded-xl shadow-sm">
                 <div className="flex items-center justify-center h-48">
                     <span className="material-symbols-outlined animate-spin text-3xl text-text-secondary">autorenew</span>
                 </div>
@@ -280,7 +292,7 @@ const TimeCard: React.FC = () => {
 
     if (!formData.interview_date) {
         return (
-            <div className="w-full h-full bento-card glass-hub border border-border p-6 rounded-xl shadow-sm flex flex-col items-center justify-center text-center gap-3 opacity-60">
+            <div className="w-full h-full apply-card glass-hub border border-border p-6 rounded-xl shadow-sm flex flex-col items-center justify-center text-center gap-3 opacity-60">
                 <span className="material-symbols-outlined text-4xl text-text-muted">calendar_today</span>
                 <p className="text-sm text-text-secondary font-medium">Please select a date first</p>
             </div>
@@ -289,7 +301,7 @@ const TimeCard: React.FC = () => {
 
     const availableCount = timeSlots.filter(time => {
         const formatted = formatTime12(time);
-        return (bookedCounts[formatted] || 0) < maxPerSlot;
+        return (bookedCounts[formatted] || 0) < maxPerSlot && !isSlotWithin12Hours(time);
     }).length;
 
     const handleClear = async (e: React.MouseEvent) => {
@@ -310,7 +322,7 @@ const TimeCard: React.FC = () => {
     };
 
     return (
-        <div className="w-full h-full bento-card glass-hub border border-border p-6 lg:p-7 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 flex flex-col gap-4">
+        <div className="w-full h-full flex flex-col items-center justify-center p-8 glass-hub apply-card border border-border rounded-xl shadow-sm gap-6 relative transition-all z-20 overflow-hidden">
             <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1">
                     <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
@@ -344,7 +356,15 @@ const TimeCard: React.FC = () => {
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar max-h-[300px]">
+            {/* 12-hour advance booking notice */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <span className="material-symbols-outlined text-blue-400 text-[14px]">info</span>
+                <span className="text-[10px] text-blue-300 font-medium">
+                    Slots must be booked at least 12 hours in advance
+                </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar max-h-75">
                 {loadingSlots ? (
                     <div className="flex items-center justify-center h-full py-8">
                         <span className="material-symbols-outlined animate-spin text-2xl text-text-secondary">autorenew</span>
@@ -357,6 +377,7 @@ const TimeCard: React.FC = () => {
                                 const isSelected = formData.interview_time === formatted;
                                 const bookedCount = bookedCounts[formatted] || 0;
                                 const isFull = bookedCount >= maxPerSlot;
+                                const isExpired = isSlotWithin12Hours(time);
                                 const remaining = maxPerSlot - bookedCount;
                                 const isHolding = (holdingSlot === formatted && !holdIdRef.current) || (isHoldingInProgress && holdingSlot === formatted);
 
@@ -364,25 +385,31 @@ const TimeCard: React.FC = () => {
                                     <button
                                         key={time}
                                         onClick={() => handleTimeSelect(time)}
-                                        disabled={(isFull && !isSelected) || isHolding}
+                                        disabled={(isFull && !isSelected) || isExpired || isHolding}
                                         className={`
                                             py-2 px-3 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center border-2 relative
                                             ${isSelected
                                                 ? "bg-primary border-primary text-text-primary shadow-md shadow-primary/20 z-10"
-                                                : isFull
-                                                    ? "bg-red-500/5 border-red-500/20 text-red-400/60 cursor-not-allowed opacity-60"
-                                                    : "bg-background-card/30 border-border/40 text-text-secondary hover:border-primary/50 hover:text-primary"
+                                                : isExpired
+                                                    ? "bg-orange-500/5 border-orange-500/15 text-orange-400/50 cursor-not-allowed opacity-50"
+                                                    : isFull
+                                                        ? "bg-red-500/5 border-red-500/20 text-red-400/60 cursor-not-allowed opacity-60"
+                                                        : "bg-background-card/30 border-border/40 text-text-secondary hover:border-primary/50 hover:text-primary"
                                             }
                                             ${isHolding ? "animate-pulse" : ""}
                                         `}
+                                        title={isExpired ? 'Booking closed — must book at least 12 hours in advance' : undefined}
                                     >
                                         <span className="flex items-center gap-1">
-                                            {isFull && !isSelected && <span className="material-symbols-outlined text-[12px]">lock</span>}
+                                            {isExpired && !isSelected && <span className="material-symbols-outlined text-[12px]">schedule</span>}
+                                            {isFull && !isSelected && !isExpired && <span className="material-symbols-outlined text-[12px]">lock</span>}
                                             {isHolding && <span className="material-symbols-outlined animate-spin text-[12px]">autorenew</span>}
                                             {formatted}
                                         </span>
                                         {isSelected ? (
                                             <span className="text-[9px] font-bold text-text-primary mt-0.5">Selected</span>
+                                        ) : isExpired ? (
+                                            <span className="text-[9px] font-semibold text-orange-400/70 mt-0.5">Closed</span>
                                         ) : isFull ? (
                                             <span className="text-[9px] font-semibold text-red-400/80 mt-0.5">Slot Full</span>
                                         ) : maxPerSlot > 1 ? (

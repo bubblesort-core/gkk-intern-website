@@ -127,14 +127,21 @@ const CalendarCard: React.FC = () => {
                 }
 
                 const counts = await getBookedSlots(displayStr);
-                // A date is fully booked if EVERY time slot has >= maxPerSlot bookings
+                // A date is fully booked if EVERY time slot is either full OR within 12 hours
                 const allFull = timeSlotsForDate.every((time24: string) => {
                     const [hourStr, minStr] = time24.split(':');
                     const hour = parseInt(hourStr);
                     const suffix = hour >= 12 ? 'PM' : 'AM';
                     const h = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
                     const formatted = `${h}:${minStr} ${suffix}`;
-                    return (counts[formatted] || 0) >= maxPerSlot;
+
+                    // Check if this slot is within 12 hours
+                    const slotDate = new Date(checkDateObj);
+                    slotDate.setHours(parseInt(hourStr), parseInt(minStr), 0, 0);
+                    const diffMs = slotDate.getTime() - Date.now();
+                    const isWithin12Hours = diffMs / (1000 * 60 * 60) < 12;
+
+                    return (counts[formatted] || 0) >= maxPerSlot || isWithin12Hours;
                 });
                 if (allFull && timeSlotsForDate.length > 0) {
                     fullyBooked.add(displayStr);
@@ -194,7 +201,7 @@ const CalendarCard: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="w-full h-full bento-card border border-border p-8 rounded-xl shadow-sm">
+            <div className="w-full h-full apply-card border border-border p-8 rounded-xl shadow-sm">
                 <div className="flex items-center justify-center h-48">
                     <span className="material-symbols-outlined animate-spin text-3xl text-text-secondary">autorenew</span>
                 </div>
@@ -204,7 +211,7 @@ const CalendarCard: React.FC = () => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub border border-border p-6 lg:p-7 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] flex flex-col gap-4"
+            className="w-full h-full apply-card glass-hub border border-border p-6 lg:p-7 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] flex flex-col gap-4"
             onMouseEnter={() => updateFormData({ mascot_emotion: 'thinking' })}
             onMouseLeave={() => updateFormData({ mascot_emotion: 'neutral' })}
             onFocus={() => updateFormData({ mascot_emotion: 'thinking' })}

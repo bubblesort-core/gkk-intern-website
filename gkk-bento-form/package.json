@@ -1,5 +1,5 @@
 {
-  "name": "gkk-bento-form",
+  "name": "gkk-apply-form",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.91.0",
     "@tailwindcss/vite": "^4.1.18",
+    "animejs": "^3.2.1",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "firebase": "^12.10.0",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/animejs": "^3.1.13",
     "@types/canvas-confetti": "^1.6.4",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",

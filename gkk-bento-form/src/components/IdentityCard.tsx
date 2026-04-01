@@ -157,7 +157,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ onFocus, onBlur }) => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub p-4 md:p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 flex flex-col gap-4 md:gap-6"
+            className="w-full h-full apply-card glass-hub p-4 md:p-8 rounded-xl shadow-sm transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 flex flex-col gap-4 md:gap-6"
         >
             <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1">

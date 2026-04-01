@@ -312,6 +312,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -326,9 +327,9 @@
         }
 
         async function loadWorkshops() {
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('workshopList').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'none';
+            if (document.getElementById('loader')) document.getElementById('loader').style.display = 'block';
+            if (document.getElementById('workshopList')) document.getElementById('workshopList').style.display = 'none';
+            if (document.getElementById('emptyState')) document.getElementById('emptyState').style.display = 'none';
 
             try {
                 const { data, error } = await supabaseClient
@@ -341,17 +342,18 @@
                 allWorkshops = data || [];
                 renderWorkshops();
             } catch (err) {
-                console.error('Error:', err);
+                if (err instanceof TypeError && err.message.includes('null')) return; // SPA detachment safe abort
+                console.error('Database Error:', err);
                 Swal.fire('Error', 'Failed to load workshops', 'error');
             } finally {
-                document.getElementById('loader').style.display = 'none';
+                if (document.getElementById('loader')) document.getElementById('loader').style.display = 'none';
             }
         }
 
         function renderWorkshops() {
             const listEl = document.getElementById('workshopList');
             if (allWorkshops.length === 0) {
-                document.getElementById('emptyState').style.display = 'block';
+                if (document.getElementById('emptyState')) document.getElementById('emptyState').style.display = 'block';
                 return;
             }
 
@@ -383,23 +385,23 @@
         function openModal(data = null) {
             const form = document.getElementById('workshopForm');
             form.reset();
-            document.getElementById('workshopId').value = '';
-            document.getElementById('modalTitle').textContent = 'New Workshop';
-            document.getElementById('previewContainer').innerHTML = '<span style="opacity:0.3">No Image</span>';
+            if (document.getElementById('workshopId')) document.getElementById('workshopId').value = '';
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'New Workshop';
+            if (document.getElementById('previewContainer')) document.getElementById('previewContainer').innerHTML = '<span style="opacity:0.3">No Image</span>';
 
             if (data) {
-                document.getElementById('workshopId').value = data.id;
-                document.getElementById('modalTitle').textContent = 'Edit Workshop';
-                document.getElementById('title').value = data.title;
-                document.getElementById('description').value = data.description || '';
-                document.getElementById('heroImageUrl').value = data.hero_image_url || '';
-                document.getElementById('ctaText').value = data.cta_text || 'Learn More';
-                document.getElementById('ctaLink').value = data.cta_link || '';
-                document.getElementById('timerDuration').value = data.timer_duration || 5;
-                document.getElementById('isActive').value = data.is_active.toString();
-                document.getElementById('instructorName').value = data.instructor_name || '';
-                document.getElementById('sessionDate').value = data.session_date || '';
-                document.getElementById('sessionTime').value = data.session_time || '';
+                if (document.getElementById('workshopId')) document.getElementById('workshopId').value = data.id;
+                if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Edit Workshop';
+                if (document.getElementById('title')) document.getElementById('title').value = data.title;
+                if (document.getElementById('description')) document.getElementById('description').value = data.description || '';
+                if (document.getElementById('heroImageUrl')) document.getElementById('heroImageUrl').value = data.hero_image_url || '';
+                if (document.getElementById('ctaText')) document.getElementById('ctaText').value = data.cta_text || 'Learn More';
+                if (document.getElementById('ctaLink')) document.getElementById('ctaLink').value = data.cta_link || '';
+                if (document.getElementById('timerDuration')) document.getElementById('timerDuration').value = data.timer_duration || 5;
+                if (document.getElementById('isActive')) document.getElementById('isActive').value = data.is_active.toString();
+                if (document.getElementById('instructorName')) document.getElementById('instructorName').value = data.instructor_name || '';
+                if (document.getElementById('sessionDate')) document.getElementById('sessionDate').value = data.session_date || '';
+                if (document.getElementById('sessionTime')) document.getElementById('sessionTime').value = data.session_time || '';
                 updatePreview();
             }
 
@@ -411,7 +413,7 @@
         }
 
         function updatePreview() {
-            const url = document.getElementById('heroImageUrl').value;
+            const url = (document.getElementById('heroImageUrl')?.value || '');
             const container = document.getElementById('previewContainer');
             if (url) {
                 container.innerHTML = `<img src="${url}" alt="Preview" onerror="this.src=''; this.parentElement.innerHTML='<span style=\'color:#ef4444\'>Invalid Image URL</span>';">`;
@@ -421,9 +423,9 @@
         }
 
         async function saveWorkshop() {
-            const id = document.getElementById('workshopId').value;
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
+            const id = (document.getElementById('workshopId')?.value || '');
+            const title = (document.getElementById('title')?.value || '');
+            const description = (document.getElementById('description')?.value || '');
             
             if (!title || !description) {
                 return Swal.fire('Error', 'Title and Description are mandatory', 'error');
@@ -432,14 +434,14 @@
             const payload = {
                 title: title,
                 description: description,
-                hero_image_url: document.getElementById('heroImageUrl').value,
-                cta_text: document.getElementById('ctaText').value,
-                cta_link: document.getElementById('ctaLink').value,
-                timer_duration: parseInt(document.getElementById('timerDuration').value) || 5,
-                is_active: document.getElementById('isActive').value === 'true',
-                instructor_name: document.getElementById('instructorName').value,
-                session_date: document.getElementById('sessionDate').value,
-                session_time: document.getElementById('sessionTime').value
+                hero_image_url: (document.getElementById('heroImageUrl')?.value || ''),
+                cta_text: (document.getElementById('ctaText')?.value || ''),
+                cta_link: (document.getElementById('ctaLink')?.value || ''),
+                timer_duration: parseInt((document.getElementById('timerDuration')?.value || '')) || 5,
+                is_active: (document.getElementById('isActive')?.value || 'false') === 'true',
+                instructor_name: (document.getElementById('instructorName')?.value || ''),
+                session_date: (document.getElementById('sessionDate')?.value || ''),
+                session_time: (document.getElementById('sessionTime')?.value || '')
             };
 
             const saveBtn = document.getElementById('saveBtn');
@@ -511,7 +513,7 @@
             }
         }
 
-        document.getElementById('sidebarOverlay').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
         init();
     </script>

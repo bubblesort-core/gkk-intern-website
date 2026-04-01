@@ -4,6 +4,59 @@
     --color-gold-400: #FACC15;
 }
 
+:root {
+  /* Fonts */
+  --font-sans: 'Space Grotesk', 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', 'Cormorant Garamond', serif;
+  --font-display: 'Syne', sans-serif;
+
+  /* Theme: Dark (Default) */
+  --bg-primary: #0a0a0f;
+  --bg-surface: #12121e;
+  --bg-elevated: #1a1a2e;
+  --text-primary: #f0efe9;
+  --text-muted: rgba(240, 239, 233, 0.6);
+  --text-faint: rgba(240, 239, 233, 0.3);
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #2c2cf3;
+  --accent-glow: #06e4f9;
+  --accent-secondary: #06e4f9;
+  
+  --glass-bg: rgba(10, 10, 15, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='light'] {
+  --bg-primary: #FFF8F0;
+  --bg-surface: #fdf6ee;
+  --bg-elevated: #f5ece1;
+  --text-primary: #121212;
+  --text-muted: rgba(18, 18, 18, 0.6);
+  --text-faint: rgba(18, 18, 18, 0.3);
+  --border: rgba(18, 18, 18, 0.1);
+  --accent: #E85D04;
+  --accent-glow: #FAA307;
+  --accent-secondary: #DC2F02;
+  
+  --glass-bg: rgba(255, 248, 240, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
 @layer utilities {
     .text-stroke-1 {
         -webkit-text-stroke: 1px black;

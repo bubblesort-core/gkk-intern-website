@@ -81,22 +81,22 @@ export default function BlogPage() {
     };
 
     return (
-        <section className="min-h-screen bg-[#F5F5F3] text-black py-16 md:py-24 relative overflow-hidden flex flex-col justify-center">
+        <section className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] py-16 md:py-24 relative overflow-hidden flex flex-col justify-center">
             {/* Header / Zigzag Pattern */}
-            <div className="absolute top-0 left-0 right-0 h-24 bg-[#E5E5E5] flex flex-col justify-end overflow-hidden z-10">
+            <div className="absolute top-0 left-0 right-0 h-24 bg-[var(--border)] flex flex-col justify-end overflow-hidden z-10">
                 <div className="flex flex-row absolute -bottom-6 -left-5">
                     {[...Array(40)].map((_, i) => (
-                        <div key={i} className="w-12 h-12 bg-[#F5F5F3] transform rotate-45 -mr-6" />
+                        <div key={i} className="w-12 h-12 bg-[var(--bg-primary)] transform rotate-45 -mr-6" />
                     ))}
                 </div>
             </div>
 
             {/* Background Geometric Elements */}
             <div className="absolute top-40 right-10 opacity-5 pointer-events-none z-0">
-                <motion.div variants={rotateAnimation} animate="animate" className="w-96 h-96 border border-black transform rotate-45" />
+                <motion.div variants={rotateAnimation} animate="animate" className="w-96 h-96 border border-[var(--text-primary)] transform rotate-45" />
             </div>
             <div className="absolute bottom-40 left-10 opacity-5 pointer-events-none z-0">
-                <motion.div variants={rotateAnimation} animate="animate" className="w-64 h-64 border border-black rounded-full" />
+                <motion.div variants={rotateAnimation} animate="animate" className="w-64 h-64 border border-[var(--text-primary)] rounded-full" />
             </div>
 
             <div className="w-full relative z-10 pl-4 md:pl-12" ref={containerRef}>

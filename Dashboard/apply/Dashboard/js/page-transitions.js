@@ -122,8 +122,8 @@
             return 'user-dashboard';
         }
 
-        // 5. Landing / Root - Only match actual root-level pages, not Dashboard index
-        if (path === '/' || (path.includes('index.html') && !path.includes('/dashboard'))) return 'index';
+        // 5. Landing / Root
+        if (path === '/' || path.includes('index.html')) return 'index';
 
         return 'default';
     }
@@ -223,21 +223,21 @@
                 );
             }
             // 3. Fly (Apply) - Paper plane gliding
-            else if (config.animation === 'write') {
-                gsap.set(icon, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 });
-                gsap.fromTo(
-                    icon,
-                    { x: 0, y: 0, scale: 1, opacity: 1 },
-                    {
-                        x: 300,
-                        y: -300,
-                        scale: 0.5,
-                        opacity: 0,
-                        duration: 0.8,
-                        delay: 0.2,
-                        ease: "power2.inOut"
-                    }
-                );
+                else if (config.animation === 'write') {
+                    gsap.set(icon, { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 });
+                    gsap.fromTo(
+                        icon,
+                        { x: 0, y: 0, scale: 1, opacity: 1 },
+                        {
+                            x: 300,
+                            y: -300,
+                            scale: 0.5,
+                            opacity: 0,
+                            duration: 0.8,
+                            delay: 0.2,
+                            ease: "power2.inOut"
+                        }
+                    );
             }
             // 4. Unlock (Dashboard) - Shake and open
             else if (config.animation === 'unlock' || config.animation === 'bounce') {
@@ -284,24 +284,24 @@
         // 2. Animate In
         if (!overlay) createOverlay();
 
-        const exitDelay = pageType === 'apply' ? 1000 : 0;
+            const exitDelay = pageType === 'apply' ? 1000 : 0;
 
-        gsap.to(overlay, {
-            opacity: 1,
-            pointerEvents: 'all',
-            duration: 0.3,
-            onComplete: () => {
-                if (exitDelay > 0) {
-                    setTimeout(() => {
+            gsap.to(overlay, {
+                opacity: 1,
+                pointerEvents: 'all',
+                duration: 0.3,
+                onComplete: () => {
+                    if (exitDelay > 0) {
+                        setTimeout(() => {
+                            if (callback) callback();
+                            else if (targetUrl) window.location.href = targetUrl;
+                        }, exitDelay);
+                    } else {
                         if (callback) callback();
                         else if (targetUrl) window.location.href = targetUrl;
-                    }, exitDelay);
-                } else {
-                    if (callback) callback();
-                    else if (targetUrl) window.location.href = targetUrl;
+                    }
                 }
-            }
-        });
+            });
     }
 
     function hideTransition() {

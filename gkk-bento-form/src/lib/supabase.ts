@@ -117,7 +117,7 @@ export async function submitFormData(data: FormSubmission): Promise<string> {
         preferred_interview_date: data.interview_date,
         preferred_interview_time: data.interview_time,
         discovery_source: data.discovery_source,
-        batch_number: data.batch_number || 'Batch 1',
+        batch_number: data.batch_number || 'Phase 1',
         status: 'pending'
     };
 

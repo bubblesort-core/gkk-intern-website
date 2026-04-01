@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -74,6 +74,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-client.js"></script>
     <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
     <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
     <script src="../js/main-page-btn.js"></script>
 
@@ -85,7 +86,7 @@
             sidebar.classList.toggle('open');
             sidebar.classList.contains('open') ? overlay.style.display = 'block' : overlay.style.display = 'none';
         }
-        document.getElementById('sidebarOverlay').addEventListener('click', () => toggleSidebar());
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
 
         // Init
         document.addEventListener('DOMContentLoaded', () => {

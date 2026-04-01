@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
 import ManifestoBox from './ManifestoBox';
+import SectionCanvas from './SectionCanvas';
 
 export default function BrutalistSection() {
     return (
-        <section id="philosophy" className="relative min-h-screen bg-white py-24 md:py-32 overflow-hidden">
+        <section id="philosophy" className="relative min-h-screen bg-[var(--bg-primary)] py-24 md:py-32 overflow-hidden">
+            <SectionCanvas dotColor="rgba(240,239,233,0.07)" />
             <div className="max-w-[1600px] mx-auto px-8">
                 {/* Large overlapping typography */}
                 <div className="relative mb-24">
@@ -15,7 +17,7 @@ export default function BrutalistSection() {
                         transition={{ duration: 1.2, ease: 'easeOut' }}
                         className="absolute -left-8 top-0 pointer-events-none"
                     >
-                        <h2 className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black font-inter leading-none tracking-tighter">
+                        <h2 className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black font-inter leading-none tracking-tighter text-[var(--text-faint)]">
                             THE
                         </h2>
                     </motion.div>
@@ -28,10 +30,10 @@ export default function BrutalistSection() {
                         transition={{ duration: 0.8, ease: 'easeOut' }}
                         className="relative z-10 break-grid pt-32 md:pt-48"
                     >
-                        <h2 className="text-6xl md:text-8xl lg:text-9xl font-black font-inter leading-[0.9] tracking-tighter mb-4">
+                        <h2 className="text-6xl md:text-8xl lg:text-9xl font-black font-inter leading-[0.9] tracking-tighter mb-4 text-[var(--text-primary)]">
                             THE COLLAPSE
                         </h2>
-                        <h2 className="text-6xl md:text-8xl lg:text-9xl font-black font-inter leading-[0.9] tracking-tighter">
+                        <h2 className="text-6xl md:text-8xl lg:text-9xl font-black font-inter leading-[0.9] tracking-tighter text-[var(--text-primary)]">
                             OF CONVENTION
                         </h2>
                     </motion.div>
@@ -44,7 +46,7 @@ export default function BrutalistSection() {
                         transition={{ delay: 0.4, duration: 0.8 }}
                         className="mt-12 ml-4 md:ml-12"
                     >
-                        <p className="text-2xl md:text-4xl font-cormorant italic text-black/60 max-w-2xl">
+                        <p className="text-2xl md:text-4xl font-cormorant italic text-[var(--text-primary)]/60 max-w-2xl">
                             Where traditional structures crumble, innovation emerges from the debris.
                         </p>
                     </motion.div>
@@ -61,15 +63,15 @@ export default function BrutalistSection() {
                         className="space-y-8"
                     >
                         <div>
-                            <h3 className="text-4xl md:text-5xl font-black font-inter mb-4">
+                            <h3 className="text-4xl md:text-5xl font-black font-inter mb-4 text-[var(--text-primary)]">
                                 DECONSTRUCTED
                             </h3>
-                            <p className="text-lg leading-relaxed text-black/70">
+                            <p className="text-lg leading-relaxed text-[var(--text-primary)]/70">
                                 We strip away the unnecessary. Every element serves a purpose. Every decision is intentional. This is design reduced to its essence.
                             </p>
                         </div>
 
-                        <div className="border-l-4 border-black pl-6">
+                        <div className="border-l-4 border-[var(--border)] pl-6">
                             <p className="text-xl font-cormorant italic">
                                 "Form follows function, but function follows vision."
                             </p>
@@ -88,7 +90,7 @@ export default function BrutalistSection() {
                     whileInView={{ opacity: 1, scaleX: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1.2, ease: 'easeOut' }}
-                    className="h-1 bg-black origin-left"
+                    className="h-1 bg-[var(--accent)] origin-left"
                 />
             </div>
         </section>

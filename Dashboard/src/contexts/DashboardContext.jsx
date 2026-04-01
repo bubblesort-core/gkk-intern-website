@@ -10,6 +10,19 @@ export function useDashboard() {
     return ctx;
 }
 
+const slugify = (text) => {
+    if (!text) return 'intern';
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+};
+
 export function DashboardProvider({ children }) {
     const navigate = useNavigate();
     const [currentUser, setCurrentUser] = useState(null);
@@ -17,6 +30,9 @@ export function DashboardProvider({ children }) {
     const [currentTeam, setCurrentTeam] = useState(null);
     const [currentProjects, setCurrentProjects] = useState([]);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isLocked, setIsLocked] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [profileSlug, setProfileSlug] = useState('');
     const pollingRef = useRef(null);
 
     // Helper: get proxied URL for Supabase storage
@@ -48,52 +64,18 @@ export function DashboardProvider({ children }) {
         return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
     }, []);
 
-    // XP/Level helpers
-    const calculateLevel = useCallback((xp) => {
-        if (!xp || xp <= 0) return 1;
-        return Math.max(1, Math.floor((1 + Math.sqrt(1 + 8 * xp / 100)) / 2));
+    // Leveling helpers (Now based on Streaks)
+    const calculateLevel = useCallback((streak) => {
+        if (!streak || streak <= 0) return 1;
+        // Level up every 5 days of streak
+        return 1 + Math.floor(streak / 5);
     }, []);
 
-    const xpForNextLevel = useCallback((currentLevel) => currentLevel * 100, []);
-    const totalXpForLevel = useCallback((level) => level <= 1 ? 0 : ((level - 1) * level / 2) * 100, []);
-
-    // Award XP
+    // XP Awarding removed as per user request
     const awardXP = useCallback(async (userId, amount, reason) => {
-        if (!userId || !amount) return false;
-        try {
-            const { data: profile, error: fetchError } = await supabase
-                .from('profiles').select('xp').eq('id', userId).single();
-            if (fetchError) throw fetchError;
-
-            const currentXP = profile?.xp || 0;
-            const newXP = currentXP + amount;
-
-            const { error: updateError } = await supabase
-                .from('profiles').update({ xp: newXP }).eq('id', userId);
-            if (updateError) throw updateError;
-
-            setCurrentProfile(prev => prev ? { ...prev, xp: newXP } : prev);
-
-            const Swal = (await import('sweetalert2')).default;
-            const Toast = Swal.mixin({
-                toast: true, position: 'top-end', showConfirmButton: false,
-                timer: 4000, timerProgressBar: true,
-                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#f8fafc'
-            });
-
-            const oldLevel = calculateLevel(currentXP);
-            const newLevel = calculateLevel(newXP);
-            if (newLevel > oldLevel) {
-                Toast.fire({ icon: 'success', title: `🎉 Level Up! You're now Level ${newLevel}!`, text: `+${amount} XP (${reason})` });
-            } else {
-                Toast.fire({ icon: 'success', title: `+${amount} XP`, text: reason });
-            }
-            return true;
-        } catch (error) {
-            console.error('Error awarding XP:', error);
-            return false;
-        }
-    }, [calculateLevel]);
+        console.warn('XP system disabled. Awarding attempt for:', reason);
+        return false;
+    }, []);
 
     // Sign out
     const signOut = useCallback(async () => {
@@ -102,6 +84,72 @@ export function DashboardProvider({ children }) {
         } catch (e) { /* ignore */ }
         navigate('/user/login');
     }, [navigate]);
+
+    // Daily Check-in Logic
+    const handleDailyCheckIn = useCallback(async (profile) => {
+        if (!profile || !profile.id || profile.role === 'admin') return profile;
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const lastCheckInStr = profile.last_check_in;
+        const lastCheckIn = lastCheckInStr ? new Date(lastCheckInStr) : null;
+        
+        if (lastCheckIn) {
+            const lastDate = new Date(lastCheckIn.getFullYear(), lastCheckIn.getMonth(), lastCheckIn.getDate());
+            if (today.getTime() === lastDate.getTime()) {
+                return profile;
+            }
+        }
+
+        // It's a new day
+        let newStreak = 1;
+
+        if (lastCheckIn) {
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const lastDate = new Date(lastCheckIn.getFullYear(), lastCheckIn.getMonth(), lastCheckIn.getDate());
+
+            if (lastDate.getTime() === yesterday.getTime()) {
+                newStreak = (profile.current_streak || 0) + 1;
+            }
+        }
+
+        try {
+            const newLevel = calculateLevel(newStreak);
+            const updates = {
+                current_streak: newStreak,
+                last_check_in: now.toISOString(),
+                level: newLevel,
+                longest_streak: Math.max(profile.longest_streak || 0, newStreak)
+            };
+
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', profile.id);
+
+            if (updateError) throw updateError;
+
+            // Show Toast
+            const Swal = (await import('sweetalert2')).default;
+            const Toast = Swal.mixin({
+                toast: true, position: 'top-end', showConfirmButton: false,
+                timer: 5000, timerProgressBar: true,
+                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#f8fafc'
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: `🔥 Day ${newStreak} Streak!`,
+                text: `You have reached Level ${newLevel}! Keep it up!`
+            });
+
+            return { ...profile, ...updates };
+        } catch (error) {
+            console.error('Error in daily check-in:', error);
+            return profile;
+        }
+    }, []);
 
     // Poll for payment status
     const startPaymentPolling = useCallback(() => {
@@ -143,6 +191,7 @@ export function DashboardProvider({ children }) {
                         status: 'active'
                     });
                     setIsLocked(false);
+                    setProfileSlug(`admin-${user.id.split('-')[0]}`);
                     setLoading(false);
                     return;
                 }
@@ -186,8 +235,10 @@ export function DashboardProvider({ children }) {
                     return;
                 }
 
-                setCurrentProfile(profile);
-                const locked = profile.status !== 'active';
+                const updatedProfile = await handleDailyCheckIn(profile);
+                setCurrentProfile(updatedProfile);
+                setProfileSlug(`${slugify(updatedProfile.full_name)}-${updatedProfile.id.split('-')[0]}`);
+                const locked = updatedProfile.status !== 'active';
                 setIsLocked(locked);
 
                 if (!locked) {
@@ -248,8 +299,8 @@ export function DashboardProvider({ children }) {
         signOut,
         getProxiedUrl,
         formatDate, formatDateTime,
-        calculateLevel, xpForNextLevel, totalXpForLevel,
-        awardXP,
+        calculateLevel,
+        profileSlug,
         supabase
     };
 

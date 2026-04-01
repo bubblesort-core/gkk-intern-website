@@ -126,7 +126,7 @@ const SensitiveLinksCard: React.FC = () => {
 
     return (
         <div
-            className="w-full h-full bento-card glass-hub border border-primary/30 p-8 rounded-xl shadow-sm flex flex-col justify-center gap-8 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+            className="w-full h-full apply-card glass-hub border border-primary/30 p-8 rounded-xl shadow-sm flex flex-col justify-center gap-8 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#10b981]/50 focus-within:border-[#10b981] focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
             tabIndex={0}
             onFocus={() => updateFormData({ mascot_emotion: 'thinking' })}
             onBlur={() => updateFormData({ mascot_emotion: 'neutral' })}

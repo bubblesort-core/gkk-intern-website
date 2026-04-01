@@ -1,5 +1,78 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import { useDashboard } from '../../contexts/DashboardContext';
+
+// 3D Tilt Component
+const TiltCard = ({ children, className, style }) => {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+
+    const mouseXSpring = useSpring(x);
+    const mouseYSpring = useSpring(y);
+
+    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["5deg", "-5deg"]);
+    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-5deg", "5deg"]);
+
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const xPct = mouseX / width - 0.5;
+        const yPct = mouseY / height - 0.5;
+        x.set(xPct);
+        y.set(yPct);
+    };
+
+    const handleMouseLeave = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    return (
+        <motion.div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{
+                rotateX,
+                rotateY,
+                transformStyle: "preserve-3d",
+                ...style
+            }}
+            className={className}
+        >
+            <div style={{ transform: "translateZ(20px)" }}>
+                {children}
+            </div>
+        </motion.div>
+    );
+};
+
+// Slot Machine Rolling Number
+const RollingNumber = ({ value }) => {
+    const digits = value.toString().split('');
+    return (
+        <span className="rolling-number">
+            {digits.map((d, i) => (
+                <span key={i} className="digit-container">
+                    <motion.span
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        transition={{ 
+                            type: "spring", 
+                            stiffness: 100, 
+                            damping: 15,
+                            delay: 0.5 + i * 0.05 
+                        }}
+                    >
+                        {d}
+                    </motion.span>
+                </span>
+            ))}
+        </span>
+    );
+};
 
 export default function PaymentSection() {
     const { currentUser, currentProfile, isLocked, setIsLocked, setCurrentProfile, getProxiedUrl, supabase } = useDashboard();
@@ -48,7 +121,7 @@ export default function PaymentSection() {
                     phone: currentProfile?.phone || '',
                     full_name: currentProfile?.full_name || '',
                     application_id: 'training_fee_unlock',
-                    amount: 100 // TEST: 1 INR (100 paise)
+                    amount: 50929 // ₹509.29 (in paise)
                 })
             });
 
@@ -116,93 +189,134 @@ export default function PaymentSection() {
 
     return (
         <div className="dash-checkout">
-            {/* Left: Order Summary */}
-            <div className="dash-card">
-                <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                    <div style={{ width: 60, height: 60, margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <img src="/assets/gkk-intern-logo.png" alt="GKK" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            {/* Left: Plan Details (40% split) */}
+            <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="payment-split-left"
+            >
+                <TiltCard className="dash-card payment-plan-card">
+                    <div className="plan-card-stripes" />
+                    <div className="payment-logo-header">
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: 'spring', damping: 12, delay: 0.5 }}
+                            className="payment-logo-icon"
+                        >
+                            <img src="/assets/gkk-intern-logo.png" alt="GKK" />
+                        </motion.div>
+                        <h2 className="payment-brand-title">GKK INTERN</h2>
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white' }}>GKK INTERN</div>
-                </div>
 
-                <div className="dash-card" style={{ background: 'rgba(255,255,255,0.02)', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <span style={{ fontWeight: 600 }}>Internship Program</span>
-                        <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>₹499</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                        <span style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399', padding: '0.25rem 0.75rem', borderRadius: 50, fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(16,185,129,0.2)' }}>
-                            <i className="fas fa-bolt" style={{ fontSize: '0.7rem', marginRight: 4 }} /> Standard Plan
-                        </span>
-                    </div>
-
-                    {['Live Project Experience', 'Team Collaboration Tools', 'Senior Mentorship', 'Completion Certificate'].map(f => (
-                        <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', color: 'var(--dash-text-secondary)', fontSize: '0.9rem' }}>
-                            <i className="fas fa-check-circle" style={{ color: '#10b981' }} /> <span>{f}</span>
+                    <div className="payment-plan-panel">
+                        <div className="plan-header-row">
+                            <span className="plan-label">Internship Program</span>
+                            <span className="plan-price">₹499</span>
                         </div>
-                    ))}
+                        <div className="plan-badge">
+                            <i className="fas fa-bolt" /> Standard Plan
+                        </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--dash-border)' }}>
-                        <span style={{ fontWeight: 600 }}>Total Payable</span>
-                        <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>₹509.29</span>
+                        <div className="plan-features timeline-style">
+                            <div className="timeline-line" />
+                            {[
+                                'Live Project Experience',
+                                'Team Collaboration Tools',
+                                'Senior Mentorship',
+                                'Completion Certificate'
+                            ].map((feature, idx) => (
+                                <motion.div 
+                                    key={feature} 
+                                    initial={{ opacity: 0, x: -10 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.6 + idx * 0.1 }}
+                                    className="plan-feature-row"
+                                >
+                                    <div className="timeline-dot" />
+                                    <i className="fas fa-check-circle check-animate" /> 
+                                    <span>{feature}</span>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        <div className="plan-divider" />
+                        
+                        <div className="plan-total-row">
+                            <span className="total-label">Total Payable</span>
+                            <span className="total-amount">₹<RollingNumber value="509.29" /></span>
+                        </div>
+                        <div className="plan-fine-print">
+                            *Includes GST & Platform Fees
+                        </div>
                     </div>
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dash-text-muted)', opacity: 0.7, fontFamily: "'JetBrains Mono', monospace" }}>
-                        *Includes GST & Platform Fees
+                </TiltCard>
+            </motion.div>
+
+            {/* Right: Payment Details (60% split) */}
+            <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="payment-split-right"
+            >
+                <div className="payment-radial-glow" />
+                <TiltCard className="dash-card payment-action-card">
+                    <div className="security-tag">
+                        <i className="fas fa-lock" /> Secure 256-bit SSL Encrypted
                     </div>
-                </div>
-            </div>
 
-            {/* Right: Payment Details */}
-            <div className="dash-card">
-                <div style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--dash-text-secondary)' }}>
-                    <i className="fas fa-lock" style={{ marginRight: 4 }} /> Secure 256-bit SSL Encrypted
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--dash-card-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--dash-text-muted)', overflow: 'hidden' }}>
-                        {currentProfile?.avatar_url
-                            ? <img src={getProxiedUrl(currentProfile.avatar_url)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <i className="fas fa-user" />}
+                    <div className="payment-user-chip">
+                        <div className="user-avatar-square">
+                            <img src="/assets/gkk-intern-logo.png" alt="GKK" />
+                        </div>
+                        <div className="user-text">
+                            <h4 className="user-name">{userName}</h4>
+                            <p className="user-email">{userEmail}</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 style={{ margin: 0, color: 'white' }}>{userName}</h4>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--dash-text-secondary)' }}>{userEmail}</p>
+
+                    <h3 className="payment-heading">Complete Payment</h3>
+                    <p className="payment-subtext">
+                        Securely pay via Razorpay to instantiate your workspace and unlock full access.
+                    </p>
+
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="payment-cta-btn"
+                        onClick={initiatePayment}
+                        disabled={paying}
+                    >
+                        <span className="shimmer-sweep" />
+                        {paying ? (
+                            <><i className="fas fa-spinner fa-spin" /> Processing...</>
+                        ) : (
+                            <><i className="fas fa-lock" /> Pay ₹509.29 Securely</>
+                        )}
+                    </motion.button>
+
+                    <div className="payment-footer">
+                        <div className="powered-by">
+                            <motion.i 
+                                animate={{ opacity: [0.5, 1, 0.5] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                                className="fas fa-shield-alt" 
+                            /> Powered by Razorpay & SSL Security
+                        </div>
+                        <div className="safe-checkout-note">
+                            Guaranteed safe & secure checkout
+                        </div>
+                        <div className="payment-icons">
+                            <motion.i whileHover={{ y: -3, filter: "brightness(1.5)" }} className="fab fa-cc-visa" title="Visa" />
+                            <motion.i whileHover={{ y: -3, filter: "brightness(1.5)" }} className="fab fa-cc-mastercard" title="Mastercard" />
+                            <motion.i whileHover={{ y: -3, filter: "brightness(1.5)" }} className="fab fa-google-pay" title="Google Pay" />
+                            <motion.i whileHover={{ y: -3, filter: "brightness(1.5)" }} className="fas fa-shield-check" title="Secure" />
+                        </div>
                     </div>
-                </div>
-
-                <h3 style={{ marginBottom: '0.5rem' }}>Complete Payment</h3>
-                <p style={{ color: 'var(--dash-text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                    Securely pay via Razorpay to instantiate your workspace and unlock full access.
-                </p>
-
-                <button
-                    className="dash-btn dash-btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', fontSize: '1.1rem', padding: '1rem 2rem' }}
-                    onClick={initiatePayment}
-                    disabled={paying}
-                >
-                    {paying ? (
-                        <><i className="fas fa-spinner fa-spin" /> Processing...</>
-                    ) : (
-                        <><i className="fas fa-lock" /> Pay ₹509.29 Securely</>
-                    )}
-                </button>
-                <p style={{ fontSize: '0.78rem', color: 'var(--dash-text-muted)', marginTop: '0.75rem', textAlign: 'center', opacity: 0.8 }}>
-                    <i className="fas fa-shield-alt" style={{ marginRight: 4 }} />
-                    Powered by Razorpay &bull; 256-bit SSL Encrypted
-                </p>
-
-                <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--dash-text-muted)' }}>
-                    Guaranteed safe & secure checkout
-                </div>
-
-                <div className="dash-trust-badges">
-                    <i className="fab fa-cc-visa" />
-                    <i className="fab fa-cc-mastercard" />
-                    <i className="fab fa-google-pay" />
-                    <i className="fas fa-shield-alt" />
-                </div>
-            </div>
+                </TiltCard>
+            </motion.div>
         </div>
     );
 }
