@@ -40,8 +40,9 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
         { label: "Services", index: 2 },
         { label: "Alumni", index: 3 }, // Since Portfolio was removed, Alumni starts at 300vh
         { label: "Achievements", index: 6 }, // After Alumni (300vh)
+        { label: "Clients", index: -1, href: "/clients.html" }, // Separate page
         { label: "Contact", index: 8 }, // After Achievement (100vh) + CTA (100vh)
-    ];
+    ] as { label: string; index: number; href?: string }[];
 
     useEffect(() => {
         // Initialize GSAP timeline
@@ -141,15 +142,25 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
                 <div ref={linksRef} className="flex flex-col gap-2 md:gap-4 max-w-4xl">
                     {menuItems.map((item, idx) => (
                         <div key={idx} className="overflow-hidden">
-                            {/* Class for GSAP selection */}
-                            <div
-                                className="menu-link-item cursor-pointer group"
-                                onClick={() => handleLinkPress(item.index)}
-                            >
-                                <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">
-                                    {item.label}
-                                </h3>
-                            </div>
+                            {item.href ? (
+                                <a
+                                    href={item.href}
+                                    className="menu-link-item cursor-pointer group block no-underline"
+                                >
+                                    <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">
+                                        {item.label}
+                                    </h3>
+                                </a>
+                            ) : (
+                                <div
+                                    className="menu-link-item cursor-pointer group"
+                                    onClick={() => handleLinkPress(item.index)}
+                                >
+                                    <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">
+                                        {item.label}
+                                    </h3>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
