@@ -9,6 +9,31 @@ CREATE TABLE IF NOT EXISTS access_controls (
     created_by UUID REFERENCES auth.users(id)
 );
 
+ALTER TABLE access_controls
+    ADD COLUMN IF NOT EXISTS target_type TEXT DEFAULT 'all';
+
+ALTER TABLE access_controls
+    ADD COLUMN IF NOT EXISTS target_batch_id UUID REFERENCES batches(id) ON DELETE CASCADE;
+
+ALTER TABLE access_controls
+    ADD COLUMN IF NOT EXISTS target_intern_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+
+ALTER TABLE access_controls
+    ADD COLUMN IF NOT EXISTS target_email TEXT;
+
+UPDATE access_controls
+SET target_type = CASE
+    WHEN target_email IS NOT NULL THEN 'email'
+    WHEN target_batch_id IS NOT NULL THEN 'batch'
+    WHEN target_intern_id IS NOT NULL THEN 'intern'
+    WHEN target_user_id IS NOT NULL THEN 'intern'
+    ELSE 'all'
+END
+WHERE target_type IS NULL OR target_type = '';
+
+DROP POLICY IF EXISTS "Admins can do everything on access_controls" ON access_controls;
+DROP POLICY IF EXISTS "Interns can read applicable locks" ON access_controls;
+
 -- RLS Policies
 ALTER TABLE access_controls ENABLE ROW LEVEL SECURITY;
 
@@ -25,6 +50,17 @@ CREATE POLICY "Interns can read applicable locks"
 ON access_controls
 FOR SELECT
 USING (
-  (target_user_id IS NULL OR target_user_id = auth.uid()) 
-  AND is_locked = true
+  is_locked = true
+  AND (
+    target_type = 'all'
+    OR (target_type = 'email' AND target_email = auth.jwt() ->> 'email')
+    OR (target_type = 'intern' AND target_intern_id = auth.uid())
+    OR (target_type = 'batch' AND target_batch_id IN (
+        SELECT t.batch_id
+        FROM team_members tm
+        INNER JOIN teams t ON t.id = tm.team_id
+        WHERE tm.user_id = auth.uid()
+      ))
+  )
 );
+

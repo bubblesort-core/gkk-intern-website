@@ -42,3 +42,39 @@
     background: transparent !important;
     transform: rotate(90deg);
 }
+
+/* ============================================
+   Global Centering Fix for Modals
+   ============================================ */
+/* Target both default and custom admin containers to ensure consistency */
+.swal2-container, 
+.admin-swal-container {
+    z-index: 100000 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px !important;
+    margin: 0 !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+/* Ensure the popup itself stays centered correctly */
+.swal2-popup {
+    margin: auto !important;
+    position: relative !important;
+}
+
+/* Specific fix for centered Swal.fire calls */
+.swal2-container.swal2-center {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}

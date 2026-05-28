@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -208,7 +208,7 @@
                         <div>
                             <div style="font-weight:500;">${i.email}</div>
                             <div style="font-size:0.85rem; color:var(--c-text-muted);">
-                                ${i.teams ? `Team: ${i.teams.name} � ` : ''} ${new Date(i.created_at).toLocaleDateString()}
+                                ${i.teams ? `Team: ${i.teams.name} ï¿½ ` : ''} ${new Date(i.created_at).toLocaleDateString()}
                             </div>
                         </div>
                     </div>
@@ -287,6 +287,7 @@
         init();
     </script>
 
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

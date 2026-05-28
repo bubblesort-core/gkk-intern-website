@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
         // Send Notification Email to Admin only
         // (Candidate "thank you" email is handled by send-application-email function)
         const adminMailOptions = {
-            from: `"GKK System" <${SMTP_USER}>`,
+            from: `"GKK INTERN TEAM" <${SMTP_USER}>`,
             to: SMTP_USER,
             subject: `New Application: ${applicationData.full_name}`,
             html: `

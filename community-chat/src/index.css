@@ -6,6 +6,20 @@
   }
 }
 
+/* Global custom hover cursor for interactive UI */
+a:hover,
+button:hover,
+[role="button"]:hover,
+summary:hover,
+label:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+[onclick]:hover,
+.cursor-pointer:hover {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M4 3L4 24L10.2 18.8L14.3 29L18 27.3L13.9 17.3L24.5 17.3Z' fill='%233b82f6' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M4 3L4 24L10.2 18.8L14.3 29L18 27.3L13.9 17.3L24.5 17.3Z' fill='none' stroke='%231d4ed8' stroke-width='0.9' stroke-linejoin='round' opacity='0.9'/%3E%3C/svg%3E") 4 3, pointer !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

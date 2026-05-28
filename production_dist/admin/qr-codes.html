@@ -13,7 +13,7 @@
     <link rel="icon" type="image/png" href="../assets/favicon.png">
 
     <!-- QR Code Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         .qr-status-badge {
@@ -435,7 +435,7 @@
             document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
             if (document.getElementById('pageNumbers')) document.getElementById('pageNumbers').textContent = `Page ${currentPage} of ${totalPages}`;
             if (document.getElementById('pageInfo')) document.getElementById('pageInfo').textContent = total > 0
-                ? `Showing ${startIdx + 1}�${endIdx} of ${total}`
+                ? `Showing ${startIdx + 1}ï¿½${endIdx} of ${total}`
                 : 'No interns found';
 
             const tbody = document.getElementById('qrTableBody');
@@ -771,6 +771,7 @@
         init();
     </script>
     <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

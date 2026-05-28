@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -180,7 +180,7 @@
                 fetch: async (url, options) => {
                     const response = await fetch(url, options);
                     if (response.status === 429) {
-                        console.error('⚠️ SUPABASE RATE LIMIT EXCEEDED (429):', url);
+                        console.error('⚠️ SUPABASE RATE LIMIT EXCEEDED (429):', url);
                     }
                     return response;
                 }
@@ -332,6 +332,7 @@
         checkAuth();
     </script>
     <script src="../js/main-page-btn.js"></script>
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

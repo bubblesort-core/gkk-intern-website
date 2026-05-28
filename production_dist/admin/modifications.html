@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -116,16 +116,25 @@
                     </h3>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
-                        <!-- Target User -->
                         <div>
-                            <label class="form-label">Target User</label>
-                            <div class="user-select-container">
+                            <label class="form-label">Target Audience</label>
+                            <select id="targetMode" class="form-select" onchange="updateTargetMode()">
+                                <option value="all" selected>All Interns</option>
+                                <option value="batch">Specific Phase</option>
+                                <option value="intern">Specific Intern</option>
+                            </select>
+                            <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
+                                Choose whether the lock applies globally, by phase, or to one intern.
+                            </p>
+
+                            <div id="internTargetWrap" class="user-select-container" style="margin-top: 16px; display: none;">
+                                <label class="form-label">Target Intern</label>
                                 <div style="display: flex; gap: 8px;">
                                     <div style="position: relative; flex: 1;">
                                         <i class="fas fa-search"
                                             style="position: absolute; left: 12px; top: 12px; color: var(--c-text-muted);"></i>
                                         <input type="text" id="userSearch" class="form-input"
-                                            placeholder="Search user or leave empty for ALL..."
+                                            placeholder="Search intern by name or email..."
                                             style="padding-left: 36px;">
                                     </div>
                                     <button class="btn btn-secondary" onclick="clearUserSelection()"
@@ -140,23 +149,36 @@
                                 </div>
                                 <input type="hidden" id="selectedUserId" value="">
                             </div>
-                            <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
-                                Leave empty to apply lock to <b>ALL INTERNS</b>.
-                            </p>
+
+                            <div id="batchTargetWrap" style="margin-top: 16px; display: none;">
+                                <label class="form-label">Target Phase</label>
+                                <select id="batchSelect" class="form-select">
+                                    <option value="">Loading phases...</option>
+                                </select>
+                                <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
+                                    Locks will apply to the selected batch / phase.
+                                </p>
+                            </div>
                         </div>
 
-                        <!-- Page Selection -->
                         <div>
                             <label class="form-label">Page / Feature to Lock</label>
                             <select id="pageSelect" class="form-select">
-                                <option value="all">?? Entire Dashboard (Full Lockout)</option>
-                                <option value="/dashboard">?? Main Dashboard</option>
-                                <option value="/tasks">?? Task Board</option>
-                                <option value="/submissions">?? Submissions Page</option>
-                                <option value="/community">?? Community Chat</option>
-                                <option value="/leaderboard">?? Leaderboard</option>
-                                <option value="/profile">?? Profile Settings</option>
+                                <option value="all">Entire Platform (Full Lockout)</option>
+                                <option value="/overview">Main Dashboard</option>
+                                <option value="/payment">Training Fee / Payment</option>
+                                <option value="/projects">Projects</option>
+                                <option value="/team">Team</option>
+                                <option value="/announcements">Announcements</option>
+                                <option value="/meetings">Meetings</option>
+                                <option value="/recordings">Recordings</option>
+                                <option value="/resources">Resources</option>
+                                <option value="/rewards">Rewards</option>
+                                <option value="/profile">Profile Settings</option>
                             </select>
+                            <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
+                                These options mirror the current intern dashboard sections.
+                            </p>
                         </div>
                     </div>
 
@@ -221,13 +243,51 @@
 
         // State
         let selectedUser = null;
+        let targetMode = 'all';
+        let batchesCache = [];
 
         async function init() {
             if (!await ensureAdminAuth()) return;
             const session = getAdminSession();
 
+            await loadBatches();
             loadLocks();
             setupUserSearch();
+            updateTargetMode();
+        }
+
+        async function loadBatches() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('batches')
+                    .select('id, name')
+                    .order('name');
+
+                if (error) throw error;
+
+                batchesCache = data || [];
+                const batchSelect = document.getElementById('batchSelect');
+                if (batchSelect) {
+                    batchSelect.innerHTML = '<option value="">Select a phase...</option>' + batchesCache.map(batch => `<option value="${batch.id}">${batch.name}</option>`).join('');
+                }
+            } catch (err) {
+                console.error('Error loading batches:', err);
+                const batchSelect = document.getElementById('batchSelect');
+                if (batchSelect) batchSelect.innerHTML = '<option value="">Failed to load phases</option>';
+            }
+        }
+
+        function updateTargetMode() {
+            targetMode = document.getElementById('targetMode')?.value || 'all';
+
+            const internWrap = document.getElementById('internTargetWrap');
+            const batchWrap = document.getElementById('batchTargetWrap');
+
+            if (internWrap) internWrap.style.display = targetMode === 'intern' ? 'block' : 'none';
+            if (batchWrap) batchWrap.style.display = targetMode === 'batch' ? 'block' : 'none';
+
+            if (targetMode !== 'intern') clearUserSelection();
+            if (targetMode !== 'batch' && document.getElementById('batchSelect')) document.getElementById('batchSelect').value = '';
         }
 
         async function loadLocks() {
@@ -238,7 +298,7 @@
                 // Fetch locks with user details
                 const { data: locks, error } = await supabaseClient
                     .from('access_controls')
-                    .select('*, profiles(full_name, email)') // join profiles to get name if user is specific
+                    .select('*, profiles(full_name, email), batches(name)') // join profiles and batches for display
                     .eq('is_locked', true)
                     .order('created_at', { ascending: false });
 
@@ -250,12 +310,17 @@
                 }
 
                 if (tbody) tbody.innerHTML = locks.map(lock => {
-                    const targetDisplay = lock.target_user_id
-                        ? `<div style="font-weight:600;">${lock.profiles?.full_name || 'Unknown User'}</div><div style="font-size:0.8rem; opacity:0.7;">${lock.profiles?.email || 'No Email'}</div>`
-                        : '<span class="badge badge-error">ALL USERS</span>';
+                    const lockType = lock.target_type || (lock.target_batch_id ? 'batch' : (lock.target_user_id || lock.target_intern_id ? 'intern' : 'all'));
+                    let targetDisplay = '<span class="badge badge-error">ALL INTERNS</span>';
+
+                    if (lockType === 'intern') {
+                        targetDisplay = `<div style="font-weight:600;">${lock.profiles?.full_name || 'Unknown User'}</div><div style="font-size:0.8rem; opacity:0.7;">${lock.profiles?.email || 'No Email'}</div>`;
+                    } else if (lockType === 'batch') {
+                        targetDisplay = `<span class="badge badge-info"><i class="fas fa-layer-group"></i> ${lock.batches?.name || 'Unknown Phase'}</span>`;
+                    }
 
                     const pageDisplay = lock.page_identifier === 'all'
-                        ? '<b>?? Entire Platform</b>'
+                        ? '<b>Entire Platform</b>'
                         : `<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">${lock.page_identifier}</code>`;
 
                     return `
@@ -280,14 +345,32 @@
         }
 
         async function createLock() {
-            const userId = (document.getElementById('selectedUserId')?.value || '') || null;
+            const userId = targetMode === 'intern' ? ((document.getElementById('selectedUserId')?.value || '') || null) : null;
+            const batchId = targetMode === 'batch' ? (document.getElementById('batchSelect')?.value || '') : '';
             const page = (document.getElementById('pageSelect')?.value || '');
             const reason = (document.getElementById('lockReason')?.value || '') || 'Maintenance in progress';
 
-            const confirmTitle = userId ? 'Lock for Specific User?' : 'LOCK FOR ALL USERS?';
-            const confirmText = userId
-                ? `This will block access to <b>${page}</b> for the selected user.`
-                : `?? This will block access to <b>${page}</b> for <b>EVERYONE</b>. Are you sure?`;
+            if (targetMode === 'intern' && !userId) {
+                Swal.fire('Select Intern', 'Please choose an intern before applying the lock.', 'warning');
+                return;
+            }
+
+            if (targetMode === 'batch' && !batchId) {
+                Swal.fire('Select Phase', 'Please choose a phase before applying the lock.', 'warning');
+                return;
+            }
+
+            const selectedBatch = batchId ? batchesCache.find(batch => batch.id === batchId) : null;
+            const confirmTitle = targetMode === 'intern'
+                ? 'Lock for Specific Intern?'
+                : targetMode === 'batch'
+                    ? 'Lock for Specific Phase?'
+                    : 'LOCK FOR ALL INTERNS?';
+            const confirmText = targetMode === 'intern'
+                ? `This will block access to <b>${page}</b> for the selected intern.`
+                : targetMode === 'batch'
+                    ? `This will block access to <b>${page}</b> for <b>${selectedBatch?.name || 'the selected phase'}</b>.`
+                    : `This will block access to <b>${page}</b> for <b>EVERYONE</b>. Are you sure?`;
 
             const result = await Swal.fire({
                 title: confirmTitle,
@@ -312,7 +395,10 @@
                 const { error } = await supabaseClient
                     .from('access_controls')
                     .insert({
-                        target_user_id: userId,
+                        target_type: targetMode,
+                        target_user_id: targetMode === 'intern' ? userId : null,
+                        target_intern_id: targetMode === 'intern' ? userId : null,
+                        target_batch_id: targetMode === 'batch' ? batchId : null,
                         page_identifier: page,
                         reason: reason,
                         is_locked: true,
@@ -444,6 +530,7 @@
 
         init();
     </script>
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

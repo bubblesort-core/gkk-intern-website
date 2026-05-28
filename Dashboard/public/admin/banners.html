@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banners | GKK Interns Admin</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        .banner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .banner-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .banner-card.active {
+            border-top: 4px solid #10b981;
+        }
+        
+        .banner-card.inactive {
+            border-top: 4px solid #4b5563;
+        }
+
+        .banner-image {
+            width: calc(100% + 3rem);
+            margin: -1.5rem -1.5rem 1rem -1.5rem;
+            height: 160px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-inactive {
+            background: rgba(75, 85, 99, 0.15);
+            color: #9ca3af;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .key-point-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        
+        .kp-inputs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .kp-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 8px;
+            overflow: hidden;
+            border: 1px solid var(--c-border);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Banner Management</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="openBannerModal()">
+                        <i class="fas fa-plus"></i> Create Banner
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="loadBanners()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div id="loadingIndicator" style="text-align: center; padding: 3rem; color: var(--c-text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; color: var(--c-primary);"></i>
+                    <p>Loading banners...</p>
+                </div>
+                
+                <div id="noBannersMsg" style="display: none; text-align: center; padding: 3rem; opacity: 0.6; background: var(--c-bg-card); border-radius: 12px; border: 1px solid var(--c-border);">
+                    <i class="fas fa-images" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <p>No banners found. Create your first one!</p>
+                </div>
+
+                <div class="banner-grid" id="bannersGrid">
+                    <!-- Banners injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Banner Form Modal -->
+    <div class="modal-overlay" id="bannerModal" style="display:none;">
+        <div class="modal-container" style="max-width: 600px; width: 100%;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Create Banner</h3>
+                <button class="modal-close" onclick="closeBannerModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editBannerId">
+                <div style="display: grid; gap: 1rem;">
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; color: var(--c-text-secondary); font-size: 0.85rem;">Title *</label>
+                        <input type="text" id="bannerTitle" class="form-input" placeholder="e.g., Early Registration Open"
+                            style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--c-border); background: rgba(0,0,0,0.2); color: white;">
+                    </div>
+                    
+                    <div class="form-row" style="margin-bottom: 0;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--c-text-secondary); font-size: 0.85rem;">Image URL</label>
+                            <input type="url" id="bannerImage" class="form-input" placeholder="https://..."
+                                style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--c-border); background: rgba(0,0,0,0.2); color: white;" oninput="updateImagePreview()">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--c-text-secondary); font-size: 0.85rem;">Image Preview</label>
+                            <div class="image-preview" id="previewContainer">
+                                <span style="opacity:0.3">No Image</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; color: var(--c-text-secondary); font-size: 0.85rem;">Description</label>
+                        <textarea id="bannerDesc" rows="3" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--c-border); background: rgba(0,0,0,0.2); color: white; resize: vertical;"></textarea>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; color: var(--c-text-secondary); font-size: 0.85rem;">Key Points (Highlight Chips)</label>
+                        <div class="kp-inputs-container" id="kpContainer">
+                            <!-- JS injected inputs -->
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top: 8px;" onclick="addKeyPointInput('')">
+                            <i class="fas fa-plus"></i> Add Point
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--c-text-primary);">
+                            <input type="checkbox" id="bannerActive" style="width: 18px; height: 18px; accent-color: var(--c-primary);">
+                            Set as Active (Visible on Landing Page)
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeBannerModal()" id="btnCancel">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBanner()" id="btnSave">Save Banner</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) overlay.style.display = 'block';
+            else overlay.style.display = 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
+
+        let allBanners = [];
+
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            loadBanners();
+        }
+
+        async function loadBanners() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('noBannersMsg').style.display = 'none';
+            document.getElementById('bannersGrid').innerHTML = '';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('banners')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                allBanners = data || [];
+                renderBanners();
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to load banners.', 'error');
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function renderBanners() {
+            const grid = document.getElementById('bannersGrid');
+            grid.innerHTML = '';
+
+            if (allBanners.length === 0) {
+                document.getElementById('noBannersMsg').style.display = 'block';
+                return;
+            }
+
+            let html = '';
+            allBanners.forEach(b => {
+                let kpHTML = '';
+                if (b.key_points && Array.isArray(b.key_points) && b.key_points.length > 0) {
+                    kpHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1.5rem;">
+                        ${b.key_points.map(kp => `<span class="key-point-chip">${escapeHtml(kp)}</span>`).join('')}
+                    </div>`;
+                }
+
+                html += `
+                <div class="banner-card ${b.is_active ? 'active' : 'inactive'}">
+                    ${b.image_url ? `<img src="${escapeHtml(b.image_url)}" class="banner-image" onerror="this.style.display='none'">` : ''}
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <h3 style="margin:0; font-size:1.1rem;">${escapeHtml(b.title)}</h3>
+                        <span class="${b.is_active ? 'badge-active' : 'badge-inactive'}">
+                            ${b.is_active ? 'Active' : 'Draft'}
+                        </span>
+                    </div>
+                    <p style="font-size:0.9rem; color:var(--c-text-secondary); flex: 1; margin:0 0 16px 0;">${escapeHtml(b.description || '')}</p>
+                    ${kpHTML}
+                    <div style="display:flex; gap:0.5rem; margin-top:auto; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.05);">
+                        <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="editBanner('${b.id}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn btn-secondary btn-sm" style="flex:1; color:#ef4444; border-color:rgba(239,68,68,0.3);" onclick="deleteBanner('${b.id}')"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        // --- Form Modal Logic ---
+
+        function openBannerModal() {
+            document.getElementById('modalTitle').textContent = 'Create Banner';
+            if (document.getElementById('editBannerId')) document.getElementById('editBannerId').value = '';
+            if (document.getElementById('bannerTitle')) document.getElementById('bannerTitle').value = '';
+            if (document.getElementById('bannerImage')) document.getElementById('bannerImage').value = '';
+            if (document.getElementById('bannerDesc')) document.getElementById('bannerDesc').value = '';
+            if (document.getElementById('bannerActive')) document.getElementById('bannerActive').checked = false;
+            
+            document.getElementById('kpContainer').innerHTML = '';
+            addKeyPointInput('');
+            
+            document.getElementById('previewContainer').innerHTML = '<span style="opacity:0.3">No Image</span>';
+            
+            const modal = document.getElementById('bannerModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('open'), 10);
+        }
+
+        function editBanner(id) {
+            const b = allBanners.find(x => x.id === id);
+            if (!b) return;
+
+            document.getElementById('modalTitle').textContent = 'Edit Banner';
+            if (document.getElementById('editBannerId')) document.getElementById('editBannerId').value = b.id;
+            if (document.getElementById('bannerTitle')) document.getElementById('bannerTitle').value = b.title;
+            if (document.getElementById('bannerImage')) document.getElementById('bannerImage').value = b.image_url || '';
+            if (document.getElementById('bannerDesc')) document.getElementById('bannerDesc').value = b.description || '';
+            if (document.getElementById('bannerActive')) document.getElementById('bannerActive').checked = b.is_active;
+
+            document.getElementById('kpContainer').innerHTML = '';
+            if (b.key_points && Array.isArray(b.key_points) && b.key_points.length > 0) {
+                b.key_points.forEach(kp => addKeyPointInput(kp));
+            } else {
+                addKeyPointInput('');
+            }
+            
+            updateImagePreview();
+
+            const modal = document.getElementById('bannerModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('open'), 10);
+        }
+
+        function closeBannerModal() {
+            const modal = document.getElementById('bannerModal');
+            modal.classList.remove('open');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function addKeyPointInput(val) {
+            const div = document.createElement('div');
+            div.className = 'kp-input-row';
+            div.innerHTML = `
+                <input type="text" class="form-input kp-val" value="${escapeHtml(val)}" placeholder="e.g. Limited Seats"
+                    style="flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--c-border); background: rgba(0,0,0,0.2); color: white;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="this.parentElement.remove()" style="padding: 0 12px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            document.getElementById('kpContainer').appendChild(div);
+        }
+
+        function updateImagePreview() {
+            const url = document.getElementById('bannerImage').value;
+            const container = document.getElementById('previewContainer');
+            if (url) {
+                container.innerHTML = `<img src="${url}" alt="Preview" onerror="this.src=''; this.parentElement.innerHTML='<span style=\\'color:#ef4444\\'>Invalid Image URL</span>';">`;
+            } else {
+                container.innerHTML = '<span style="opacity:0.3">No Image</span>';
+            }
+        }
+
+        async function saveBanner() {
+            const id = document.getElementById('editBannerId').value;
+            const title = document.getElementById('bannerTitle').value.trim();
+            const imageUrl = document.getElementById('bannerImage').value.trim();
+            const desc = document.getElementById('bannerDesc').value.trim();
+            const isActive = document.getElementById('bannerActive').checked;
+            
+            // Collect key points
+            const kpInputs = document.querySelectorAll('.kp-val');
+            const keyPoints = [];
+            kpInputs.forEach(inp => {
+                const v = inp.value.trim();
+                if (v) keyPoints.push(v);
+            });
+
+            if (!title) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Field',
+                    text: 'Title is required!',
+                    background: '#1e293b', color: '#fff'
+                });
+                return;
+            }
+
+            const payload = {
+                title: title,
+                image_url: imageUrl,
+                description: desc,
+                key_points: keyPoints,
+                is_active: isActive
+            };
+
+            const btnSave = document.getElementById('btnSave');
+            const originalText = btnSave.innerHTML;
+            btnSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btnSave.disabled = true;
+
+            try {
+                if (id) {
+                    const { error } = await supabaseClient.from('banners').update(payload).eq('id', id);
+                    if (error) throw error;
+                    Swal.fire({icon: 'success', title: 'Updated!', toast: true, position:'top-end', showConfirmButton:false, timer:2000, background:'#1e293b', color: '#fff' });
+                } else {
+                    const { error } = await supabaseClient.from('banners').insert([payload]);
+                    if (error) throw error;
+                    Swal.fire({icon: 'success', title: 'Created!', toast: true, position:'top-end', showConfirmButton:false, timer:2000, background:'#1e293b', color: '#fff' });
+                }
+                closeBannerModal();
+                loadBanners();
+            } catch (err) {
+                Swal.fire({icon: 'error', title: 'Error', text: err.message, background: '#1e293b', color: '#fff'});
+            } finally {
+                btnSave.innerHTML = originalText;
+                btnSave.disabled = false;
+            }
+        }
+
+        async function deleteBanner(id) {
+            const res = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#3b82f6',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#1e293b', color: '#fff'
+            });
+
+            if (res.isConfirmed) {
+                try {
+                    const { error } = await supabaseClient.from('banners').delete().eq('id', id);
+                    if (error) throw error;
+                    Swal.fire({icon: 'success', title: 'Deleted!', toast: true, position:'top-end', showConfirmButton:false, timer:2000, background:'#1e293b', color: '#fff' });
+                    loadBanners();
+                } catch (err) {
+                    Swal.fire({icon: 'error', title: 'Error', text: err.message, background: '#1e293b', color: '#fff'});
+                }
+            }
+        }
+
+        // Utils
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+         }
+
+        init();
+    </script>
+    <script src="../js/admin-identity.js"></script> <!-- Identity Check -->
+</body>
+
+</html>

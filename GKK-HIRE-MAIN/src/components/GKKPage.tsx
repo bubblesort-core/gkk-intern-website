@@ -5,8 +5,6 @@ import NavigationMenu from './NavigationMenu';
 import SectionCanvas from './SectionCanvas';
 import TransitionOverlay from './TransitionOverlay';
 import anime from 'animejs/lib/anime.es.js';
-import HeroTitle from './HeroTitle';
-import InternsMask from './InternsMask';
 import Marquee from './Marquee';
 import { MagneticButton } from './MagneticButton';
 
@@ -141,8 +139,15 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
                             style={styles.titleContainerMotion as any}
                         >
                             <View style={styles.titleContainer}>
-                                <HeroTitle />
-                                <InternsMask />
+                                <div className="relative flex flex-col items-center leading-none select-none">
+                                    <div className="absolute -inset-x-10 top-8 h-24 md:h-32 rounded-full bg-linear-to-r from-[#22d87a]/20 via-[#06e4f9]/15 to-[#22d87a]/20 blur-3xl" />
+                                    <h1 className="relative text-[clamp(68px,12vw,190px)] font-black tracking-tight text-[#f0efe9] [text-shadow:0_8px_30px_rgba(0,0,0,0.45)]">
+                                        GKK
+                                    </h1>
+                                    <p className="relative mt-1 md:mt-2 text-[clamp(34px,6vw,92px)] font-black tracking-[0.18em] text-[#f0efe9]/55">
+                                        INTERNS
+                                    </p>
+                                </div>
                             </View>
                         </motion.div>
 
@@ -178,7 +183,7 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
                     }}
                 />
 
-                <div className="absolute bottom-0 left-0 w-full z-[40] border-t border-[rgba(255,255,255,0.05)] bg-[#0c0c0f]">
+                <div className="absolute bottom-0 left-0 w-full z-40 border-t border-[rgba(255,255,255,0.05)] bg-[#0c0c0f]">
                     <Marquee />
                 </div>
             </View >

@@ -78,12 +78,12 @@ function DashboardFallback() {
 
 import { AudioProvider } from './contexts/AudioContext';
 import { PandaaBot } from './components/PandaaBot';
-import { MagneticCursor } from './components/MagneticCursor';
+
 
 export default function App() {
     return (
         <AudioProvider>
-            <MagneticCursor />
+
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/index.html" element={<Navigate to="/" replace />} />

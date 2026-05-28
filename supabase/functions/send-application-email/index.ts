@@ -1,4 +1,4 @@
-﻿import nodemailer from "npm:nodemailer@6.9.13";
+import nodemailer from "npm:nodemailer@6.9.13";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
                 <div class="container">
                     <!-- Header -->
                     <div class="header">
-                        <h1 class="logo-text">GKK INTERNS</h1>
+                        <h1 class="logo-text">GKK TEAM</h1>
                     </div>
 
                     <!-- Main Content -->
@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
                     <!-- Footer -->
                     <div class="footer">
                         <p class="footer-text">
-                            &copy; 2026 GKK Interns. All rights reserved.<br>
+                            &copy; 2026 GKK TEAM. All rights reserved.<br>
                             Made with <span style="color: #ef4444;">&hearts;</span> for interns.
                         </p>
                     </div>
@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
         `;
 
         await transporter.sendMail({
-            from: `"GKK Hiring" <${SMTP_USER}>`,
+            from: `"GKK INTERN TEAM" <${SMTP_USER}>`,
             to: email.trim(),
             subject: "Application Received — GKK Intern Program 🎉",
             text: `Hi ${firstName}, Thank you for applying to the GKK Internship Program! We've received your application and will review your profile. If shortlisted, you'll receive an interview invitation via WhatsApp and Email. Good luck!`,

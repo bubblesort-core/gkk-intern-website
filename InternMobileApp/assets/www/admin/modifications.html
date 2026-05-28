@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -286,7 +286,7 @@
             const confirmTitle = userId ? 'Lock for Specific User?' : 'LOCK FOR ALL USERS?';
             const confirmText = userId
                 ? `This will block access to <b>${page}</b> for the selected user.`
-                : `⚠️ This will block access to <b>${page}</b> for <b>EVERYONE</b>. Are you sure?`;
+                : `⚠️ This will block access to <b>${page}</b> for <b>EVERYONE</b>. Are you sure?`;
 
             const result = await Swal.fire({
                 title: confirmTitle,
@@ -437,6 +437,7 @@
 
         init();
     </script>
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

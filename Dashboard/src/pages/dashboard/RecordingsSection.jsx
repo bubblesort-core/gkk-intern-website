@@ -19,6 +19,8 @@ export default function RecordingsSection() {
     const [volume, setVolume] = useState(100);
     const [isMuted, setIsMuted] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(1);
+    const [showControls, setShowControls] = useState(true);
+    const controlsTimer = useRef(null);
     const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
     // Helper: safely check if player methods are callable
@@ -203,9 +205,27 @@ export default function RecordingsSection() {
     const toggleFullscreen = () => {
         const el = document.getElementById('rec-player-body');
         if (!el) return;
-        if (!document.fullscreenElement) el.requestFullscreen().catch(() => { });
-        else document.exitFullscreen();
+        if (!document.fullscreenElement) {
+            el.requestFullscreen().catch(() => { });
+        } else {
+            document.exitFullscreen();
+        }
     };
+
+    const handleMouseMove = () => {
+        setShowControls(true);
+        if (controlsTimer.current) clearTimeout(controlsTimer.current);
+        controlsTimer.current = setTimeout(() => {
+            if (isPlaying) setShowControls(false);
+        }, 3000);
+    };
+
+    useEffect(() => {
+        if (!isPlaying) {
+            setShowControls(true);
+            if (controlsTimer.current) clearTimeout(controlsTimer.current);
+        }
+    }, [isPlaying]);
 
     // Escape key to close
     useEffect(() => {
@@ -267,8 +287,18 @@ export default function RecordingsSection() {
                 </div>
 
                 {/* Video Body */}
-                <div id="rec-player-body" style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000' }}
-                    onContextMenu={e => e.preventDefault()}>
+                <div 
+                    id="rec-player-body" 
+                    style={{ 
+                        position: 'relative', 
+                        width: '100%', 
+                        paddingTop: '56.25%', 
+                        background: '#000',
+                        cursor: showControls ? 'auto' : 'none'
+                    }}
+                    onMouseMove={handleMouseMove}
+                    onContextMenu={e => e.preventDefault()}
+                >
                     {/* YouTube iframe — pointer-events disabled */}
                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                         <div id="rec-yt-player" style={{ width: '100%', height: '100%' }} />
@@ -311,7 +341,8 @@ export default function RecordingsSection() {
                         position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 14,
                         background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%)',
                         padding: '2rem 1rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.6rem',
-                        opacity: 1, transition: 'opacity 0.3s'
+                        opacity: showControls ? 1 : 0, transition: 'opacity 0.3s',
+                        pointerEvents: showControls ? 'auto' : 'none'
                     }}>
                         <button onClick={togglePlay} style={ctrlBtn}>
                             <i className={`fas fa-${isPlaying ? 'pause' : 'play'}`} style={!isPlaying ? { marginLeft: 2 } : {}} />

@@ -18,7 +18,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-native": "^0.73.0",
-    "react-native-web": "^0.19.10"
+    "react-native-web": "^0.19.10",
+    "react-player": "^3.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

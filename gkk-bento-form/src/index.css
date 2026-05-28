@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../shared/**/*.{js,ts,jsx,tsx}";
 
 @theme {
   /* Dark Theme - Matching GKK website */
@@ -23,6 +24,7 @@
   --font-heading: "DM Serif Display", serif;
   --font-body: "Inter", sans-serif;
 }
+
 
 /* ===== BASE ===== */
 body {

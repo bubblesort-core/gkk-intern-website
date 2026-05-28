@@ -15,7 +15,7 @@ import StepResumeLinks from '@/components/StepResumeLinks';
 import StepSchedule from '@/components/StepSchedule';
 import StepAdditional from '@/components/StepAdditional';
 import { PandaaBot } from '@/components/PandaaBot';
-import { MagneticCursor } from '@/components/MagneticCursor';
+import CustomCursor from '../../CustomCursor.jsx';
 
 const cloudyMessages: Record<number, string> = {
     1: "Hey! Let's start with who you are 👋",
@@ -34,6 +34,7 @@ function FormApp() {
 
 
     const [isFormLocked, setIsFormLocked] = useState(false);
+    const [lockMessage, setLockMessage] = useState('');
     const [isCheckingLock, setIsCheckingLock] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [animDir, setAnimDir] = useState<'enter' | 'exit'>('enter');
@@ -43,6 +44,7 @@ function FormApp() {
         async function checkLock() {
             const { data } = await getFormSettings();
             if (data?.is_form_locked === true) setIsFormLocked(true);
+            if (data?.lock_message) setLockMessage(data.lock_message);
             if (data?.active_batch) setActiveBatch(data.active_batch);
             setIsCheckingLock(false);
         }
@@ -196,11 +198,11 @@ function FormApp() {
     if (isFormLocked) {
         return (
             <div className="min-h-screen flex flex-col bg-bg-body">
-                <Header />
+                <Header isLocked={isFormLocked} />
                 <div className="flex-1 flex flex-col items-center justify-center text-center px-4 sm:px-6 gap-6">
                     <span className="material-symbols-outlined text-6xl text-text-muted">lock</span>
                     <h2 className="text-2xl font-bold text-text-primary" style={{ fontFamily: 'var(--font-heading)' }}>Applications are closed</h2>
-                    <p className="text-text-secondary max-w-md">The application form is currently closed. Please check back later or follow us on social media for updates.</p>
+                    <p className="text-text-secondary max-w-md whitespace-pre-wrap">{lockMessage || "The application form is currently closed. Please check back later or follow us on social media for updates."}</p>
                     <a href="/Dashboard/" className="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-hover transition-colors">Back to Dashboard</a>
                 </div>
             </div>
@@ -211,7 +213,7 @@ function FormApp() {
 
     return (
         <div className="h-screen flex flex-col relative overflow-hidden bg-[#0c0c0f]">
-            <MagneticCursor />
+            <CustomCursor label="You" color="#22c55e" />
             <PandaaBot />
             {/* Background Layers */}
             <div className="fixed inset-0 z-0 pointer-events-none opacity-60">
@@ -220,7 +222,7 @@ function FormApp() {
             
             <div className="relative z-10 flex flex-col h-full overflow-hidden pt-1 px-3 pb-3 md:pt-2 md:px-6 md:pb-6 lg:pt-2 lg:px-8 lg:pb-8">
                 <div className="flex items-center justify-between gap-4">
-                    <Header />
+                    <Header isLocked={isFormLocked} />
                 </div>
 
                 <div className="flex flex-col md:flex-row flex-1 overflow-hidden relative mt-1 md:mt-2 lg:mt-3 gap-4 md:gap-6 lg:gap-8">
@@ -256,7 +258,7 @@ function FormApp() {
                                 {currentStep === 4 && <StepAdditional />}
                                 
                                 {currentStep > 1 && !completedSteps.has(currentStep - 1) && (
-                                    <div className="absolute -inset-x-4 -top-8 -bottom-12 sm:-inset-x-8 sm:-top-10 sm:-bottom-20 z-[100] bg-bg-body/40 backdrop-blur-xl rounded-2xl sm:rounded-3xl flex items-start justify-center pt-24 sm:pt-32">
+                                    <div className="absolute -inset-x-4 -top-8 -bottom-12 sm:-inset-x-8 sm:-top-10 sm:-bottom-20 z-100 bg-bg-body/40 backdrop-blur-xl rounded-2xl sm:rounded-3xl flex items-start justify-center pt-24 sm:pt-32">
                                         <div className="bg-bg-card/90 backdrop-blur-sm p-8 rounded-3xl border border-white/10 flex flex-col items-center gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-center max-w-[320px] animate-in fade-in zoom-in duration-300">
                                             <span className="material-symbols-outlined text-amber-500 text-5xl mb-2 drop-shadow-[0_0_15px_rgba(245,158,11,0.4)]">lock</span>
                                             <p className="text-lg font-bold text-text-primary">Step Locked</p>
@@ -322,7 +324,7 @@ function FormApp() {
                 <LivePreviewPanel />
             </div>
             {/* Noise Overlay */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-[1] bg-[url('https://res.cloudinary.com/dzt6v9d7t/image/upload/v1711311000/noise_nt9p4c.png')]"></div>
+            <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-1 bg-[url('https://res.cloudinary.com/dzt6v9d7t/image/upload/v1711311000/noise_nt9p4c.png')]"></div>
             </div>
         </div>
     );

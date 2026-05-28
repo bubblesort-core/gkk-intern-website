@@ -1,4 +1,4 @@
-A@echo off
+@echo off
 setlocal
 echo Deploying Supabase Edge Functions...
 
@@ -32,9 +32,25 @@ if %errorlevel% neq 0 (
     exit /b %errorlevel%
 )
 
+call supabase functions deploy send-reminder-email --no-verify-jwt
+if %errorlevel% neq 0 (
+    echo Failed to deploy send-reminder-email!
+    popd
+    pause
+    exit /b %errorlevel%
+)
+
 call supabase functions deploy send-application-email --no-verify-jwt
 if %errorlevel% neq 0 (
     echo Failed to deploy send-application-email!
+    popd
+    pause
+    exit /b %errorlevel%
+)
+
+call supabase functions deploy pandaa-assistant --no-verify-jwt
+if %errorlevel% neq 0 (
+    echo Failed to deploy pandaa-assistant!
     popd
     pause
     exit /b %errorlevel%

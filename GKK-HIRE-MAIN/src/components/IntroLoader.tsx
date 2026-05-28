@@ -9,14 +9,6 @@ export default function IntroLoader({ onComplete }: { onComplete: () => void }) 
     // Prevent scrolling on the body while the loader is active
     document.body.style.overflow = 'hidden';
 
-    if (videoRef.current) {
-        // Attempt to play explicitly
-        videoRef.current.play().catch(e => {
-            console.log("Autoplay prevented:", e);
-            // If autoplay strict policies block playback completely, user can click to play/skip
-        });
-    }
-
     return () => {
         document.body.style.overflow = '';
     };
@@ -62,6 +54,7 @@ export default function IntroLoader({ onComplete }: { onComplete: () => void }) 
             autoPlay 
             muted 
             playsInline 
+          preload="metadata"
             onEnded={handleComplete}
             style={{
                 width: '100%',

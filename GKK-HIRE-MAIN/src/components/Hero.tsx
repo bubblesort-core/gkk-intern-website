@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import FloatingCard from './FloatingCard';
 import type { MousePosition } from '../types';
 import TransitionOverlay from './TransitionOverlay';
@@ -7,6 +7,8 @@ import TransitionOverlay from './TransitionOverlay';
 export default function Hero() {
     const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const rafRef = useRef<number | null>(null);
+    const pendingMouseRef = useRef<MousePosition>({ x: 0, y: 0 });
 
     const handleMainPage = () => {
         setIsTransitioning(true);
@@ -14,40 +16,49 @@ export default function Hero() {
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            setMousePosition({ x: e.clientX, y: e.clientY });
+            pendingMouseRef.current = { x: e.clientX, y: e.clientY };
+
+            if (rafRef.current !== null) return;
+
+            rafRef.current = window.requestAnimationFrame(() => {
+                rafRef.current = null;
+                const next = pendingMouseRef.current;
+
+                // Ignore tiny changes to reduce rerenders under high mouse polling rates.
+                setMousePosition((prev) => {
+                    if (Math.abs(prev.x - next.x) < 3 && Math.abs(prev.y - next.y) < 3) {
+                        return prev;
+                    }
+                    return next;
+                });
+            });
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            if (rafRef.current !== null) {
+                window.cancelAnimationFrame(rafRef.current);
+            }
+        };
     }, []);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-ghost pt-20">
-            {/* Background Text Layers */}
+            {/* Hero Logo */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-                {/* Bottom Layer - Solid GKK */}
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, ease: 'easeOut' }}
                     className="absolute"
                 >
-                    <h2 className="text-[12rem] md:text-[18rem] lg:text-[24rem] font-black font-inter leading-none tracking-tighter text-black/10">
-                        GKK
-                    </h2>
-                </motion.div>
-
-                {/* Middle Layer - Ghost INTERNS */}
-                <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
-                    className="absolute"
-                    style={{ top: '55%' }}
-                >
-                    <h2 className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black font-inter leading-none tracking-wider text-stroke">
-                        INTERNS
-                    </h2>
+                    <img
+                        src="/gkk-intern-logo.png"
+                        alt="GKK Interns"
+                        className="w-[82vw] max-w-245 md:w-[70vw] lg:w-[62vw] h-auto opacity-95"
+                        loading="eager"
+                    />
                 </motion.div>
             </div>
 
@@ -66,7 +77,7 @@ export default function Hero() {
                 className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-black/50 z-20"
             >
                 <span className="text-xs tracking-widest uppercase">Scroll</span>
-                <div className="w-[1px] h-12 bg-black/30"></div>
+                <div className="w-px h-12 bg-black/30"></div>
             </motion.div>
 
             {/* Main Page Button */}

@@ -30,7 +30,9 @@
         "landing/**/*",
         "gkk-bento-form/**/*",
         "supabase/**/*",
-        "vite.config.js"
+        "shared/**/*",
+        "vite.config.js",
+        "vite-env.d.ts"
     ],
     "exclude": [
         "node_modules",

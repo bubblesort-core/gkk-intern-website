@@ -40,7 +40,7 @@ serve(async (req) => {
 
         // Send Email
         const info = await transporter.sendMail({
-            from: '"GKK Support" <noreplay.gkk26@gmail.com>',
+            from: '"GKK INTERN TEAM" <noreplay.gkk26@gmail.com>',
             to: to,
             subject: subject,
             text: text,

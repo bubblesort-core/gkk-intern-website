@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Phases', icon: 'fas fa-layer-group', link: 'batches.html' },
         { name: 'Modifications', icon: 'fas fa-tools', link: 'modifications.html' },
         { name: 'Availability', icon: 'fas fa-calendar-check', link: 'availability.html' },
+        { name: 'Alumni Adder', icon: 'fas fa-user-graduate', link: 'alumni-adder.html' },
         { name: 'Booked Dates', icon: 'fas fa-calendar-day', link: 'booked-dates.html' },
         { name: 'Teams', icon: 'fas fa-users', link: 'teams.html' },
         { name: 'Projects', icon: 'fas fa-project-diagram', link: 'projects.html' },
@@ -24,11 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         { label: 'Communication', isLabel: true },
         { name: 'Invitations', icon: 'fas fa-envelope', link: 'invitations.html', hidden: true },
+        { name: 'Banners', icon: 'fas fa-image', link: 'banners.html' },
         { name: 'Announcements', icon: 'fas fa-bullhorn', link: 'announcements.html' },
         { name: 'Resources', icon: 'fas fa-book', link: 'resources.html' },
         { name: 'Sessions & Recordings', icon: 'fas fa-video', link: 'sessions.html' },
 
-        { name: 'Custom Email', icon: 'fas fa-paper-plane', link: 'custom-email.html' },
+        { name: 'Custom Email', icon: 'fas fa-paper-plane', link: 'custom-email.html', hidden: true },
         { name: 'Push Notifications', icon: 'fas fa-bell', link: 'custom-notifications.html' },
 
         { label: 'Finance', isLabel: true },

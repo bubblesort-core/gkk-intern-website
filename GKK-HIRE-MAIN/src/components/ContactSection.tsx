@@ -88,9 +88,9 @@ const ContactSection = () => {
     };
 
     return (
-        <section className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] py-16 md:py-24 px-4 md:px-12 relative overflow-hidden flex items-center justify-center">
+        <section className="min-h-screen bg-(--bg-primary) text-(--text-primary) py-16 md:py-24 px-4 md:px-12 relative overflow-hidden flex items-center justify-center">
             <SectionCanvas dotColor="rgba(240,239,233,0.06)" />
-            <div className="max-w-[1400px] w-full mx-auto relative z-10">
+            <div className="max-w-350 w-full mx-auto relative z-10">
 
                 {/* Header */}
                 <div className="text-center mb-12 md:mb-20">
@@ -99,7 +99,7 @@ const ContactSection = () => {
                         whileInView="visible"
                         viewport={{ once: false, amount: 0.5 }}
                         variants={flipInX}
-                        className="text-3xl md:text-7xl font-light tracking-tight mb-4 md:mb-6 text-[var(--text-primary)]"
+                        className="text-3xl md:text-7xl font-light tracking-tight mb-4 md:mb-6 text-(--text-primary)"
                     >
                         Get in Touch with GKK
                     </motion.h1>
@@ -127,12 +127,12 @@ const ContactSection = () => {
                             viewport={{ once: true }}
                             variants={fadeInUp}
                             transition={{ delay: 0.2 }}
-                            className="border-b border-neutral-200 pb-8"
+                            className="border-b border-(--border) pb-8"
                         >
                             <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 mb-4">
                                 Direct Inquiry
                             </h3>
-                            <a href="mailto:noreplay.gkk26@gmail.com" className="text-2xl font-medium text-[#1a1a1a] hover:text-neutral-500 transition-colors">
+                            <a href="mailto:noreplay.gkk26@gmail.com" className="text-2xl font-medium text-(--text-primary) hover:text-neutral-300 transition-colors">
                                 noreplay.gkk26@gmail.com
                             </a>
                         </motion.div>
@@ -144,12 +144,12 @@ const ContactSection = () => {
                             viewport={{ once: true }}
                             variants={fadeInUp}
                             transition={{ delay: 0.3 }}
-                            className="border-b border-neutral-200 pb-8"
+                            className="border-b border-(--border) pb-8"
                         >
                             <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 mb-4">
                                 Working Hours
                             </h3>
-                            <p className="text-xl font-medium text-[#1a1a1a] mb-2">Monday — Friday</p>
+                            <p className="text-xl font-medium text-(--text-primary) mb-2">Monday — Friday</p>
                             <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-neutral-400">
                                 10:00 AM — 6:00 PM (IST)
                             </span>
@@ -162,12 +162,12 @@ const ContactSection = () => {
                             viewport={{ once: true }}
                             variants={fadeInUp}
                             transition={{ delay: 0.4 }}
-                            className="border-b border-neutral-200 pb-8"
+                            className="border-b border-(--border) pb-8"
                         >
                             <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 mb-4">
                                 Location
                             </h3>
-                            <p className="text-xl font-medium text-[#1a1a1a]">India</p>
+                            <p className="text-xl font-medium text-(--text-primary)">India</p>
                         </motion.div>
 
                         {/* Support Note */}
@@ -196,9 +196,9 @@ const ContactSection = () => {
                                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 1.1 }}
-                                    className="bg-white p-12 md:p-20 shadow-[0_4px_30px_rgba(0,0,0,0.04)] border border-neutral-100 flex flex-col items-center justify-center text-center min-h-[500px]"
+                                    className="bg-(--bg-elevated) p-12 md:p-20 shadow-[0_4px_30px_rgba(0,0,0,0.3)] border border-(--border) flex flex-col items-center justify-center text-center min-h-125"
                                 >
-                                    <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-8 border border-green-100">
+                                    <div className="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center mb-8 border border-green-400/30">
                                         <motion.svg 
                                             width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
                                             initial={{ pathLength: 0 }}
@@ -208,13 +208,13 @@ const ContactSection = () => {
                                             <polyline points="20 6 9 17 4 12"></polyline>
                                         </motion.svg>
                                     </div>
-                                    <h2 className="text-3xl font-bold text-black mb-4 tracking-tight">Message Sent Successfully!</h2>
-                                    <p className="text-neutral-500 max-w-md leading-relaxed mb-8">
+                                    <h2 className="text-3xl font-bold text-(--text-primary) mb-4 tracking-tight">Message Sent Successfully!</h2>
+                                    <p className="text-(--text-muted) max-w-md leading-relaxed mb-8">
                                         Thank you for reaching out to GKK. We've received your inquiry and our team will get back to you across your email shortly.
                                     </p>
                                     <button 
                                         onClick={() => setSubmitStatus('idle')}
-                                        className="text-[10px] font-black tracking-[0.2em] uppercase bg-black text-white px-8 py-4 hover:bg-neutral-800 transition-colors"
+                                        className="text-[10px] font-black tracking-[0.2em] uppercase bg-(--text-primary) text-(--bg-primary) px-8 py-4 hover:opacity-90 transition-opacity"
                                     >
                                         Send Another Message
                                     </button>
@@ -226,12 +226,12 @@ const ContactSection = () => {
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.8 }}
-                                    className="bg-white p-8 md:p-12 shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-neutral-100"
+                                    className="bg-(--bg-elevated) p-8 md:p-12 shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-(--border)"
                                 >
                                     <form onSubmit={handleSubmit} className="space-y-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                                <label className="text-[10px] font-black tracking-[0.2em] uppercase text-(--text-primary) block mb-2">
                                                     Full Name
                                                 </label>
                                                 <input
@@ -241,11 +241,11 @@ const ContactSection = () => {
                                                     onChange={handleChange}
                                                     required
                                                     placeholder="E.g. Julian Vost"
-                                                    className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
+                                                    className="w-full border border-(--border) p-4 text-sm text-(--text-primary) focus:outline-none focus:border-(--text-primary) transition-all bg-transparent placeholder:text-(--text-muted)"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                                <label className="text-[10px] font-black tracking-[0.2em] uppercase text-(--text-primary) block mb-2">
                                                     Email Address
                                                 </label>
                                                 <input
@@ -255,13 +255,13 @@ const ContactSection = () => {
                                                     onChange={handleChange}
                                                     required
                                                     placeholder="email@institution.com"
-                                                    className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
+                                                    className="w-full border border-(--border) p-4 text-sm text-(--text-primary) focus:outline-none focus:border-(--text-primary) transition-all bg-transparent placeholder:text-(--text-muted)"
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                            <label className="text-[10px] font-black tracking-[0.2em] uppercase text-(--text-primary) block mb-2">
                                                 Subject
                                             </label>
                                             <input
@@ -271,12 +271,12 @@ const ContactSection = () => {
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="Nature of your inquiry"
-                                                className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent placeholder:text-neutral-400"
+                                                className="w-full border border-(--border) p-4 text-sm text-(--text-primary) focus:outline-none focus:border-(--text-primary) transition-all bg-transparent placeholder:text-(--text-muted)"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black tracking-[0.2em] uppercase text-black block mb-2">
+                                            <label className="text-[10px] font-black tracking-[0.2em] uppercase text-(--text-primary) block mb-2">
                                                 Message
                                             </label>
                                             <textarea
@@ -286,7 +286,7 @@ const ContactSection = () => {
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="Describe your inquiry in detail..."
-                                                className="w-full border border-neutral-200 p-4 text-sm focus:outline-none focus:border-black transition-all bg-transparent resize-none placeholder:text-neutral-400"
+                                                className="w-full border border-(--border) p-4 text-sm text-(--text-primary) focus:outline-none focus:border-(--text-primary) transition-all bg-transparent resize-none placeholder:text-(--text-muted)"
                                             ></textarea>
                                         </div>
 
@@ -306,7 +306,7 @@ const ContactSection = () => {
                                                 whileTap={{ scale: 0.98 }}
                                                 type="submit"
                                                 disabled={isSubmitting}
-                                                className={`ml-auto bg-black text-white px-12 py-5 text-[10px] font-black tracking-[0.25em] uppercase flex items-center gap-4 hover:bg-neutral-800 transition-colors ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                className={`ml-auto bg-(--text-primary) text-(--bg-primary) px-12 py-5 text-[10px] font-black tracking-[0.25em] uppercase flex items-center gap-4 hover:opacity-90 transition-opacity ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
                                                 {isSubmitting ? 'Sending...' : 'Send Message'}
                                                 <span>→</span>

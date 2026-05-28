@@ -618,22 +618,9 @@
                 <input type="text" id="candidateSearch" class="form-input" placeholder="Search by name or email..."
                     style="padding-left:38px;" oninput="filterCandidates()">
             </div>
-            <div class="cand-section-label">Filter by Status</div>
-            <div class="cand-filter-pills" id="candFilterPills">
-                <button class="cand-fpill active" data-status="all" onclick="setCandFilter('all',this)">All <span
-                        class="fp-count" id="fc-all">0</span></button>
-                <button class="cand-fpill" data-status="approved" onclick="setCandFilter('approved',this)">Approved
-                    <span class="fp-count" id="fc-approved">0</span></button>
-                <button class="cand-fpill" data-status="shortlisted"
-                    onclick="setCandFilter('shortlisted',this)">Shortlisted <span class="fp-count"
-                        id="fc-shortlisted">0</span></button>
-                <button class="cand-fpill" data-status="INTERVIEW_READY"
-                    onclick="setCandFilter('INTERVIEW_READY',this)">Interview Ready <span class="fp-count"
-                        id="fc-INTERVIEW_READY">0</span></button>
-                <button class="cand-fpill" data-status="pending" onclick="setCandFilter('pending',this)">Pending <span
-                        class="fp-count" id="fc-pending">0</span></button>
-                <button class="cand-fpill" data-status="rejected" onclick="setCandFilter('rejected',this)">Rejected
-                    <span class="fp-count" id="fc-rejected">0</span></button>
+            <div class="cand-section-label" style="display: flex; justify-content: space-between; align-items: center;">
+                Active & Paid Interns
+                <span class="badge badge-success" style="font-size: 0.65rem; padding: 2px 6px;">Strict Mode</span>
             </div>
             <div
                 style="display:flex; justify-content:space-between; margin-top:14px; align-items:center; padding-bottom:10px; border-bottom:1px solid var(--c-border);">
@@ -1159,30 +1146,65 @@
 
         async function fetchApplicationsForPanel() {
             try {
-                const { data, error } = await supabaseClient
+                const listContainer = document.getElementById('candidateSelectList');
+                if (listContainer) listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:var(--c-text-muted);"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:10px">Verifying Intern Eligibility...</p></div>';
+
+                // 1. Fetch Approved Applications
+                const { data: apps, error: appError } = await supabaseClient
                     .from('applications')
                     .select('full_name, email, status')
+                    .eq('status', 'approved')
                     .order('created_at', { ascending: false });
-                if (error) throw error;
-                const unique = new Map();
-                (data || []).forEach(a => {
-                    if (a.email && !unique.has(a.email.toLowerCase())) unique.set(a.email.toLowerCase(), a);
+                if (appError) throw appError;
+
+                // 2. Fetch Payments (must be completed or captured)
+                const { data: payments, error: payError } = await supabaseClient
+                    .from('payments')
+                    .select('user_id, customer_email, status')
+                    .in('status', ['completed', 'captured', 'paid']);
+                if (payError) throw payError;
+
+                // 3. Profiles are already loaded in currentCandidates via loadCandidates()
+                // We perform a strict merge/filter (Approved + Paid + Account Created)
+                const filtered = (apps || []).filter(app => {
+                    const email = (app.email || '').toLowerCase();
+                    // Must have an account in the profiles table (currentCandidates)
+                    const profile = currentCandidates.find(p => p.email?.toLowerCase() === email);
+                    if (!profile) return false;
+
+                    // Must have a payment record matching profile.id OR email
+                    const isPaid = (payments || []).some(pay => 
+                        (pay.user_id === profile.id) || 
+                        (pay.customer_email?.toLowerCase() === email)
+                    );
+                    
+                    return isPaid;
                 });
-                allApplications = Array.from(unique.values());
-                updateCandFilterCounts();
+
+                // Unique emails only
+                const uniqueDict = new Map();
+                filtered.forEach(a => {
+                    const e = (a.email || '').toLowerCase();
+                    if (e && !uniqueDict.has(e)) uniqueDict.set(e, a);
+                });
+
+                allApplications = Array.from(uniqueDict.values());
+                
+                if (document.getElementById('candListCount')) document.getElementById('candListCount').textContent = `${allApplications.length} eligible interns`;
+                
                 renderCandidateList();
             } catch (e) {
-                console.error('Error fetching applications:', e);
-                if (document.getElementById('candidateSelectList')) document.getElementById('candidateSelectList').innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle fa-2x"></i><p style="margin-top:10px">Failed to load candidates.</p></div>';
+                console.error('Error fetching eligible interns:', e);
+                if (document.getElementById('candidateSelectList')) document.getElementById('candidateSelectList').innerHTML = '<div style="text-align:center; padding:30px; color:#ef4444;"><i class="fas fa-exclamation-circle fa-2x"></i><p style="margin-top:10px">Failed to load eligible interns.</p></div>';
             }
         }
 
         function getVisibleCandidates() {
             const term = (document.getElementById('candidateSearch')?.value || '').toLowerCase();
             return allApplications.filter(c => {
-                const matchesSearch = (c.full_name || '').toLowerCase().includes(term) || (c.email || '').toLowerCase().includes(term);
-                const matchesStatus = candStatusFilter === 'all' || (c.status || '').toLowerCase() === candStatusFilter.toLowerCase();
-                return matchesSearch && matchesStatus;
+                const name = (c.full_name || '').toLowerCase();
+                const email = (c.email || '').toLowerCase();
+                return name.includes(term) || email.includes(term);
             });
         }
 

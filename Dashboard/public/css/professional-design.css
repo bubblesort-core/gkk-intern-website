@@ -1614,7 +1614,7 @@ input:disabled+.app-slider {
 }
 
 /* ============================================
-   GLOBAL OVERRIDES (Rectangle Buttons)
+   GLOBAL OVERRIDES (Capsule Buttons)
    ============================================ */
 button,
 .btn,
@@ -1628,7 +1628,8 @@ button,
 .pro-btn-ghost,
 .auth-btn,
 a.btn {
-    border-radius: 0 !important;
+    border-radius: 999px !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 button:hover,
@@ -1638,5 +1639,5 @@ button:hover,
 .pro-btn:hover,
 .auth-btn:hover,
 a.btn:hover {
-    border-radius: 0 !important;
+    border-radius: 999px !important;
 }

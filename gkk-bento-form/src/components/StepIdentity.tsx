@@ -94,14 +94,14 @@ const StepIdentity: React.FC = () => {
                 <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">First Name <span className="text-red-500">*</span></span>
                     <div className="relative">
-                        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Aditya" className="bg-bg-input !text-text-primary border-white/10 w-full px-4 h-12 rounded-xl !pr-10" />
+                        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Aditya" className="bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10!" />
                         {firstName && <button type="button" onClick={() => setFirstName('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
                 </label>
                 <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Last Name <span className="text-red-500">*</span></span>
                     <div className="relative">
-                        <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Sharma" className="bg-bg-input !text-text-primary border-white/10 w-full px-4 h-12 rounded-xl !pr-10" />
+                        <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Sharma" className="bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10!" />
                         {lastName && <button type="button" onClick={() => setLastName('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
                 </label>
@@ -123,7 +123,7 @@ const StepIdentity: React.FC = () => {
                                 }
                             }}
                             placeholder="name@gmail.com"
-                            className={`bg-bg-input !text-text-primary border-white/10 w-full px-4 h-12 rounded-xl !pr-10 ${shakeEmail ? 'animate-shake' : ''} ${formData.email && !formData.email.endsWith('@gmail.com') ? '!border-red-400 focus:!border-red-400' : ''}`}
+                            className={`bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10! ${shakeEmail ? 'animate-shake' : ''} ${formData.email && !formData.email.endsWith('@gmail.com') ? 'border-red-400! focus:border-red-400!' : ''}`}
                         />
                         {formData.email && <button type="button" onClick={() => updateFormData({ email: '', is_email_verified: false })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
@@ -159,7 +159,7 @@ const StepIdentity: React.FC = () => {
                                         }}
                                         placeholder="••••••"
                                         maxLength={6}
-                                        className={`bg-bg-input !text-text-primary border-white/10 w-full h-12 rounded-xl text-center tracking-[0.5em] font-black text-lg ${otpError ? '!border-red-400' : ''}`}
+                                        className={`bg-bg-input text-text-primary! border-white/10 w-full h-12 rounded-xl text-center tracking-[0.5em] font-black text-lg ${otpError ? 'border-red-400!' : ''}`}
                                     />
                                     {isVerifying && (
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -211,7 +211,7 @@ const StepIdentity: React.FC = () => {
                             value={formData.college || ''}
                             onChange={(e) => updateFormData({ college: e.target.value })}
                             placeholder="Indian Institute of Technology, Delhi"
-                            className="bg-bg-input !text-text-primary border-white/10 w-full px-4 h-12 rounded-xl !pr-10"
+                            className="bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10!"
                         />
                         {(formData.college || '') !== '' && <button type="button" onClick={() => updateFormData({ college: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
@@ -236,7 +236,7 @@ const StepIdentity: React.FC = () => {
                             onChange={(e) => updateFormData({ college: `Other: ${e.target.value}` })}
                             placeholder="Briefly describe your current status."
                             rows={2}
-                            className="!pr-10"
+                            className="pr-10!"
                         />
                         {(formData.college || '') !== 'Other: ' && (formData.college || '') !== '' && <button type="button" onClick={() => updateFormData({ college: 'Other: ' })} className="absolute right-3 top-3 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
@@ -252,7 +252,7 @@ const StepIdentity: React.FC = () => {
                         <input type="tel" value={formData.phone || ''} onChange={(e) => {
                             const v = e.target.value.replace(/\D/g, '').slice(0, 10);
                             updateFormData({ phone: v });
-                        }} placeholder="9876543210" className="bg-bg-input !text-text-primary border-white/10 w-full h-12 rounded-xl !pl-10 !pr-10" />
+                        }} placeholder="9876543210" className="bg-bg-input text-text-primary! border-white/10 w-full h-12 rounded-xl pl-10! pr-10!" />
                         {formData.phone && <button type="button" onClick={() => updateFormData({ phone: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
                 </label>
@@ -263,14 +263,14 @@ const StepIdentity: React.FC = () => {
                         <input type="tel" value={formData.whatsapp_number || ''} onChange={(e) => {
                             const v = e.target.value.replace(/\D/g, '').slice(0, 10);
                             updateFormData({ whatsapp_number: v });
-                        }} placeholder="9876543210" className="bg-bg-input !text-text-primary border-white/10 w-full h-12 rounded-xl !pl-10 !pr-10" />
+                        }} placeholder="9876543210" className="bg-bg-input text-text-primary! border-white/10 w-full h-12 rounded-xl pl-10! pr-10!" />
                         {formData.whatsapp_number && <button type="button" onClick={() => updateFormData({ whatsapp_number: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
                 </label>
                 <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Age <span className="text-red-500">*</span></span>
                     <div className="relative">
-                        <input type="number" value={formData.age || ''} onChange={(e) => updateFormData({ age: e.target.value })} placeholder="21" min="16" max="40" className="bg-bg-input !text-text-primary border-white/10 w-full px-4 h-12 rounded-xl !pr-10" />
+                        <input type="number" value={formData.age || ''} onChange={(e) => updateFormData({ age: e.target.value })} placeholder="21" min="16" max="40" className="bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10!" />
                         {formData.age && <button type="button" onClick={() => updateFormData({ age: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
                     </div>
                 </label>

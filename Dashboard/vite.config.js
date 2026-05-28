@@ -8,6 +8,7 @@ export default defineConfig({
     root: '.',
     publicDir: 'public',
     resolve: {
+        dedupe: ['react', 'react-dom'],
         alias: {
             '@': resolve(__dirname, 'src'),
         },
@@ -15,6 +16,9 @@ export default defineConfig({
     server: {
         port: 5174,
         strictPort: true,
+        fs: {
+            allow: ['..']
+        }
     },
     build: {
         outDir: 'dist',

@@ -77,9 +77,74 @@ const RollingNumber = ({ value }) => {
 export default function PaymentSection() {
     const { currentUser, currentProfile, isLocked, setIsLocked, setCurrentProfile, getProxiedUrl, supabase } = useDashboard();
     const [paying, setPaying] = useState(false);
+    const [isPaymentLocked, setIsPaymentLocked] = useState(false);
+    const [lockReason, setLockReason] = useState('');
 
     const userName = currentProfile?.full_name || 'Student';
     const userEmail = currentUser?.email || 'Verifying account...';
+
+    // Check if user is locked from payment
+    useEffect(() => {
+        if (!currentUser?.id || !currentUser?.email) return;
+
+        // Initial check
+        const checkPaymentLock = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('access_controls')
+                    .select('*')
+                    .eq('page_identifier', '/payment')
+                    .eq('is_locked', true)
+                    .or(`and(target_type.eq.email,target_email.eq.${currentUser.email}),and(target_type.eq.intern,target_intern_id.eq.${currentUser.id})`);
+
+                if (error) {
+                    console.warn('Error checking payment lock:', error);
+                    setIsPaymentLocked(false);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    setIsPaymentLocked(true);
+                    setLockReason(data[0].reason || 'Payment access locked');
+                } else {
+                    setIsPaymentLocked(false);
+                }
+            } catch (err) {
+                console.error('Payment lock check error:', err);
+                setIsPaymentLocked(false);
+            }
+        };
+
+        checkPaymentLock();
+
+        // Subscribe to real-time changes on access_controls table
+        const subscription = supabase
+            .channel('payment_locks')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'access_controls',
+                    filter: `page_identifier=eq./payment AND is_locked=eq.true`
+                },
+                async (payload) => {
+                    // Check if this lock applies to current user
+                    if (payload.new.target_type === 'email' && payload.new.target_email === currentUser.email) {
+                        setIsPaymentLocked(true);
+                        setLockReason(payload.new.reason || 'Payment access locked');
+                    } else if (payload.new.target_type === 'intern' && payload.new.target_intern_id === currentUser.id) {
+                        setIsPaymentLocked(true);
+                        setLockReason(payload.new.reason || 'Payment access locked');
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [currentUser?.id, currentUser?.email, supabase]);
 
     useEffect(() => {
         const handler = () => {
@@ -189,6 +254,86 @@ export default function PaymentSection() {
 
     return (
         <div className="dash-checkout">
+            {isPaymentLocked ? (
+                // Locked Payment Message
+                <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '500px' }}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6 }}
+                        className="dash-card"
+                        style={{
+                            maxWidth: '500px',
+                            padding: '60px 40px',
+                            textAlign: 'center',
+                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+                        }}
+                    >
+                        <motion.div
+                            animate={{ rotate: [0, -10, 10, -5, 5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            style={{ marginBottom: '20px' }}
+                        >
+                            <i className="fas fa-lock" style={{ fontSize: '64px', color: '#ef4444' }} />
+                        </motion.div>
+                        
+                        <h2 style={{ fontSize: '28px', marginBottom: '16px', color: '#fff' }}>
+                            Payment Access Locked
+                        </h2>
+                        
+                        <p style={{ fontSize: '16px', color: '#9ca3af', marginBottom: '24px', lineHeight: '1.6' }}>
+                            You did not complete your payment within the required timeframe. Your payment access has been temporarily locked.
+                        </p>
+
+                        <div style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            marginBottom: '32px',
+                            textAlign: 'left'
+                        }}>
+                            <p style={{ fontSize: '14px', color: '#fca5a5', margin: '0' }}>
+                                <i className="fas fa-info-circle" style={{ marginRight: '8px' }} />
+                                <strong>What happened:</strong> Payment deadline has passed. To unlock your access, please contact the admin.
+                            </p>
+                        </div>
+
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                window.location.href = 'mailto:noreplay.gkk26@gmail.com?subject=Payment Access Unlock Request';
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '12px 24px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                backgroundColor: '#3b82f6',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                marginBottom: '12px',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <i className="fas fa-envelope" style={{ marginRight: '8px' }} />
+                            Contact Admin
+                        </motion.button>
+
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0' }}>
+                            Email: <strong>noreplay.gkk26@gmail.com</strong>
+                        </p>
+                    </motion.div>
+                </div>
+            ) : (
+                // Normal Payment Form
+                <>
             {/* Left: Plan Details (40% split) */}
             <motion.div 
                 initial={{ opacity: 0, x: -30 }}
@@ -317,6 +462,8 @@ export default function PaymentSection() {
                     </div>
                 </TiltCard>
             </motion.div>
+                </>
+            )}
         </div>
     );
 }

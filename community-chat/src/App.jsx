@@ -323,11 +323,11 @@ function App() {
       )}
 
       {/* Main Container */}
-      <div className="w-full max-w-[1400px] h-[100vh] lg:h-[90vh] bg-[#0f172a] lg:rounded-2xl border-0 lg:border border-[#334155] shadow-2xl flex relative z-10">
+      <div className="w-full max-w-350 h-screen lg:h-[90vh] bg-[#0f172a] lg:rounded-2xl border-0 lg:border border-[#334155] shadow-2xl flex relative z-10">
 
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 w-72 bg-[#1e293b] border-r border-[#334155] flex flex-col justify-between z-[60] transition-transform duration-300 ease-in-out
+          fixed lg:static inset-y-0 left-0 w-72 bg-[#1e293b] border-r border-[#334155] flex flex-col justify-between z-60 transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-6">
@@ -496,11 +496,11 @@ function ChatView({ activeChannel, onlineCount, messages, inputText, setInputTex
                 {msg.replyTo && (
                   <div className={`flex items-center gap-2 text-xs text-[#64748b] px-3 py-1 rounded-lg bg-[#334155]/50 border-l-2 ${isMe ? 'mr-2' : 'ml-2'}`} style={{ borderColor: activeChannel.color || '#10b981' }}>
                     <CornerDownRight size={12} />
-                    <span className="truncate max-w-[200px]">{msg.replyTo.text}</span>
+                    <span className="truncate max-w-50">{msg.replyTo.text}</span>
                   </div>
                 )}
 
-                <div className={`px-5 py-3 text-[15px] leading-relaxed shadow-md relative break-words whitespace-pre-wrap rounded-2xl ${isMe
+                <div className={`px-5 py-3 text-[15px] leading-relaxed shadow-md relative wrap-break-word whitespace-pre-wrap rounded-2xl ${isMe
                   ? 'text-white rounded-tr-sm'
                   : 'bg-[#1e293b] text-[#f8fafc] border border-[#334155] rounded-tl-sm'
                   }`}
@@ -531,7 +531,7 @@ function ChatView({ activeChannel, onlineCount, messages, inputText, setInputTex
           <div className="flex items-center gap-2 text-sm text-[#94a3b8]">
             <Reply size={16} style={{ color: activeChannel.color || '#10b981' }} />
             <span>Replying to: </span>
-            <span className="text-[#f8fafc] font-medium truncate max-w-[200px]">{replyingTo.text}</span>
+            <span className="text-[#f8fafc] font-medium truncate max-w-50">{replyingTo.text}</span>
           </div>
           <button onClick={() => setReplyingTo(null)} className="text-[#64748b] hover:text-[#f8fafc]">
             <X size={18} />
@@ -541,7 +541,7 @@ function ChatView({ activeChannel, onlineCount, messages, inputText, setInputTex
 
       {/* Input Area */}
       <div className="p-4 lg:p-8 bg-[#1e293b] border-t border-[#334155]">
-        <div className="max-w-[900px] mx-auto relative group">
+        <div className="max-w-225 mx-auto relative group">
           <div className="bg-[#0f172a] border border-[#334155] p-2 pl-4 rounded-full flex items-center gap-3 shadow-lg transition-all"
             style={{ borderColor: 'var(--border-color, #334155)' }}
             onFocusCapture={(e) => e.currentTarget.style.borderColor = activeChannel.color || '#10b981'}

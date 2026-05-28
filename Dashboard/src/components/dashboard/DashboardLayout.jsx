@@ -9,9 +9,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     FiCreditCard, FiGrid, FiUser, FiLayers, FiUsers, 
     FiBell, FiVideo, FiPlayCircle, FiBookOpen, FiGift, FiSmartphone,
-    FiRefreshCcw, FiLogOut, FiLock, FiX, FiMenu
+    FiRefreshCcw, FiLogOut, FiLock, FiX, FiMenu, FiMoon, FiSun, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi';
-import { PandaaBot } from '../PandaaBot';
+
 
 const GEAR_PATH = 'M20,0 L22,4 L24,0.5 L25.5,4.8 L28,2 L28.5,6.5 L32,5 L31,9.2 L34.5,9 L32.5,12.5 L36,13.5 L33.5,16 L37,18 L33.5,20 L36,22.5 L32.5,23.5 L34.5,27 L31,26.8 L32,31 L28.5,29.5 L28,34 L25.5,31.2 L24,35.5 L22,32 L20,36 L18,32 L16,35.5 L14.5,31.2 L12,34 L11.5,29.5 L8,31 L9,26.8 L5.5,27 L7.5,23.5 L4,22.5 L6.5,20 L3,18 L6.5,16 L4,13.5 L7.5,12.5 L5.5,9 L9,9.2 L8,5 L11.5,6.5 L12,2 L14.5,4.8 L16,0.5 L18,4 Z';
 
@@ -97,7 +97,7 @@ function PaymentSuccessOverlay({ active, onComplete }) {
 
 const NAV_GROUPS = [
     {
-        label: 'WORKSPACE',
+        label: 'OVERVIEW',
         items: [
             { id: 'payment', icon: <FiCreditCard />, label: 'Training Fee', path: 'payment', paymentOnly: true },
             { id: 'overview', icon: <FiGrid />, label: 'Overview', path: 'overview' },
@@ -105,7 +105,7 @@ const NAV_GROUPS = [
         ]
     },
     {
-        label: 'COLLABORATE',
+        label: 'PROGRESS',
         items: [
             { id: 'projects', icon: <FiLayers />, label: 'Projects', path: 'projects' },
             { id: 'team', icon: <FiUsers />, label: 'Team', path: 'team' },
@@ -115,7 +115,7 @@ const NAV_GROUPS = [
         ]
     },
     {
-        label: 'GROW',
+        label: 'ACCOUNT',
         items: [
             { id: 'resources', icon: <FiBookOpen />, label: 'Resources', path: 'resources' },
             { id: 'rewards', icon: <FiGift />, label: 'Rewards', path: 'rewards' },
@@ -140,12 +140,19 @@ const SECTION_TITLES = {
 const LOCKED_SECTIONS = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards'];
 
 export default function DashboardLayout() {
-    const { currentUser, currentProfile, currentTeam, isLocked, loading, signOut, getProxiedUrl, profileSlug, supabase } = useDashboard();
+    const { currentUser, currentProfile, currentTeam, isLocked, loading, signOut, getProxiedUrl, profileSlug, supabase, isAdmin } = useDashboard();
     const { slug } = useParams();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [notifications, setNotifications] = useState({});
     const [refreshing, setRefreshing] = useState(false);
     const [showUnlockAnimation, setShowUnlockAnimation] = useState(false);
+    const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        return window.innerWidth > 1024;
+    });
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('gkk_dashboard_theme') || 'dark';
+    });
     const prevLockedRef = useRef(true);
     const location = useLocation();
     const navigate = useNavigate();
@@ -163,6 +170,32 @@ export default function DashboardLayout() {
         }
         prevLockedRef.current = isLocked;
     }, [isLocked, loading]);
+
+    // Apply theme to document
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('gkk_dashboard_theme', theme);
+    }, [theme]);
+
+    useEffect(() => {
+        const handleViewportLayout = () => {
+            const width = window.innerWidth;
+            if (width < 768) {
+                setSidebarOpen(false);
+            }
+            if (width >= 768 && width <= 1024) {
+                setSidebarExpanded(false);
+            }
+        };
+
+        handleViewportLayout();
+        window.addEventListener('resize', handleViewportLayout);
+        return () => window.removeEventListener('resize', handleViewportLayout);
+    }, []);
+
+    const toggleTheme = useCallback(() => {
+        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    }, []);
 
     const handleUnlockAnimationComplete = useCallback(() => {
         setShowUnlockAnimation(false);
@@ -355,9 +388,11 @@ export default function DashboardLayout() {
     }
 
     const userName = currentProfile?.full_name || currentProfile?.email?.split('@')[0] || 'Intern';
-    const userEmail = currentProfile?.email || '';
     const userInitial = userName[0]?.toUpperCase() || 'I';
-    const mobileNavItems = NAV_GROUPS.flatMap(group => group.items)
+
+    const displayedNavGroups = [...NAV_GROUPS];
+
+    const mobileNavItems = displayedNavGroups.flatMap(group => group.items)
         .filter(item => !item.paymentOnly || isLocked)
         .filter(item => ['overview', 'projects', 'meetings', 'profile', 'payment'].includes(item.path));
 
@@ -369,9 +404,29 @@ export default function DashboardLayout() {
                 <div className={`dash-mobile-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
 
                 {/* Sidebar */}
-                <aside className={`dash-sidebar ${sidebarOpen ? 'open' : ''} cinematic-entry entry-1`}>
+                <aside className={`dash-sidebar ${sidebarOpen ? 'open' : ''} ${sidebarExpanded ? 'expanded' : 'collapsed'} cinematic-entry entry-1`}>
                     <div className="dash-sidebar-logo">
-                        <img src="/assets/gkk-intern-logo.png" alt="GKK Intern Logo" className="dash-logo-img" />
+                        <button
+                            className="dash-sidebar-expand-toggle dash-tooltip"
+                            onClick={() => setSidebarExpanded(prev => !prev)}
+                            data-tooltip={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                            aria-label={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                        >
+                            {sidebarExpanded ? <FiChevronLeft /> : <FiChevronRight />}
+                        </button>
+
+                        <div className="dash-sidebar-user-card">
+                            <div className="dash-sidebar-avatar">
+                                {currentProfile?.avatar_url
+                                    ? <img src={getProxiedUrl(currentProfile.avatar_url)} alt="Avatar" />
+                                    : userInitial}
+                            </div>
+                            <div className="dash-sidebar-info">
+                                <div className="dash-sidebar-name">{userName}</div>
+                                <div className="dash-sidebar-meta-badge">Intern · {isLocked ? 'Pending' : 'Active'}</div>
+                            </div>
+                        </div>
+
                         {sidebarOpen && (
                             <button 
                                 className="dash-mobile-toggle" 
@@ -385,39 +440,81 @@ export default function DashboardLayout() {
 
                     <nav className="dash-nav">
                         <div className="sidebar-noise" />
-                        {NAV_GROUPS.map((group, gIdx) => (
+                        {displayedNavGroups.map((group, gIdx) => (
                             <div key={group.label} className={`dash-nav-group cinematic-entry entry-${gIdx + 2}`}>
                                 <span className="dash-nav-group-label">{group.label}</span>
-                                {group.items.map((item) => {
-                                    if (item.paymentOnly && !isLocked) return null;
+                                <AnimatePresence mode="wait">
+                                    {group.items.map((item) => {
+                                        if (item.paymentOnly && !isLocked) return null;
 
-                                    const isActive = activePath === item.path || (activePath === '' && item.path === '');
-                                    const isLockedItem = isLocked && LOCKED_SECTIONS.includes(item.path);
-                                    const hasNotif = notifications[item.path];
+                                        const isActive = activePath === item.path || (activePath === '' && item.path === '');
+                                        const isLockedItem = isLocked && LOCKED_SECTIONS.includes(item.path);
+                                        const hasNotif = notifications[item.path];
 
-                                    return (
-                                        <button
-                                            key={item.id}
-                                            className={`dash-nav-item group ${isActive ? 'active' : ''} ${isLockedItem ? 'locked' : ''}`}
-                                            onClick={() => goTo(item.path)}
-                                            title={item.label}
-                                        >
-                                            <div className="nav-item-active-bar" />
-                                            <div className="nav-item-liquid" />
-                                            <motion.div 
-                                                className="nav-item-icon-wrapper"
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                        return (
+                                            <motion.button
+                                                key={item.id}
+                                                className={`dash-nav-item dash-tooltip group ${isActive ? 'active' : ''} ${isLockedItem ? 'locked' : 'unlocked'}`}
+                                                onClick={() => goTo(item.path)}
+                                                data-tooltip={item.label}
+                                                data-label={item.label}
+                                                aria-label={item.label}
+                                                layout
+                                                initial={{ opacity: 0.7, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -10 }}
+                                                transition={{ duration: 0.3, ease: "easeInOut" }}
                                             >
-                                                {item.icon}
-                                                {isLockedItem && <i className="fas fa-lock lock-icon" />}
-                                            </motion.div>
-                                            <span className="nav-item-label">{item.label}</span>
-                                            {hasNotif && <span className="dash-nav-notif" />}
-                                        </button>
-                                    );
-                                })}
+                                                <div className="nav-item-active-bar" />
+                                                <motion.div 
+                                                    className="nav-item-liquid"
+                                                    animate={isActive ? { transform: 'translateX(0)' } : { transform: 'translateX(-100%)' }}
+                                                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                                                />
+                                                <motion.div 
+                                                    className="nav-item-icon-wrapper"
+                                                    whileHover={!isLockedItem ? { scale: 1.1, y: -2 } : {}}
+                                                    whileTap={!isLockedItem ? { scale: 0.95 } : {}}
+                                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                                    animate={isLockedItem ? { filter: 'grayscale(90%)' } : { filter: 'grayscale(0%)' }}
+                                                >
+                                                    {item.icon}
+                                                    <AnimatePresence>
+                                                        {isLockedItem && (
+                                                            <motion.div
+                                                                className="lock-icon-wrapper"
+                                                                initial={{ scale: 0, rotate: -45 }}
+                                                                animate={{ scale: 1, rotate: 0 }}
+                                                                exit={{ scale: 0, rotate: 45 }}
+                                                                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                                                            >
+                                                                <i className="fas fa-lock lock-icon" />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </motion.div>
+                                                <motion.span 
+                                                    className="nav-item-label"
+                                                    animate={isLockedItem ? { opacity: 0.6 } : { opacity: 1 }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    {item.label}
+                                                </motion.span>
+                                                <AnimatePresence>
+                                                    {hasNotif && (
+                                                        <motion.span 
+                                                            className="dash-nav-notif"
+                                                            initial={{ scale: 0 }}
+                                                            animate={{ scale: 1 }}
+                                                            exit={{ scale: 0 }}
+                                                            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                                                        />
+                                                    )}
+                                                </AnimatePresence>
+                                            </motion.button>
+                                        );
+                                    })}
+                                </AnimatePresence>
                             </div>
                         ))}
                     </nav>
@@ -425,17 +522,15 @@ export default function DashboardLayout() {
                     <div className="sidebar-fog-fade" />
 
                     <div className="dash-sidebar-footer">
-                        <div className="dash-sidebar-user">
-                            <div className="dash-sidebar-avatar">
-                                {currentProfile?.avatar_url
-                                    ? <img src={getProxiedUrl(currentProfile.avatar_url)} alt="Avatar" />
-                                    : userInitial}
-                            </div>
-                            <div className="dash-sidebar-info">
-                                <div className="dash-sidebar-name">{userName}</div>
-                                <div className="dash-sidebar-email">{userEmail}</div>
-                            </div>
-                        </div>
+                        <div className="dash-sidebar-divider" />
+                        <button className="dash-nav-item dash-bottom-nav-item" onClick={() => goTo('profile')} data-label="Settings" aria-label="Settings">
+                            <div className="nav-item-icon-wrapper"><FiUser /></div>
+                            <span className="nav-item-label">Settings</span>
+                        </button>
+                        <button className="dash-nav-item dash-bottom-nav-item" onClick={signOut} data-label="Logout" aria-label="Logout">
+                            <div className="nav-item-icon-wrapper"><FiLogOut /></div>
+                            <span className="nav-item-label">Logout</span>
+                        </button>
                     </div>
                 </aside>
 
@@ -471,14 +566,22 @@ export default function DashboardLayout() {
                             )}
 
                             <button
-                                className="dash-btn-icon"
+                                className="dash-btn-icon dash-tooltip"
+                                onClick={toggleTheme}
+                                data-tooltip={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+                            >
+                                {theme === 'light' ? <FiMoon /> : <FiSun />}
+                            </button>
+
+                            <button
+                                className="dash-btn-icon dash-tooltip"
                                 onClick={handleRefresh}
-                                title="Check for updates"
+                                data-tooltip="Check for updates"
                             >
                                 <FiRefreshCcw className={refreshing ? 'nav-icon-spin' : ''} />
                             </button>
 
-                            <button className="dash-signout-btn" onClick={signOut} title="Sign Out">
+                            <button className="dash-signout-btn dash-tooltip" onClick={signOut} data-tooltip="Sign Out">
                                 <span>Sign Out</span>
                                 <FiLogOut />
                             </button>
@@ -511,7 +614,7 @@ export default function DashboardLayout() {
                     </nav>
                 </div>
             </div>
-            <PandaaBot />
+
         </>
     );
 }

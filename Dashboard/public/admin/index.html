@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="../css/admin-minimal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 
 <body>
@@ -171,48 +175,63 @@
                                 <i class="fas fa-download"></i> Export
                             </button>
                         </div>
-                        <div style="display:flex; gap:12px; width:100%; margin-top:16px; flex-wrap:wrap;">
-                            <!-- Date Range -->
-                            <div
-                                style="display:flex; align-items:center; gap:8px; background:var(--c-bg-card); padding:4px 12px; border-radius:8px; border:1px solid var(--c-border);">
-                                <select id="dbFilterMode" class="form-select"
-                                    style="border:none; background:transparent; font-size:0.85rem; padding:4px; font-weight:600; color:var(--c-text-primary); cursor:pointer;">
-                                    <option value="created_at">📅 Joined</option>
-                                    <option value="preferred_interview_date">🎥 Interview</option>
-                                </select>
+                        <div class="filters-bar" style="margin-bottom: 0; border-radius: 12px; margin-top: 16px;">
+                            <!-- Date Range Group -->
+                            <div class="filter-group">
+                                <label class="filter-group-label">Timeframe &amp; Phase</label>
+                                <div class="filter-capsule">
+                                    <select id="dbFilterMode" class="filter-select">
+                                        <option value="created_at">📅 Joined</option>
+                                        <option value="preferred_interview_date">🎥 Interview</option>
+                                    </select>
 
-                                <div style="width:1px; height:20px; background:var(--c-border); margin:0 4px;"></div>
+                                    <span class="filter-divider"></span>
 
-                                <input type="date" id="dbStartDate" class="form-input"
-                                    style="border:none; padding:4px; height:auto; width:130px; font-size:0.85rem; background:transparent;"
-                                    placeholder="Start Date">
-                                <span style="color:var(--c-text-muted);">-</span>
-                                <input type="date" id="dbEndDate" class="form-input"
-                                    style="border:none; padding:4px; height:auto; width:130px; font-size:0.85rem; background:transparent;"
-                                    placeholder="End Date">
+                                    <input type="text" id="dbStartDate" class="filter-date" placeholder="Start Date">
+                                    <span class="filter-date-separator">–</span>
+                                    <input type="text" id="dbEndDate" class="filter-date" placeholder="End Date">
 
-                                <div style="width:1px; height:20px; background:var(--c-border); margin:0 4px;"></div>
+                                    <span class="filter-divider"></span>
 
-                                <select id="dbTimeSlotFilter" class="form-select"
-                                    style="border:none; background:transparent; font-size:0.85rem; padding:4px; width:100px; color:var(--c-text-secondary);">
-                                    <option value="">🕒 Time</option>
-                                    <!-- Populated by JS -->
+                                    <select id="dbTimeSlotFilter" class="filter-select muted">
+                                        <option value="">🕒 Time</option>
+                                        <!-- Populated by JS -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Search Group -->
+                            <div class="filter-group" style="flex:1; min-width:200px;">
+                                <label class="filter-group-label">Quick Search</label>
+                                <div class="filter-search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="searchInput" class="filter-search-input"
+                                        placeholder="Search by name or email...">
+                                </div>
+                            </div>
+
+                            <!-- Status Group -->
+                            <div class="filter-group">
+                                <label class="filter-group-label">Application Status</label>
+                                <select id="statusFilter" class="filter-standalone-select" style="width:160px;">
+                                    <option value="all">All Status</option>
+                                    <option value="approved">✅ Approved</option>
+                                    <option value="pending">⏳ Pending</option>
+                                    <option value="rejected">❌ Rejected</option>
                                 </select>
                             </div>
-                            <input type="text" id="searchInput" class="form-input"
-                                placeholder="Search by name or email..." style="flex:1; min-width:200px;">
-                            <select id="statusFilter" class="form-select" style="width:150px;">
-                                <option value="all">All Apps</option>
-                                <option value="approved">Approved</option>
-                                <option value="pending">Pending</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                            <select id="paymentFilter" class="form-select" style="width:150px;">
-                                <option value="all">Any Payment</option>
-                                <option value="paid">Paid</option>
-                                <option value="unpaid">Unpaid</option>
-                            </select>
+
+                            <!-- Payment Group -->
+                            <div class="filter-group">
+                                <label class="filter-group-label">Payment</label>
+                                <select id="paymentFilter" class="filter-standalone-select" style="width:160px;">
+                                    <option value="all">Any Payment</option>
+                                    <option value="paid">💰 Paid</option>
+                                    <option value="unpaid">💸 Unpaid</option>
+                                </select>
+                            </div>
                         </div>
+                    </div>
                     </div>
                     <div class="table-container" style="border:none; box-shadow:none;">
                         <table>
@@ -292,6 +311,10 @@
             document.getElementById('dbEndDate').addEventListener('change', onFilterChange);
             document.getElementById('dbFilterMode').addEventListener('change', onFilterChange);
             document.getElementById('dbTimeSlotFilter').addEventListener('change', onFilterChange);
+
+            // Init Flatpickr
+            flatpickr("#dbStartDate", { theme: "dark", dateFormat: "Y-m-d", onChange: onFilterChange });
+            flatpickr("#dbEndDate", { theme: "dark", dateFormat: "Y-m-d", onChange: onFilterChange });
         }
 
         async function loadSettingsAndDatabase() {
@@ -488,7 +511,7 @@
                         : `<span style="color:#ef4444; font-weight:500; font-family:'JetBrains Mono', monospace; display:inline-flex; align-items:center; gap:6px; background:rgba(239,68,68,0.05); padding:4px 8px; border-radius:4px;"><i class="fas fa-times"></i> Unpaid</span>`}
                     </td>
                     <td style="padding: 1rem;">
-                        <button class="btn btn-secondary btn-sm" onclick="spaNavigate('applications.html?search=${encodeURIComponent(s.email)}')" title="View Details" style="background:var(--c-bg-card); border:1px solid var(--c-border);">
+                        <button class="btn btn-secondary btn-sm" onclick="openCandidateView('${s.id}')" title="View Details" style="background:var(--c-bg-card); border:1px solid var(--c-border); color:var(--c-primary);">
                             <i class="fas fa-eye"></i>
                         </button>
                     </td>
@@ -675,6 +698,12 @@
             document.body.removeChild(link);
 
             closeExportModal();
+        }
+
+        function openCandidateView(id) {
+            const student = allStudents.find(s => s.id === id);
+            if (!student) return;
+            window.location.href = `applications.html?search=${encodeURIComponent(student.email)}&autoOpen=true`;
         }
 
         init();

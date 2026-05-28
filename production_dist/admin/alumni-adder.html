@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Adder | GKK Interns - Code. Build. Deploy.</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        .alumni-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .alumni-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-card);
+        }
+
+        .alumni-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .alumni-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alumni-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .alumni-info {
+            padding: 16px;
+        }
+
+        .alumni-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .alumni-role {
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            margin-bottom: 12px;
+        }
+
+        .alumni-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--c-border);
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .delete-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .order-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 5;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Alumni Adder</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateModal()"><i class="fas fa-plus"></i> Add Alumni</button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div id="alumniList" class="alumni-grid">
+                    <!-- Cards injected via JS -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--c-text-muted);">
+                        <i class="fas fa-spinner fa-spin"></i> Loading Alumni...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Add New Alumni</h3>
+                <button class="modal-close" onclick="closeModal('createModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="alumName" class="form-input" placeholder="e.g. Manav Sharma" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <input type="text" id="alumRole" class="form-input" placeholder="e.g. Former Intern" value="Former Intern">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">YouTube Video Link</label>
+                    <input type="url" id="alumVideoUrl" class="form-input" placeholder="https://youtube.com/shorts/..." required>
+                    <small style="color: var(--c-text-muted); display: block; margin-top: 4px;">Standard links or Shorts are supported.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Display Order</label>
+                    <input type="number" id="alumOrder" class="form-input" value="0" min="0">
+                    <small style="color: var(--c-text-muted); display: block; margin-top: 4px;">Lower numbers appear first.</small>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:10px; margin-top: 15px;">
+                    <input type="checkbox" id="alumIsPortrait" style="width:20px; height:20px; cursor:pointer;">
+                    <label class="form-label" style="margin:0; cursor:pointer;" for="alumIsPortrait">Portrait Mode (9:16 Aspect Ratio)</label>
+                </div>
+                <small style="color: var(--c-text-muted); display: block; margin-bottom: 12px;">Check this for YT Shorts or vertical videos.</small>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createModal')">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn" onclick="saveAlumni()">Save Alumni</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    
+    <script>
+        let editingId = null;
+
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
+
+        // YouTube Helper
+        function getYoutubeId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        async function loadAlumni() {
+            const list = document.getElementById('alumniList');
+            try {
+                const { data, error } = await supabaseClient
+                    .from('alumni_members')
+                    .select('*')
+                    .order('display_order', { ascending: true })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || !data.length) {
+                    list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--c-text-muted);">No alumni added yet.</div>';
+                    return;
+                }
+
+                list.innerHTML = data.map(a => `
+                    <div class="alumni-card">
+                        <div class="order-badge">Order: ${a.display_order}</div>
+                        <div class="alumni-thumb">
+                            <img src="${a.image_url || 'https://img.youtube.com/vi/' + getYoutubeId(a.video_url) + '/maxresdefault.jpg'}" alt="${a.name}">
+                            <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;">
+                                <i class="fas fa-play" style="color:white; font-size:2rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));"></i>
+                            </div>
+                        </div>
+                        <div class="alumni-info">
+                            <div class="alumni-name">${a.name}</div>
+                            <div class="alumni-role">${a.role}</div>
+                            <div class="alumni-actions">
+                                <button class="btn btn-secondary btn-sm" style="background:#3b82f6; border-color:#2563eb; color:white; font-size:0.8rem; padding:6px 12px; height:auto;" onclick="editAlumni('${a.id}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="delete-btn" onclick="deleteAlumni('${a.id}')" style="margin:0;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <a href="${a.video_url}" target="_blank" class="btn btn-secondary btn-sm" style="width:100%; text-align:center; font-size:0.8rem; height:auto; padding:6px;">
+                                    <i class="fas fa-external-link-alt"></i> View Video
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #ef4444;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function saveAlumni() {
+            const name = document.getElementById('alumName').value.trim();
+            const role = document.getElementById('alumRole').value.trim();
+            const videoUrl = document.getElementById('alumVideoUrl').value.trim();
+            const order = parseInt(document.getElementById('alumOrder').value) || 0;
+
+            if (!name || !videoUrl) {
+                return Swal.fire('Error', 'Name and Video Link are required', 'warning');
+            }
+
+            const videoId = getYoutubeId(videoUrl);
+            if (!videoId) {
+                return Swal.fire('Error', 'Invalid YouTube URL provided', 'warning');
+            }
+
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.innerHTML;
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                const alumniData = {
+                    name,
+                    role,
+                    video_url: videoUrl,
+                    image_url: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                    display_order: order,
+                    is_portrait: document.getElementById('alumIsPortrait').checked
+                };
+
+                let error;
+                if (editingId) {
+                    const result = await supabaseClient
+                        .from('alumni_members')
+                        .update(alumniData)
+                        .eq('id', editingId);
+                    error = result.error;
+                } else {
+                    const result = await supabaseClient
+                        .from('alumni_members')
+                        .insert([alumniData]);
+                    error = result.error;
+                }
+
+                if (error) throw error;
+
+                closeModal('createModal');
+                loadAlumni();
+                Swal.fire({ 
+                    toast: true, 
+                    position: 'top-end', 
+                    icon: 'success', 
+                    title: editingId ? 'Alumni updated!' : 'Alumni added!', 
+                    showConfirmButton: false, 
+                    timer: 3000 
+                });
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to save alumni: ' + err.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        }
+
+        async function editAlumni(id) {
+            try {
+                // Ensure we are searching by the correct type (Supabase IDs can be numeric or string/UUID)
+                const { data, error } = await supabaseClient
+                    .from('alumni_members')
+                    .select('*')
+                    .filter('id', 'eq', id)
+                    .maybeSingle(); // maybeSingle() is safer than .single() as it returns null instead of erroring on 0 rows
+                
+                if (error) throw error;
+                if (!data) throw new Error('No alumni found with ID: ' + id);
+
+                editingId = id;
+                document.getElementById('modalTitle').innerText = 'Edit Alumni';
+                document.getElementById('saveBtn').innerText = 'Update Alumni';
+                
+                document.getElementById('alumName').value = data.name || '';
+                document.getElementById('alumRole').value = data.role || '';
+                document.getElementById('alumVideoUrl').value = data.video_url || '';
+                document.getElementById('alumOrder').value = data.display_order || '0';
+                document.getElementById('alumIsPortrait').checked = data.is_portrait || false;
+                
+                document.getElementById('createModal').classList.add('open');
+            } catch (err) {
+                console.error('Edit fetch error:', err);
+                Swal.fire('Error', 'Could not fetch alumni details: ' + (err.message || 'Unknown error'), 'error');
+            }
+        }
+
+        async function deleteAlumni(id) {
+            const result = await Swal.fire({
+                title: 'Delete alumni?',
+                text: "This will remove them from the landing page.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete',
+                background: '#1e293b',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const { error } = await supabaseClient.from('alumni_members').delete().eq('id', id);
+                    if (error) throw error;
+                    loadAlumni();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Deleted', showConfirmButton: false, timer: 2000 });
+                } catch (err) {
+                    Swal.fire('Error', err.message, 'error');
+                }
+            }
+        }
+
+        function openCreateModal() {
+            editingId = null;
+            document.getElementById('modalTitle').innerText = 'Add New Alumni';
+            document.getElementById('saveBtn').innerText = 'Save Alumni';
+            document.getElementById('alumName').value = '';
+            document.getElementById('alumRole').value = 'Former Intern';
+            document.getElementById('alumVideoUrl').value = '';
+            document.getElementById('alumOrder').value = '0';
+            document.getElementById('alumIsPortrait').checked = false;
+            document.getElementById('createModal').classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            loadAlumni();
+        }
+
+        init();
+    </script>
+</body>
+</html>

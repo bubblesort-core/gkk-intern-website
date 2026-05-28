@@ -10,7 +10,7 @@ const corsHeaders = {
 interface EmailRequest {
   email: string;
   name: string;
-  type: "approved" | "rejected" | "shortlisted" | "received" | "interview" | "custom";
+  type: "approved" | "rejected" | "shortlisted" | "received" | "interview" | "create_account_reminder" | "payment_reminder" | "meeting_details" | "custom";
   preferredTiming?: string;
   preferredDate?: string;
   customSubject?: string;
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate type
-    const validTypes = ["approved", "rejected", "shortlisted", "received", "interview", "custom"];
+    const validTypes = ["approved", "rejected", "shortlisted", "received", "interview", "create_account_reminder", "payment_reminder", "meeting_details", "custom"];
     if (!validTypes.includes(type)) {
       return new Response(JSON.stringify({ success: false, error: `Invalid type. Must be one of: ${validTypes.join(", ")}` }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -118,7 +118,10 @@ Deno.serve(async (req) => {
       rejected: { bg: '#fef2f2', text: '#991b1b', border: '#ef4444', icon: '📄' },
       shortlisted: { bg: '#eff6ff', text: '#1e40af', border: '#3b82f6', icon: '⭐' },
       interview: { bg: '#fffbeb', text: '#92400e', border: '#f59e0b', icon: '📅' },
+      create_account_reminder: { bg: '#f0f9ff', text: '#0c4a6e', border: '#0ea5e9', icon: '👤' },
+      payment_reminder: { bg: '#fff7ed', text: '#9a3412', border: '#f97316', icon: '💳' },
       received: { bg: '#f0f9ff', text: '#0c4a6e', border: '#0ea5e9', icon: '📬' },
+      meeting_details: { bg: '#f5f3ff', text: '#4c1d95', border: '#8b5cf6', icon: '📍' },
       custom: { bg: '#f8fafc', text: '#334155', border: '#64748b', icon: '📢' }
     };
 
@@ -130,15 +133,15 @@ Deno.serve(async (req) => {
     const recipientName = isBulk ? "Candidate" : (name || "Candidate");
 
     if (type === "custom") {
-      subject = customSubject || "Update from GKK Hire";
+      subject = customSubject || "Update from GKK TEAM";
       // Convert newlines to breaks for HTML
       const formattedBody = customBody ? customBody.replace(/\n/g, '<br>') : 'No content provided.';
-      text = `Dear ${recipientName},\n\n${customBody}\n\nBest regards,\nThe GKK Hire Team`;
+      text = `Dear ${recipientName},\n\n${customBody}\n\nBest regards,\nThe GKK TEAM`;
 
       html = `
         <div style="${containerStyle}">
           <div style="${headerStyle}">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK HIRE</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
             <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">${customSubject || 'Official Update'}</p>
           </div>
           
@@ -149,23 +152,23 @@ Deno.serve(async (req) => {
               ${formattedBody}
             </div>
 
-            <p>Best regards,<br><strong>The GKK Hire Team</strong></p>
+            <p>Best regards,<br><strong>The GKK TEAM</strong></p>
           </div>
           
           <div style="${footerStyle}">
-            <p style="margin: 0;">Questions? Reply to this email or contact norply.gkk26@gmail.com</p>
-            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.</p>
+            <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
           </div>
         </div>
       `;
     } else if (type === "approved") {
       subject = "🎉 Congratulations! You're Hired - GKK Internship";
-      text = `Dear ${recipientName},\n\nCongratulations! Your application for the GKK Internship Program has been APPROVED.\n\nYour skills impressed our team, and we're excited to have you join us.\n\nPlease sign up to your dashboard to complete your profile and start your journey.\n\nBest regards,\nThe GKK Hire Team`;
+      text = `Dear ${recipientName},\n\nCongratulations! Your application for the GKK Internship Program has been APPROVED.\n\nYour skills impressed our team, and we're excited to have you join us.\n\nPlease sign up to your dashboard to complete your profile and start your journey.\n\nBest regards,\nThe GKK TEAM`;
 
       html = `
         <div style="${containerStyle}">
           <div style="${headerStyle}">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK HIRE</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
             <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Welcome Aboard!</p>
           </div>
           
@@ -198,12 +201,108 @@ Deno.serve(async (req) => {
             </div>
             
             <p>We're committed to your growth and can't wait to see what you build!</p>
-            <p>Best regards,<br><strong>The GKK Hire Team</strong></p>
+            <p>Best regards,<br><strong>The GKK TEAM</strong></p>
           </div>
           
           <div style="${footerStyle}">
-            <p style="margin: 0;">Questions? Reply to this email or contact norply.gkk26@gmail.com</p>
-            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.</p>
+            <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
+          </div>
+        </div>
+      `;
+    } else if (type === "create_account_reminder") {
+      subject = "Action Required: Create Your GKK Account";
+      text = `Dear ${recipientName},\n\nWelcome to GKK Interns. To continue your onboarding, please create your account and complete your profile using the link below.\n\nCreate your account: https://gkkintern.in/dashboard/user/signup\n\nIf you already finished this step, you can ignore this reminder.\n\nBest regards,\nThe GKK TEAM`;
+
+      html = `
+        <div style="${containerStyle}">
+          <div style="${headerStyle}">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
+            <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Account Setup Reminder</p>
+          </div>
+
+          <div style="${contentStyle}">
+            <p style="margin-top: 0;">Dear <strong>${recipientName}</strong>,</p>
+
+            <div style="background-color: ${colors.create_account_reminder.bg}; color: ${colors.create_account_reminder.text}; padding: 20px; border-radius: 8px; border-left: 4px solid ${colors.create_account_reminder.border}; margin: 24px 0;">
+              <h3 style="margin: 0 0 8px 0; font-size: 18px; display: flex; align-items: center;">
+                👤 Account Reminder
+              </h3>
+              <p style="margin: 0; font-size: 15px;">
+                Please create your account to continue your application and unlock the next step of the process.
+              </p>
+            </div>
+
+            <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
+              <h4 style="margin: 0 0 12px 0; font-size: 16px; color: #1e293b;">What you need to do</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #475569;">
+                <li style="margin-bottom: 8px;">Create your account using the button below.</li>
+                <li style="margin-bottom: 8px;">Complete your profile after sign up.</li>
+                <li>Then continue from your dashboard whenever you’re ready.</li>
+              </ul>
+            </div>
+
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="https://gkkintern.in/dashboard/user/signup" style="background-color: #2563eb; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+                Create Your Account &rarr;
+              </a>
+            </div>
+
+            <p>Once your account is ready, you can continue from your dashboard.</p>
+            <p>Best regards,<br><strong>The GKK TEAM</strong></p>
+          </div>
+
+          <div style="${footerStyle}">
+            <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
+          </div>
+        </div>
+      `;
+    } else if (type === "payment_reminder") {
+      subject = "Payment Reminder: Complete Your GKK Internship Fee";
+      text = `Dear ${recipientName},\n\nThis is a friendly reminder to complete your internship training payment so we can keep your application active.\n\nOpen your dashboard: https://gkkintern.in/dashboard/user/login\n\nIf you have already paid, thank you and please ignore this reminder.\n\nBest regards,\nThe GKK TEAM`;
+
+      html = `
+        <div style="${containerStyle}">
+          <div style="${headerStyle}">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
+            <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Complete Payment</p>
+          </div>
+
+          <div style="${contentStyle}">
+            <p style="margin-top: 0;">Dear <strong>${recipientName}</strong>,</p>
+
+            <div style="background-color: ${colors.payment_reminder.bg}; color: ${colors.payment_reminder.text}; padding: 20px; border-radius: 8px; border-left: 4px solid ${colors.payment_reminder.border}; margin: 24px 0;">
+              <h3 style="margin: 0 0 8px 0; font-size: 18px; display: flex; align-items: center;">
+                💳 Payment Reminder
+              </h3>
+              <p style="margin: 0; font-size: 15px;">
+                Please complete the training fee payment to keep your application active.
+              </p>
+            </div>
+
+            <div style="background-color: #fff7ed; border-radius: 8px; padding: 20px; border: 1px solid #fed7aa; margin-bottom: 24px;">
+               <h4 style="margin: 0 0 12px 0; font-size: 16px; color: #9a3412;">What to do next</h4>
+               <ul style="margin: 0; padding-left: 20px; color: #7c2d12;">
+                 <li style="margin-bottom: 8px;">Log in to your dashboard</li>
+                 <li style="margin-bottom: 8px;">Open the payment section</li>
+                 <li>Complete the payment to continue your onboarding</li>
+               </ul>
+            </div>
+
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="https://gkkintern.in/dashboard/user/login" style="background-color: #ea580c; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.2);">
+                Open Dashboard &rarr;
+              </a>
+            </div>
+
+            <p>We look forward to having you on board.</p>
+            <p>Best regards,<br><strong>The GKK TEAM</strong></p>
+          </div>
+
+          <div style="${footerStyle}">
+            <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
           </div>
         </div>
       `;
@@ -218,12 +317,12 @@ Deno.serve(async (req) => {
            </div>`
         : `<p style="color: #64748b; font-style: italic; text-align: center;">A Google Meet link will be shared shortly.</p>`;
 
-      text = `Dear ${recipientName},\n\nGreat news! You've been selected for an interview.\n\nDate: ${preferredDate || 'TBD'}\nTime: ${preferredTiming || 'TBD'}\nLink: ${meetLink || 'Will be shared soon'}\n\nPlease be ready 5 minutes early.\n\nBest regards,\nThe GKK Hire Team`;
+      text = `Dear ${recipientName},\n\nGreat news! You've been selected for an interview.\n\nDate: ${preferredDate || 'TBD'}\nTime: ${preferredTiming || 'TBD'}\nLink: ${meetLink || 'Will be shared soon'}\n\nPlease be ready 5 minutes early.\n\nBest regards,\nThe GKK TEAM`;
 
       html = `
         <div style="${containerStyle}">
           <div style="${headerStyle}">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK HIRE</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
             <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Interview Invitation</p>
           </div>
           
@@ -262,23 +361,23 @@ Deno.serve(async (req) => {
             </div>
             
             <p style="margin-top: 24px;">We look forward to speaking with you!</p>
-            <p>Best regards,<br><strong>The GKK Hire Team</strong></p>
+            <p>Best regards,<br><strong>The GKK TEAM</strong></p>
           </div>
           
           <div style="${footerStyle}">
-            <p style="margin: 0;">Questions? Reply to this email or contact norply.gkk26@gmail.com</p>
-            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.</p>
+            <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
           </div>
         </div>
       `;
     } else if (type === "shortlisted") {
       subject = "⭐ You're Shortlisted - GKK Internship";
-      text = `Dear ${recipientName},\n\nExciting news! Your application for the GKK Internship Program has been SHORTLISTED.\n\nThis means your profile looks promising. We'll inform you soon about the next steps.\n\nBest regards,\nThe GKK Hire Team`;
+      text = `Dear ${recipientName},\n\nExciting news! Your application for the GKK Internship Program has been SHORTLISTED.\n\nThis means your profile looks promising. We'll inform you soon about the next steps.\n\nBest regards,\nThe GKK TEAM`;
 
       html = `
           <div style="${containerStyle}">
             <div style="${headerStyle}">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK HIRE</h1>
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
               <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Application Status Update</p>
             </div>
             
@@ -304,23 +403,23 @@ Deno.serve(async (req) => {
               </div>
               
               <p style="margin-top: 24px;">Please keep an eye on your inbox (and spam folder) for further updates.</p>
-              <p>Best regards,<br><strong>The GKK Hire Team</strong></p>
+              <p>Best regards,<br><strong>The GKK TEAM</strong></p>
             </div>
             
             <div style="${footerStyle}">
-              <p style="margin: 0;">Questions? Reply to this email or contact norply.gkk26@gmail.com</p>
-              <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.</p>
+              <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+              <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
             </div>
           </div>
         `;
     } else if (type === "rejected") {
       subject = "Application Status Update - GKK Internship";
-      text = `Dear ${recipientName},\n\nThank you for applying to the GKK Internship Program.\n\nAfter careful consideration, we've decided not to move forward with your application at this time.\n\nWe encourage you to apply again in the future.\n\nBest regards,\nThe GKK Hire Team`;
+      text = `Dear ${recipientName},\n\nThank you for applying to the GKK Internship Program.\n\nAfter careful consideration, we've decided not to move forward with your application at this time.\n\nWe encourage you to apply again in the future.\n\nBest regards,\nThe GKK TEAM`;
 
       html = `
           <div style="${containerStyle}">
             <div style="${headerStyle}">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK HIRE</h1>
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
               <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Application Update</p>
             </div>
             
@@ -342,23 +441,23 @@ Deno.serve(async (req) => {
                 </p>
               </div>
               
-              <p style="margin-top: 24px;">Best regards,<br><strong>The GKK Hire Team</strong></p>
+              <p style="margin-top: 24px;">Best regards,<br><strong>The GKK TEAM</strong></p>
             </div>
             
             <div style="${footerStyle}">
-              <p style="margin: 0;">Questions? Reply to this email or contact norply.gkk26@gmail.com</p>
-              <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.</p>
+              <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+              <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
             </div>
           </div>
         `;
     } else if (type === "received") {
       subject = "✉️ Application Received - GKK Internship";
-      text = `Dear ${recipientName},\n\nWe've received your application for the GKK Internship Program.\n\nOur team is reviewing your profile. We aim to get back to you within 3-5 business days.\n\nBest regards,\nThe GKK Hire Team`;
+      text = `Dear ${recipientName},\n\nWe've received your application for the GKK Internship Program.\n\nOur team is reviewing your profile. We aim to get back to you within 3-5 business days.\n\nBest regards,\nThe GKK TEAM`;
 
       html = `
           <div style="${containerStyle}">
             <div style="${headerStyle}">
-              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK HIRE</h1>
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
               <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">We've Received Your Application</p>
             </div>
             
@@ -386,21 +485,76 @@ Deno.serve(async (req) => {
               
               <p>While you wait, feel free to review your portfolio and ensure all links are accessible.</p>
               
-              <p>Best regards,<br><strong>The GKK Hire Team</strong></p>
+              <p>Best regards,<br><strong>The GKK TEAM</strong></p>
             </div>
             
             <div style="${footerStyle}">
-              <p style="margin: 0;">Questions? Reply to this email or contact norply.gkk26@gmail.com</p>
-              <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.</p>
+              <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+              <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
             </div>
           </div>
         `;
+    } else if (type === "meeting_details") {
+      subject = "📍 Meeting Joining Details - GKK Interview";
+      const meetingLink = meetLink || "https://meet.google.com/";
+      
+      text = `Dear ${recipientName},\n\nYour interview joining details are confirmed.\n\nSchedule: ${preferredDate || 'TBD'} at ${preferredTiming || 'TBD'}\nJoining Link: ${meetingLink}\n\nImportant Notes:\n- Join from a quiet location\n- Ensure stable internet connection\n- Use clear audio/video device\n\nBest regards,\nThe GKK TEAM`;
+
+      html = `
+        <div style="${containerStyle}">
+          <div style="${headerStyle}; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">GKK TEAM</h1>
+            <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Meeting Joining Details</p>
+          </div>
+          
+          <div style="${contentStyle}">
+            <p style="margin-top: 0;">Dear <strong>${recipientName}</strong>,</p>
+            
+            <p>Your interview joining details have been confirmed. Please find the schedule and link below:</p>
+
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
+              <div style="margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Interview Schedule</p>
+                <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 700; color: #1e293b;">${preferredDate || 'Scheduled'} @ ${preferredTiming || 'Confirmed Time'}</p>
+              </div>
+
+              <a href="${meetingLink}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">
+                Join Interview Now
+              </a>
+
+              <div style="margin-top: 16px;">
+                <p style="margin: 0; font-size: 12px; color: #94a3b8;">If the button doesn't work, copy this link:</p>
+                <p style="margin: 4px 0 0 0; font-size: 12px; color: #4f46e5; word-break: break-all;">${meetingLink}</p>
+              </div>
+            </div>
+
+            <div style="background-color: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 8px; padding: 16px; margin-top: 24px;">
+              <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #4c1d95; display: flex; align-items: center; gap: 8px;">
+                📝 Important Notes:
+              </h4>
+              <ul style="margin: 0; padding-left: 20px; color: #5b21b6; font-size: 14px;">
+                <li style="margin-bottom: 4px;">Join from a <strong>quiet location</strong> to avoid background noise.</li>
+                <li style="margin-bottom: 4px;">Ensure you have a <strong>stable internet connection</strong>.</li>
+                <li>Use a device with <strong>clear audio and video</strong> capabilities.</li>
+              </ul>
+            </div>
+            
+            <p style="margin-top: 24px;">We look forward to meeting you!</p>
+            <p>Best regards,<br><strong>The GKK TEAM</strong></p>
+          </div>
+          
+          <div style="${footerStyle}">
+            <p style="margin: 0;">Questions? Reply to this email or contact noreplay.gkk26@gmail.com</p>
+            <p style="margin: 8px 0 0 0;">&copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.</p>
+          </div>
+        </div>
+      `;
     }
 
     // Send Mail
     // If bulk (more than 1 recipient), use BCC to hide emails from each other
     const mailOptions = {
-      from: '"GKK Hiring Team" <noreplay.gkk26@gmail.com>',
+      from: '"GKK INTERN TEAM" <noreplay.gkk26@gmail.com>',
       subject: subject,
       text: text,
       html: html,

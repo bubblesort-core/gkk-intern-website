@@ -6,7 +6,6 @@
 /* Import Main Font: Inter */
 /* Import Main Fonts */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('swal-dark.css');
 
 :root {
     /* --- MIDNIGHT DEVELOPER DARK THEME --- */
@@ -1531,23 +1530,365 @@ tr:hover td {
 }
 
 /* ============================================
-   SweetAlert2 Premium Dark Theme Overrides
+   PREMIUM FILTER BAR DESIGN SYSTEM
    ============================================ */
-.admin-swal-container {
-    backdrop-filter: blur(8px);
-    background: rgba(0, 0, 0, 0.5) !important;
-    z-index: 2000 !important;
+
+/* --- Filter Bar Container --- */
+.filters-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    align-items: stretch;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.65) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 20px 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: visible;
 }
 
-.admin-swal-popup {
-    background: var(--c-bg-card) !important;
-    border: 1px solid var(--c-border) !important;
-    border-radius: var(--radius-lg) !important;
-    color: var(--c-text-primary) !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
-    padding: 0 !important;
-    overflow: hidden !important;
+.filters-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.3), transparent);
 }
+
+/* --- Filter Groups --- */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-primary);
+    font-weight: 700;
+    padding-left: 4px;
+    opacity: 0.9;
+}
+
+/* --- Filter Capsule (groups controls together) --- */
+.filter-capsule {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 4px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    height: 44px;
+    transition: all 0.3s ease;
+}
+
+.filter-capsule:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.filter-capsule:focus-within {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+/* Divider inside capsules */
+.filter-capsule .filter-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+/* --- Custom Select (inside capsule) --- */
+.filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--c-text-primary);
+    padding: 6px 28px 6px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    min-width: 80px;
+}
+
+.filter-select:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.filter-select:focus {
+    background-color: rgba(16, 185, 129, 0.08);
+    color: #34d399;
+}
+
+.filter-select option {
+    background: #1e293b;
+    color: var(--c-text-primary);
+    padding: 10px;
+    font-weight: 500;
+}
+
+/* Muted variant (e.g. Time, secondary selects) */
+.filter-select.muted {
+    color: var(--c-text-secondary);
+    font-weight: 500;
+}
+
+/* --- Custom Date Input --- */
+.filter-date {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--c-text-primary);
+    padding: 6px 10px;
+    width: 140px;
+    font-family: inherit;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.filter-date:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.filter-date:focus {
+    background: rgba(16, 185, 129, 0.08);
+    color: #34d399;
+}
+
+/* Custom calendar icon color */
+.filter-date::-webkit-calendar-picker-indicator {
+    filter: invert(0.7) sepia(0.3) hue-rotate(120deg);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.filter-date:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+}
+
+.filter-date-separator {
+    color: var(--c-text-muted);
+    opacity: 0.4;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    padding: 0 2px;
+}
+
+/* --- Search Box (inside filter bar) --- */
+.filter-search-box {
+    position: relative;
+    flex: 1;
+    min-width: 240px;
+}
+
+.filter-search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--c-text-muted);
+    pointer-events: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.filter-search-box:focus-within i {
+    color: var(--c-primary);
+}
+
+.filter-search-input {
+    width: 100%;
+    padding: 0 16px 0 42px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    height: 44px;
+    font-size: 0.9rem;
+    color: var(--c-text-primary);
+    font-family: inherit;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.filter-search-input::placeholder {
+    color: var(--c-text-muted);
+    opacity: 0.5;
+}
+
+.filter-search-input:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.filter-search-input:focus {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+/* --- Standalone Select (status/payment filters) --- */
+.filter-standalone-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 0 32px 0 14px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    height: 44px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--c-text-primary);
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.filter-standalone-select:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.filter-standalone-select:focus {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.filter-standalone-select option {
+    background: #1e293b;
+    color: var(--c-text-primary);
+    padding: 10px;
+}
+
+/* --- Filter Status Tabs --- */
+.filter-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    height: 44px;
+    align-items: center;
+}
+
+.filter-tab {
+    padding: 7px 14px;
+    border: none;
+    background: transparent;
+    color: var(--c-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    font-family: inherit;
+    position: relative;
+}
+
+.filter-tab:hover {
+    color: var(--c-text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, var(--c-primary) 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* --- Filter Bar Responsive --- */
+@media (max-width: 1024px) {
+    .filters-bar {
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .filter-capsule {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 44px;
+    }
+
+    .filter-date {
+        width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-bar {
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-capsule {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 8px 10px;
+    }
+
+    .filter-search-box {
+        min-width: 100%;
+    }
+
+    .filter-tabs {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 6px;
+    }
+
+    .filter-tab {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+    }
+}
+
+
+/* ============================================
+
+/* Import Swal Dark Theme (at the end to override all) */
+@import url('swal-dark.css');
 
 .admin-swal-popup .swal2-title {
     color: var(--c-text-primary) !important;

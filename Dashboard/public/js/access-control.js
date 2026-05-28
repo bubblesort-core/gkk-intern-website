@@ -23,12 +23,25 @@
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return; // Not logged in, let login logic handle it or public page
 
+            let currentBatchId = null;
+            try {
+                const { data: membership } = await supabaseClient
+                    .from('team_members')
+                    .select('teams(batch_id)')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+
+                currentBatchId = membership?.teams?.batch_id || null;
+            } catch (batchErr) {
+                console.warn('Could not resolve current batch for access control:', batchErr);
+            }
+
             // Fetch active locks for this user or global
             const { data: locks, error } = await supabaseClient
                 .from('access_controls')
-                .select('page_identifier, reason')
+                .select('page_identifier, reason, target_type, target_user_id, target_intern_id, target_batch_id')
                 .eq('is_locked', true)
-                .or(`target_user_id.eq.${user.id},target_user_id.is.null`);
+                .order('created_at', { ascending: false });
 
             if (error) {
                 console.error('Access control check failed:', error);
@@ -37,8 +50,24 @@
 
             if (!locks || locks.length === 0) return;
 
+            const applicableLocks = locks.filter(lock => {
+                const lockType = lock.target_type || (lock.target_batch_id ? 'batch' : (lock.target_user_id || lock.target_intern_id ? 'intern' : 'all'));
+
+                if (lockType === 'all') return true;
+
+                if (lockType === 'intern') {
+                    return (lock.target_intern_id || lock.target_user_id) === user.id;
+                }
+
+                if (lockType === 'batch') {
+                    return !!currentBatchId && lock.target_batch_id === currentBatchId;
+                }
+
+                return false;
+            });
+
             // map of locked pages
-            const lockedPages = locks.reduce((acc, lock) => {
+            const lockedPages = applicableLocks.reduce((acc, lock) => {
                 acc[lock.page_identifier] = lock.reason;
                 return acc;
             }, {});
@@ -95,23 +124,62 @@
 
     function applyDashboardLocks(lockedPages) {
         // Map identifiers to section IDs or nav links
-        // Identifiers from admin: /dashboard, /tasks, /projects, /team, /leaderboard, /rewards, /profile
+        // Identifiers from admin: /overview, /payment, /projects, /team, /announcements, /meetings, /recordings, /resources, /rewards, /profile
 
         const sectionMap = {
-            '/dashboard': 'overview', // ID in index.html
+            '/dashboard': 'overview', // legacy identifier
             '/overview': 'overview',
+            '/payment': 'payment',
             '/projects': 'projects',
             '/team': 'team',
-            '/community': 'team', // Community chat is in team section?
-            '/leaderboard': 'leaderboard',
+            '/announcements': 'announcements',
+            '/meetings': 'meetings',
+            '/recordings': 'recordings',
+            '/resources': 'resources',
             '/rewards': 'rewards',
             '/profile': 'profile',
-            '/meetings': 'meetings' // virtual section
+            '/tasks': 'projects',
+            '/submissions': 'resources',
+            '/community': 'team',
+            '/leaderboard': 'rewards',
+            'payment': 'payment',
+            'overview': 'overview',
+            'projects': 'projects',
+            'team': 'team',
+            'announcements': 'announcements',
+            'meetings': 'meetings',
+            'recordings': 'recordings',
+            'resources': 'resources',
+            'rewards': 'rewards',
+            'profile': 'profile'
+        };
+
+        const normalizeSection = (value) => {
+            const raw = (value || '').trim().toLowerCase();
+            const labelMap = {
+                'training fee': 'payment',
+                'complete registration': 'payment',
+                'complete payment': 'payment',
+                'dashboard overview': 'overview',
+                'overview': 'overview',
+                'profile': 'profile',
+                'projects': 'projects',
+                'team': 'team',
+                'updates': 'announcements',
+                'announcements': 'announcements',
+                'live meetings': 'meetings',
+                'recorded sessions': 'recordings',
+                'resources': 'resources',
+                'rewards & coupons': 'rewards',
+                'rewards': 'rewards'
+            };
+
+            return labelMap[raw] || raw;
         };
 
         // 1. Visually Lock Nav Items
-        document.querySelectorAll('.nav-item').forEach(nav => {
-            const section = nav.getAttribute('data-section') || nav.getAttribute('href')?.replace('#', '');
+        document.querySelectorAll('.nav-item, .dash-nav-item, .dash-mobile-nav-item').forEach(nav => {
+            const section = normalizeSection(nav.getAttribute('data-section') || nav.getAttribute('data-label') || nav.getAttribute('aria-label') || nav.getAttribute('title') || nav.getAttribute('href')?.replace('#', '') || nav.textContent);
 
             // Reverse lookup or check direct mapping
             // We iterate lockedPages keys

@@ -134,13 +134,13 @@ Deno.serve(async (req) => {
         const html = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
         <div style="text-align: center; margin-bottom: 24px;">
-           <h1 style="color: #10b981; margin: 0; font-size: 24px;">GKK HIRE</h1>
+           <h1 style="color: #10b981; margin: 0; font-size: 24px;">GKK TEAM</h1>
         </div>
         
         <p style="color: #374151; font-size: 16px;">Hello ${name || 'User'},</p>
         
         <p style="color: #374151; font-size: 16px; line-height: 1.5;">
-          You requested to create an account on GKK Hire Intern Portal. Use the One-Time Password (OTP) below to verify your email address.
+          You requested to create an account on GKK TEAM Intern Portal. Use the One-Time Password (OTP) below to verify your email address.
         </p>
 
         <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
@@ -154,15 +154,15 @@ Deno.serve(async (req) => {
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
         
         <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-          &copy; ${new Date().getFullYear()} GKK Hire. All rights reserved.
+          &copy; ${new Date().getFullYear()} GKK TEAM. All rights reserved.
         </p>
       </div>
     `;
 
         const info = await transporter.sendMail({
-            from: '"GKK Hire Security" <noreplay.gkk26@gmail.com>',
+            from: '"GKK INTERN TEAM" <noreplay.gkk26@gmail.com>',
             to: normalizedEmail,
-            subject: "Your Verification Code - GKK Hire",
+            subject: "Your Verification Code - GKK TEAM",
             html: html,
         });
 

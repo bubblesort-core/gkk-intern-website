@@ -17,6 +17,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
 
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <style>
         /* Extra styles specific to Projects */
         .view-switcher .btn {
@@ -376,7 +381,7 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label class="form-label">Deadline</label>
-                            <input type="date" id="p-deadline" class="form-input">
+                            <input type="text" id="p-deadline" class="form-input" placeholder="Select Deadline">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Priority</label>
@@ -468,6 +473,9 @@
             ]);
 
             setupTagInput();
+
+            // Init Flatpickr for Deadline
+            flatpickr("#p-deadline", { theme: "dark", dateFormat: "Y-m-d" });
         }
 
         // --- Tag Input Logic ---
@@ -764,7 +772,11 @@
             if (document.getElementById('p-description')) document.getElementById('p-description').value = p.description || '';
             // Handle date format YYYY-MM-DD
             if (p.deadline) {
-                if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = new Date(p.deadline).toISOString().split('T')[0];
+                const d = new Date(p.deadline);
+                const yr = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = `${yr}-${mo}-${da}`;
             } else {
                 if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = '';
             }
@@ -1116,6 +1128,7 @@
 
     </script>
 
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

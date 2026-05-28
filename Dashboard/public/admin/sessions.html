@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <style>
-        /* ═══ Page-Specific Styles ═══ */
+        /* ═══ Page-Specific Styles ═══ */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -608,7 +608,7 @@
             margin-left: 0.5rem;
         }
 
-        /* ═══ Security: Prevent YouTube native UI interaction ═══ */
+        /* ═══ Security: Prevent YouTube native UI interaction ═══ */
         .rec-security-shield {
             position: absolute;
             inset: 0;
@@ -773,7 +773,7 @@
                         Recordings</button>
                 </div>
 
-                <!-- ═══ SESSIONS TAB ═══ -->
+                <!-- ═══ SESSIONS TAB ═══ -->
                 <div class="tab-panel active" id="panel-sessions">
                     <!-- Live Banner (hidden by default) -->
                     <div class="live-banner" id="liveBanner" style="display:none;">
@@ -912,7 +912,7 @@
                     </div>
                 </div>
 
-                <!-- ═══ RECORDINGS TAB ═══ -->
+                <!-- ═══ RECORDINGS TAB ═══ -->
                 <div class="tab-panel" id="panel-recordings">
                     <!-- Add Recording Form -->
                     <div class="card">
@@ -1011,9 +1011,9 @@
     <script src="../js/main-page-btn.js"></script>
     <script src="../js/skeleton-ui.js"></script>
     <script>
-        /* ═══════════════════════════════════════════
+        /* ═══════════════════════════════════════════
            SESSIONS & RECORDINGS — ADMIN LOGIC
-        ═══════════════════════════════════════════ */
+        ═══════════════════════════════════════════ */
 
         // === State ===
         let allSessions = [], allRecordings = [];
@@ -1417,7 +1417,8 @@
             };
 
             try {
-                if (mode === 'live') await supabaseClient.from('sessions').update({ status: 'ended', actual_end: now }).eq('status', 'live');
+                // Auto-ending live sessions removed to support multiple concurrent Google Meet links
+                // if (mode === 'live') await supabaseClient.from('sessions').update({ status: 'ended', actual_end: now }).eq('status', 'live');
                 const { error } = await supabaseClient.from('sessions').insert([row]);
                 if (error) throw error;
                 Swal.fire({ icon: 'success', title: mode === 'live' ? 'Session is Live!' : 'Scheduled!', timer: 1500, showConfirmButton: false });
@@ -1430,7 +1431,8 @@
         // === GO LIVE (from scheduled) ===
         async function goLive(id) {
             const now = new Date().toISOString();
-            await supabaseClient.from('sessions').update({ status: 'ended', actual_end: now }).eq('status', 'live');
+            // Auto-ending live sessions removed to support multiple concurrent Google Meet links
+            // await supabaseClient.from('sessions').update({ status: 'ended', actual_end: now }).eq('status', 'live');
             await supabaseClient.from('sessions').update({ status: 'live', actual_start: now }).eq('id', id);
             loadSessions();
         }
@@ -1919,6 +1921,7 @@
 
         init();
     </script>
+    <script src="../js/admin-cursor.js"></script>
 </body>
 
 </html>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../shared/**/*.{js,ts,jsx,tsx}";
 
 @theme {
     --color-gold-400: #FACC15;
@@ -79,3 +80,4 @@ h1, h2, h3, h4, h5, h6, .font-display {
         -webkit-text-stroke: 2px #d4d4d4;
     }
 }
+

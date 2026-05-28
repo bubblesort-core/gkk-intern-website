@@ -319,12 +319,12 @@ export default function ProjectsSection() {
                                 <textarea className="dash-input dash-textarea" required value={cpDesc} onChange={e => setCpDesc(e.target.value)} placeholder="Describe the project..." rows={4} />
                             </div>
                             <div>
-                                <label className="dash-label">Project Deployed Link <span style={{ color: '#ef4444' }}>*</span></label>
-                                <input className="dash-input" required value={cpDeployedUrl} onChange={e => setCpDeployedUrl(e.target.value)} placeholder="your-project.vercel.app" />
+                                <label className="dash-label">Project Deployed Link <span style={{ color: 'var(--dash-text-muted)', fontWeight: 400 }}>(optional)</span></label>
+                                <input className="dash-input" value={cpDeployedUrl} onChange={e => setCpDeployedUrl(e.target.value)} placeholder="your-project.vercel.app" />
                             </div>
                             <div>
-                                <label className="dash-label">GitHub Repository Link <span style={{ color: 'var(--dash-text-muted)', fontWeight: 400 }}>(optional)</span></label>
-                                <input className="dash-input" value={cpGithubUrl} onChange={e => setCpGithubUrl(e.target.value)} placeholder="github.com/username/repo" />
+                                <label className="dash-label">GitHub Repository Link <span style={{ color: '#ef4444' }}>*</span></label>
+                                <input className="dash-input" required value={cpGithubUrl} onChange={e => setCpGithubUrl(e.target.value)} placeholder="github.com/username/repo" />
                             </div>
                             <button type="submit" className="dash-btn dash-btn-primary" style={{ alignSelf: 'flex-start' }} disabled={cpSubmitting}>
                                 {cpSubmitting ? <><i className="fas fa-spinner fa-spin" /> Submitting...</> : <><i className="fas fa-paper-plane" /> Submit Project</>}

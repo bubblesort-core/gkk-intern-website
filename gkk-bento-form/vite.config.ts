@@ -8,8 +8,14 @@ export default defineConfig({
   base: '/dashboard/apply/',
   plugins: [react(), tailwindcss()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    fs: {
+      allow: ['..'],
     },
   },
 })

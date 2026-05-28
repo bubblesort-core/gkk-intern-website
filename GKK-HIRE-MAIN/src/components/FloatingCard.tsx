@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { MousePosition } from '../types';
 
@@ -34,19 +35,19 @@ const FloatingCard = ({ index, mousePosition }: FloatingCardProps) => {
 
     return (
         <motion.div
-            className={`absolute ${positions[index % positions.length]} ${sizes[index % sizes.length]} ${colors[index % colors.length]} backdrop-blur-sm border border-white/20 rounded-xl pointer-events-none`}
+            className={`absolute ${positions[index % positions.length]} ${sizes[index % sizes.length]} ${colors[index % colors.length]} border border-white/20 rounded-xl pointer-events-none will-change-transform`}
             animate={{
                 x,
                 y,
-                rotate: [0, 5, -5, 0],
+                rotate: [0, 3, -3, 0],
             }}
             transition={{
-                x: { type: 'spring', damping: 20 },
-                y: { type: 'spring', damping: 20 },
-                rotate: { duration: 10, repeat: Infinity, ease: 'linear' },
+                x: { type: 'spring', damping: 28, stiffness: 90 },
+                y: { type: 'spring', damping: 28, stiffness: 90 },
+                rotate: { duration: 14, repeat: Infinity, ease: 'linear' },
             }}
         />
     );
 };
 
-export default FloatingCard;
+export default memo(FloatingCard);
