@@ -7,10 +7,12 @@ node_modules/
 # Build cache
 .vite/
 dist/
+production_dist/
 
 # Environment files (keep .env.example)
-# .env
-# .env.local
+.env
+.env.*
+!.env.example
 
 # IDE
 .vscode/
