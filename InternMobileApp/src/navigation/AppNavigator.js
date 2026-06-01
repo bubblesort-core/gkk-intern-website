@@ -7,7 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
 import PendingScreen from '../screens/PendingScreen';
 import PaymentRequiredScreen from '../screens/PaymentRequiredScreen';
-import DashboardScreen from '../screens/DashboardScreen';
+import MainTabs from './MainTabs';
+import NoAccountScreen from '../screens/NoAccountScreen';
 import { colors } from '../theme/colors';
 
 const Stack = createNativeStackNavigator();
@@ -23,24 +24,35 @@ export default function AppNavigator() {
     );
   }
 
+  // Debug: log profile data to see exact field names and values
+  if (profile) {
+    console.log('COMBINED PROFILE DATA:', JSON.stringify(profile, null, 2));
+  }
+
+  const hasApplication = !!profile?.application;
+  const isApproved = profile?.application?.status?.toLowerCase() === 'approved';
+  
+  // According to the web dashboard, a paid user has a profile with status === 'active'
+  const isPaid = profile?.userProfile?.status === 'active';
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
         {!session ? (
           // Not logged in
           <Stack.Screen name="Login" component={LoginScreen} />
-        ) : !profile ? (
-          // Logged in but profile data is still fetching (or not found in applications table)
+        ) : !hasApplication ? (
+          // Logged in but no application found
+          <Stack.Screen name="NoAccount" component={NoAccountScreen} />
+        ) : !isApproved ? (
+          // Application not approved yet
           <Stack.Screen name="Pending" component={PendingScreen} />
-        ) : !profile.is_approved ? (
-          // Not approved yet
-          <Stack.Screen name="Pending" component={PendingScreen} />
-        ) : profile.payment_status !== 'paid' && profile.payment_status !== 'successful' && profile.payment_status !== 'success' ? (
-          // Approved but not paid
+        ) : !isPaid ? (
+          // Approved but payment not completed (or account not created yet on web)
           <Stack.Screen name="PaymentRequired" component={PaymentRequiredScreen} />
         ) : (
-          // Approved and Paid
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          // Approved and Paid — full access
+          <Stack.Screen name="Dashboard" component={MainTabs} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

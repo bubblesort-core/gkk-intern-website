@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.glassBorder,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   payButtonText: {
-    color: '#fff',
+    color: '#0a0a0f',
     fontSize: 16,
     fontWeight: 'bold',
   },

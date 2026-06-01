@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        fetchProfile(session.user.email);
+        fetchProfile(session.user);
       } else {
         setLoading(false);
       }
@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        fetchProfile(session.user.email);
+        fetchProfile(session.user);
       } else {
         setProfile(null);
         setLoading(false);
@@ -29,16 +29,26 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
-  const fetchProfile = async (email) => {
+  const fetchProfile = async (user) => {
     try {
-      const { data, error } = await supabase
+      // 1. Fetch Application data (to check if they applied and are approved)
+      const { data: appData, error: appError } = await supabase
         .from('applications')
         .select('*')
-        .eq('email', email)
+        .eq('email', user.email)
         .single();
       
-      if (error) throw error;
-      setProfile(data);
+      // 2. Fetch Profile data (to check if they created an account and paid)
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      setProfile({
+        application: appData || null,
+        userProfile: userProfile || null,
+      });
     } catch (error) {
       console.error('Error fetching profile:', error.message);
     } finally {

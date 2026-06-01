@@ -3,14 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 import { supabase } from '../lib/supabase';
 
-export default function PendingScreen() {
+export default function NoAccountScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.icon}>⏳</Text>
-        <Text style={styles.title}>Under Review</Text>
+        <Text style={styles.icon}>⚠️</Text>
+        <Text style={styles.title}>Account Not Found</Text>
         <Text style={styles.subtitle}>
-          Your application is currently being reviewed by our team. You will gain access to the dashboard once approved.
+          We couldn't find an application associated with this email address. Please apply on our website first.
         </Text>
         
         <TouchableOpacity 

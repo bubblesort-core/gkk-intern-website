@@ -6,10 +6,12 @@ import { useAuth } from '../context/AuthContext';
 
 export default function DashboardScreen() {
   const { profile } = useAuth();
+  
+  const userName = profile?.userProfile?.full_name || profile?.application?.full_name || 'Intern';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome back, {profile?.full_name?.split(' ')[0] || 'Intern'}!</Text>
+      <Text style={styles.title}>Welcome back, {userName.split(' ')[0]}!</Text>
       <Text style={styles.subtitle}>Your mobile dashboard is ready.</Text>
       
       <View style={styles.grid}>
