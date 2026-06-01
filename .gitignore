@@ -7,7 +7,7 @@ node_modules/
 # Build cache
 .vite/
 dist/
-production_dist/
+# production_dist/
 
 # Environment files (keep .env.example)
 .env
