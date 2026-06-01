@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { AuthProvider } from './src/context/AuthContext';
 import { DashboardProvider } from './src/context/DashboardContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import MaintenanceGuard from './src/components/MaintenanceGuard';
 import SplashScreen from './src/screens/SplashScreen';
 
 export default function App() {
@@ -21,7 +22,9 @@ export default function App() {
     <AuthProvider>
       <DashboardProvider>
         <StatusBar style="light" />
-        <AppNavigator />
+        <MaintenanceGuard>
+          <AppNavigator />
+        </MaintenanceGuard>
       </DashboardProvider>
     </AuthProvider>
   );

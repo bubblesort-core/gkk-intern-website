@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Payments', icon: 'fas fa-rupee-sign', link: 'payments.html' },
 
         { label: 'System', isLabel: true },
-        { name: 'Activity Logs', icon: 'fas fa-history', link: 'logs.html' }
+        { name: 'Activity Logs', icon: 'fas fa-history', link: 'logs.html' },
+        { name: 'Maintenance', icon: 'fas fa-hard-hat', link: 'maintenance.html' }
     ];
 
     // Get current page filename

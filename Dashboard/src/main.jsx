@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './styles/global.css';
+import MaintenanceGuard from './components/MaintenanceGuard';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
@@ -13,7 +14,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 v7_relativeSplatPath: true,
             }}
         >
-            <App />
+            <MaintenanceGuard>
+                <App />
+            </MaintenanceGuard>
         </BrowserRouter>
     </React.StrictMode>
 );

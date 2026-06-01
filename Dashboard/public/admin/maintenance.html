@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Mode | GKK Interns - Admin</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    
+    <style>
+        .setting-group {
+            margin-bottom: 24px;
+        }
+        .setting-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--c-text-primary);
+        }
+        .setting-group p.hint {
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            margin-bottom: 12px;
+            margin-top: -4px;
+        }
+        
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #ef4444; /* Red for danger/maintenance */
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #ef4444;
+        }
+        input:checked + .slider:before {
+            -webkit-transform: translateX(24px);
+            -ms-transform: translateX(24px);
+            transform: translateX(24px);
+        }
+        
+        .template-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .template-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .template-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .template-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+            color: #3b82f6;
+        }
+        .template-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--c-text-secondary);
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Maintenance Mode</h1>
+                </div>
+            </header>
+
+            <div class="page-body" style="max-width: 800px; margin: 0 auto;">
+                
+                <div class="card-premium" id="maintenanceStatusCard" style="border-left: 4px solid #334155; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h3 style="margin-top:0; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-hard-hat" id="statusIcon"></i> 
+                                <span id="statusText">Maintenance Mode is OFF</span>
+                            </h3>
+                            <p style="margin:0; color: var(--c-text-muted); font-size: 0.9rem;">
+                                When enabled, all frontend pages (Dashboard, Apply, Main, Chat) will be blocked and show a full-screen notice.
+                            </p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="maintenanceToggle" onchange="toggleMaintenanceState()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card-premium">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-envelope-open-text"></i> Notice Settings</h3>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Quick Templates</label>
+                        <p class="hint">Click a template to quickly fill out the title and message.</p>
+                        <div class="template-cards">
+                            <div class="template-card" onclick="applyTemplate('Scheduled Maintenance', 'We are currently undergoing scheduled maintenance to improve the platform. Please check back soon.')">
+                                <h4>Scheduled Update</h4>
+                                <p>Standard notice for planned upgrades.</p>
+                            </div>
+                            <div class="template-card" onclick="applyTemplate('Emergency Maintenance', 'We are currently fixing an unexpected issue. Our team is on it, and we will be back online shortly.')">
+                                <h4>Emergency Fix</h4>
+                                <p>For sudden downtime or critical bugs.</p>
+                            </div>
+                            <div class="template-card" onclick="applyTemplate('System Upgrade', 'We are upgrading our systems to bring you new features! The portal will be available again in a few hours.')">
+                                <h4>Major Upgrade</h4>
+                                <p>Longer duration for new features.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Notice Title</label>
+                        <input type="text" id="noticeTitle" class="form-control" placeholder="e.g., Scheduled Maintenance" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 6px;">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Notice Message</label>
+                        <textarea id="noticeMessage" class="form-control" rows="4" placeholder="Enter the message interns will see..." style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveSettings()" id="saveBtn">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                    <span id="saveStatus" style="margin-left: 12px; color: #10b981; font-size: 0.9rem; display: none;">Saved successfully!</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/admin-identity.js"></script> 
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            sidebar.classList.contains('open') ? overlay.style.display = 'block' : overlay.style.display = 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
+
+        let currentState = {
+            enabled: false,
+            title: "Scheduled Maintenance",
+            message: "We are currently undergoing scheduled maintenance to improve the platform. Please check back soon."
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+        });
+
+        async function loadSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('system_config')
+                    .select('value')
+                    .eq('key', 'maintenance_mode')
+                    .single();
+                
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        // Not found, we will initialize it on save
+                        console.log("No maintenance mode config found yet.");
+                    } else {
+                        throw error;
+                    }
+                } else if (data && data.value) {
+                    currentState = { ...currentState, ...data.value };
+                }
+
+                updateUI();
+            } catch (err) {
+                console.error('Error loading settings:', err);
+                alert('Error loading maintenance settings: ' + err.message);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('maintenanceToggle').checked = currentState.enabled;
+            document.getElementById('noticeTitle').value = currentState.title || "";
+            document.getElementById('noticeMessage').value = currentState.message || "";
+            
+            const card = document.getElementById('maintenanceStatusCard');
+            const statusText = document.getElementById('statusText');
+            
+            if (currentState.enabled) {
+                card.style.borderLeftColor = '#ef4444';
+                statusText.textContent = "Maintenance Mode is ON";
+                statusText.style.color = '#ef4444';
+            } else {
+                card.style.borderLeftColor = '#334155';
+                statusText.textContent = "Maintenance Mode is OFF";
+                statusText.style.color = 'inherit';
+            }
+        }
+
+        function applyTemplate(title, message) {
+            document.getElementById('noticeTitle').value = title;
+            document.getElementById('noticeMessage').value = message;
+        }
+
+        async function toggleMaintenanceState() {
+            currentState.enabled = document.getElementById('maintenanceToggle').checked;
+            await saveSettings();
+        }
+
+        async function saveSettings() {
+            const btn = document.getElementById('saveBtn');
+            const status = document.getElementById('saveStatus');
+            
+            // Get latest values from inputs
+            currentState.title = document.getElementById('noticeTitle').value;
+            currentState.message = document.getElementById('noticeMessage').value;
+            currentState.enabled = document.getElementById('maintenanceToggle').checked;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('system_config')
+                    .upsert({ 
+                        key: 'maintenance_mode', 
+                        value: currentState,
+                        updated_at: new Date().toISOString()
+                    });
+
+                if (error) throw error;
+                
+                // Log action
+                await supabaseClient.from('admin_logs').insert([{
+                    admin_id: window.adminIdentity?.id,
+                    admin_name: window.adminIdentity?.name,
+                    action: 'UPDATE_MAINTENANCE',
+                    details: 'Turned maintenance mode ' + (currentState.enabled ? 'ON' : 'OFF'),
+                    ip_address: window.adminIdentity?.ip,
+                    user_agent: navigator.userAgent
+                }]);
+
+                updateUI();
+                
+                status.style.display = 'inline';
+                setTimeout(() => status.style.display = 'none', 3000);
+            } catch (err) {
+                console.error('Error saving settings:', err);
+                alert('Error saving maintenance settings: ' + err.message);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Settings';
+                btn.disabled = false;
+            }
+        }
+    </script>
+    <script src="../js/admin-cursor.js"></script>
+</body>
+
+</html>
