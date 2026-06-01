@@ -304,11 +304,9 @@
                 
                 // Log action
                 await supabaseClient.from('admin_logs').insert([{
-                    admin_id: window.adminIdentity?.id,
-                    admin_name: window.adminIdentity?.name,
+                    admin_name: sessionStorage.getItem('admin_identity') || 'Unknown Admin',
                     action: 'UPDATE_MAINTENANCE',
-                    details: 'Turned maintenance mode ' + (currentState.enabled ? 'ON' : 'OFF'),
-                    ip_address: window.adminIdentity?.ip,
+                    details: JSON.stringify({ message: 'Turned maintenance mode ' + (currentState.enabled ? 'ON' : 'OFF') }),
                     user_agent: navigator.userAgent
                 }]);
 
