@@ -18,7 +18,7 @@ const MaintenanceGuard = ({ children }: { children: React.ReactNode }) => {
           .from('system_config')
           .select('value')
           .eq('key', 'maintenance_mode')
-          .single();
+          .maybeSingle();
 
         if (error) {
           if (error.code !== 'PGRST116') {

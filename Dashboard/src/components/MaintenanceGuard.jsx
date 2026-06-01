@@ -11,7 +11,7 @@ const MaintenanceGuard = ({ children }) => {
           .from('system_config')
           .select('value')
           .eq('key', 'maintenance_mode')
-          .single();
+          .maybeSingle();
 
         if (error) {
           // If not found, assume maintenance is off
