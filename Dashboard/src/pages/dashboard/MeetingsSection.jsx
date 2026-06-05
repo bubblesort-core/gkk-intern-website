@@ -126,7 +126,16 @@ export default function MeetingsSection() {
 
         playerRef.current = new window.YT.Player(`yt-player-${meetingId}`, {
             height: '100%', width: '100%', videoId,
-            playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, disablekb: 1, origin: window.location.origin },
+            playerVars: { 
+                autoplay: 1, 
+                controls: 0, 
+                rel: 0, 
+                modestbranding: 1, 
+                playsinline: 1, 
+                disablekb: 1, 
+                enablejsapi: 1,
+                origin: window.location.origin 
+            },
             events: {
                 onStateChange: (e) => {
                     setIsPlaying(e.data === window.YT.PlayerState.PLAYING);

@@ -114,7 +114,19 @@ export default function RecordingsSection() {
         if (playerRef.current) { try { playerRef.current.destroy(); } catch (e) { } }
         playerRef.current = new window.YT.Player('rec-yt-player', {
             height: '100%', width: '100%', videoId,
-            playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, disablekb: 1, iv_load_policy: 3, fs: 0, showinfo: 0 },
+            playerVars: { 
+                autoplay: 1, 
+                controls: 0, 
+                rel: 0, 
+                modestbranding: 1, 
+                playsinline: 1, 
+                disablekb: 1, 
+                iv_load_policy: 3, 
+                fs: 0, 
+                showinfo: 0,
+                enablejsapi: 1,
+                origin: window.location.origin
+            },
             events: {
                 onReady: (e) => {
                     playerReady.current = true;
