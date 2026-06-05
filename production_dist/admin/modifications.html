@@ -1,0 +1,536 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifications & Access Control | GKK Interns - Code. Build. Deploy.</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        .control-panel {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .user-select-container {
+            position: relative;
+        }
+
+        .user-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-sm);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .user-result-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .user-result-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .locks-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .locks-table th,
+        .locks-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        .locks-table th {
+            color: var(--c-text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Modifications & Access Control</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshCurrentPage()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+
+                <!-- Create Lock Panel -->
+                <div class="control-panel">
+                    <h3
+                        style="font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-lock" style="color: var(--c-primary);"></i> Create Access Lock
+                    </h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+                        <div>
+                            <label class="form-label">Target Audience</label>
+                            <select id="targetMode" class="form-select" onchange="updateTargetMode()">
+                                <option value="all" selected>All Interns</option>
+                                <option value="batch">Specific Phase</option>
+                                <option value="intern">Specific Intern</option>
+                            </select>
+                            <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
+                                Choose whether the lock applies globally, by phase, or to one intern.
+                            </p>
+
+                            <div id="internTargetWrap" class="user-select-container" style="margin-top: 16px; display: none;">
+                                <label class="form-label">Target Intern</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <div style="position: relative; flex: 1;">
+                                        <i class="fas fa-search"
+                                            style="position: absolute; left: 12px; top: 12px; color: var(--c-text-muted);"></i>
+                                        <input type="text" id="userSearch" class="form-input"
+                                            placeholder="Search intern by name or email..."
+                                            style="padding-left: 36px;">
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="clearUserSelection()"
+                                        title="Clear Selection">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div id="userSearchResults" class="user-results"></div>
+                                <div id="selectedUserDisplay"
+                                    style="margin-top: 8px; font-size: 0.9rem; color: var(--c-primary); display: none;">
+                                    Selected: <span id="selectedUserName" style="font-weight: 600;"></span>
+                                </div>
+                                <input type="hidden" id="selectedUserId" value="">
+                            </div>
+
+                            <div id="batchTargetWrap" style="margin-top: 16px; display: none;">
+                                <label class="form-label">Target Phase</label>
+                                <select id="batchSelect" class="form-select">
+                                    <option value="">Loading phases...</option>
+                                </select>
+                                <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
+                                    Locks will apply to the selected batch / phase.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Page / Feature to Lock</label>
+                            <select id="pageSelect" class="form-select">
+                                <option value="all">Entire Platform (Full Lockout)</option>
+                                <option value="/overview">Main Dashboard</option>
+                                <option value="/payment">Training Fee / Payment</option>
+                                <option value="/projects">Projects</option>
+                                <option value="/team">Team</option>
+                                <option value="/announcements">Announcements</option>
+                                <option value="/meetings">Meetings</option>
+                                <option value="/recordings">Recordings</option>
+                                <option value="/resources">Resources</option>
+                                <option value="/rewards">Rewards</option>
+                                <option value="/profile">Profile Settings</option>
+                            </select>
+                            <p style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 6px;">
+                                These options mirror the current intern dashboard sections.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Reason -->
+                    <div style="margin-top: 20px;">
+                        <label class="form-label">Lock Reason (Visible to Intern)</label>
+                        <textarea id="lockReason" class="form-textarea" rows="3"
+                            placeholder="e.g. Maintenance in progress. We will be back shortly."></textarea>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                        <button class="btn btn-primary" onclick="createLock()">
+                            <i class="fas fa-plus-circle"></i> Apply Lock
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Locks List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Active Locks</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="locks-table">
+                            <thead>
+                                <tr>
+                                    <th>Target</th>
+                                    <th>Page / Feature</th>
+                                    <th>Reason</th>
+                                    <th>Created At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="locksTableBody">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
+
+        // State
+        let selectedUser = null;
+        let targetMode = 'all';
+        let batchesCache = [];
+
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            const session = getAdminSession();
+
+            await loadBatches();
+            loadLocks();
+            setupUserSearch();
+            updateTargetMode();
+        }
+
+        async function loadBatches() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('batches')
+                    .select('id, name')
+                    .order('name');
+
+                if (error) throw error;
+
+                batchesCache = data || [];
+                const batchSelect = document.getElementById('batchSelect');
+                if (batchSelect) {
+                    batchSelect.innerHTML = '<option value="">Select a phase...</option>' + batchesCache.map(batch => `<option value="${batch.id}">${batch.name}</option>`).join('');
+                }
+            } catch (err) {
+                console.error('Error loading batches:', err);
+                const batchSelect = document.getElementById('batchSelect');
+                if (batchSelect) batchSelect.innerHTML = '<option value="">Failed to load phases</option>';
+            }
+        }
+
+        function updateTargetMode() {
+            targetMode = document.getElementById('targetMode')?.value || 'all';
+
+            const internWrap = document.getElementById('internTargetWrap');
+            const batchWrap = document.getElementById('batchTargetWrap');
+
+            if (internWrap) internWrap.style.display = targetMode === 'intern' ? 'block' : 'none';
+            if (batchWrap) batchWrap.style.display = targetMode === 'batch' ? 'block' : 'none';
+
+            if (targetMode !== 'intern') clearUserSelection();
+            if (targetMode !== 'batch' && document.getElementById('batchSelect')) document.getElementById('batchSelect').value = '';
+        }
+
+        async function loadLocks() {
+            const tbody = document.getElementById('locksTableBody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Loading locks...</td></tr>';
+
+            try {
+                // Fetch locks with user details
+                const { data: locks, error } = await supabaseClient
+                    .from('access_controls')
+                    .select('*, profiles(full_name, email), batches(name)') // join profiles and batches for display
+                    .eq('is_locked', true)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!locks || locks.length === 0) {
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--c-text-muted);">No active locks found.</td></tr>';
+                    return;
+                }
+
+                if (tbody) tbody.innerHTML = locks.map(lock => {
+                    const lockType = lock.target_type || (lock.target_batch_id ? 'batch' : (lock.target_user_id || lock.target_intern_id ? 'intern' : 'all'));
+                    let targetDisplay = '<span class="badge badge-error">ALL INTERNS</span>';
+
+                    if (lockType === 'intern') {
+                        targetDisplay = `<div style="font-weight:600;">${lock.profiles?.full_name || 'Unknown User'}</div><div style="font-size:0.8rem; opacity:0.7;">${lock.profiles?.email || 'No Email'}</div>`;
+                    } else if (lockType === 'batch') {
+                        targetDisplay = `<span class="badge badge-info"><i class="fas fa-layer-group"></i> ${lock.batches?.name || 'Unknown Phase'}</span>`;
+                    }
+
+                    const pageDisplay = lock.page_identifier === 'all'
+                        ? '<b>Entire Platform</b>'
+                        : `<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px;">${lock.page_identifier}</code>`;
+
+                    return `
+                        <tr>
+                            <td>${targetDisplay}</td>
+                            <td>${pageDisplay}</td>
+                            <td style="max-width:300px;">${lock.reason}</td>
+                            <td style="font-size:0.85rem; opacity:0.8;">${new Date(lock.created_at).toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="unlockAccess('${lock.id}')" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">
+                                    <i class="fas fa-unlock"></i> Unlock
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Error loading locks:', err);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444;">Error loading data: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function createLock() {
+            const userId = targetMode === 'intern' ? ((document.getElementById('selectedUserId')?.value || '') || null) : null;
+            const batchId = targetMode === 'batch' ? (document.getElementById('batchSelect')?.value || '') : '';
+            const page = (document.getElementById('pageSelect')?.value || '');
+            const reason = (document.getElementById('lockReason')?.value || '') || 'Maintenance in progress';
+
+            if (targetMode === 'intern' && !userId) {
+                Swal.fire('Select Intern', 'Please choose an intern before applying the lock.', 'warning');
+                return;
+            }
+
+            if (targetMode === 'batch' && !batchId) {
+                Swal.fire('Select Phase', 'Please choose a phase before applying the lock.', 'warning');
+                return;
+            }
+
+            const selectedBatch = batchId ? batchesCache.find(batch => batch.id === batchId) : null;
+            const confirmTitle = targetMode === 'intern'
+                ? 'Lock for Specific Intern?'
+                : targetMode === 'batch'
+                    ? 'Lock for Specific Phase?'
+                    : 'LOCK FOR ALL INTERNS?';
+            const confirmText = targetMode === 'intern'
+                ? `This will block access to <b>${page}</b> for the selected intern.`
+                : targetMode === 'batch'
+                    ? `This will block access to <b>${page}</b> for <b>${selectedBatch?.name || 'the selected phase'}</b>.`
+                    : `This will block access to <b>${page}</b> for <b>EVERYONE</b>. Are you sure?`;
+
+            const result = await Swal.fire({
+                title: confirmTitle,
+                html: confirmText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, Lock Access',
+                background: '#1e293b',
+                color: '#fff'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // disable button
+                const btn = document.querySelector('button[onclick="createLock()"]');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                btn.disabled = true;
+
+                const { error } = await supabaseClient
+                    .from('access_controls')
+                    .insert({
+                        target_type: targetMode,
+                        target_user_id: targetMode === 'intern' ? userId : null,
+                        target_intern_id: targetMode === 'intern' ? userId : null,
+                        target_batch_id: targetMode === 'batch' ? batchId : null,
+                        page_identifier: page,
+                        reason: reason,
+                        is_locked: true,
+                        created_by: (await supabaseClient.auth.getUser()).data.user?.id
+                    });
+
+                if (error) throw error;
+
+                Swal.fire({ icon: 'success', title: 'Lock Applied Successfully', timer: 1500, showConfirmButton: false });
+
+                // Reset form
+                if (document.getElementById('lockReason')) document.getElementById('lockReason').value = '';
+                // Don't reset user selection immediately in case they want to add more locks for same user, but maybe safer to reset?
+                // Use case: bulk locking. Let's keep user selected.
+
+                await loadLocks();
+
+            } catch (err) {
+                console.error('Lock creation error:', err);
+                Swal.fire('Error', err.message, 'error');
+            } finally {
+                const btn = document.querySelector('button[onclick="createLock()"]');
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-plus-circle"></i> Apply Lock';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        async function unlockAccess(id) {
+            try {
+                const { error } = await supabaseClient
+                    .from('access_controls')
+                    .delete() // Simply delete the rule to unlock
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                Toast.fire({ icon: 'success', title: 'Access Unlocked' });
+
+                await loadLocks();
+            } catch (err) {
+                console.error('Unlock error:', err);
+                Swal.fire('Error', 'Failed to unlock', 'error');
+            }
+        }
+
+        /* --- User Search Logic --- */
+        function setupUserSearch() {
+            const input = document.getElementById('userSearch');
+            const results = document.getElementById('userSearchResults');
+            let debounceTimer;
+
+            if (input) {
+                input.addEventListener('input', (e) => {
+                    clearTimeout(debounceTimer);
+                    const query = e.target.value.trim();
+
+                    if (query.length < 2) {
+                        if (results) results.style.display = 'none';
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => performUserSearch(query), 300);
+                });
+            }
+
+            // Hide results on outside click
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.user-select-container')) {
+                    if (results) results.style.display = 'none';
+                }
+            });
+        }
+
+        async function performUserSearch(query) {
+            const resultsDiv = document.getElementById('userSearchResults');
+            if (resultsDiv) {
+                resultsDiv.innerHTML = '<div style="padding:10px; text-align:center; color:var(--c-text-muted);"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+                resultsDiv.style.display = 'block';
+            }
+
+            try {
+                // Search in profiles
+                const { data: users, error } = await supabaseClient
+                    .from('profiles')
+                    .select('id, full_name, email, avatar_url')
+                    .ilike('full_name', `%${query}%`)
+                    .limit(5);
+
+                if (error) throw error;
+
+                if (!users || users.length === 0) {
+                    if (resultsDiv) resultsDiv.innerHTML = '<div style="padding:10px; text-align:center; color:var(--c-text-muted);">No users found</div>';
+                    return;
+                }
+
+                if (resultsDiv) resultsDiv.innerHTML = users.map(u => `
+                    <div class="user-result-item" onclick="selectUser('${u.id}', '${u.full_name}', '${u.email}')">
+                        <div style="width:32px; height:32px; border-radius:50%; background:#2dd4bf; overflow:hidden; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff;">
+                            ${u.avatar_url ? `<img src="${getProxiedUrl(u.avatar_url)}" style="width:100%;height:100%;object-fit:cover;">` : u.full_name[0]}
+                        </div>
+                        <div>
+                            <div style="font-weight:600; font-size:0.9rem;">${u.full_name}</div>
+                            <div style="font-size:0.75rem; opacity:0.7;">${u.email}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                if (resultsDiv) resultsDiv.innerHTML = `<div style="padding:10px; text-align:center; color:#ef4444;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function selectUser(id, name, email) {
+            if (document.getElementById('selectedUserId')) document.getElementById('selectedUserId').value = id;
+            if (document.getElementById('selectedUserName')) document.getElementById('selectedUserName').textContent = `${name} (${email})`;
+            if (document.getElementById('selectedUserDisplay')) document.getElementById('selectedUserDisplay').style.display = 'block';
+            if (document.getElementById('userSearchResults')) document.getElementById('userSearchResults').style.display = 'none';
+            if (document.getElementById('userSearch')) document.getElementById('userSearch').value = ''; // clear search
+        }
+
+        function clearUserSelection() {
+            if (document.getElementById('selectedUserId')) document.getElementById('selectedUserId').value = '';
+            if (document.getElementById('selectedUserDisplay')) document.getElementById('selectedUserDisplay').style.display = 'none';
+            if (document.getElementById('userSearch')) document.getElementById('userSearch').value = '';
+        }
+
+        init();
+    </script>
+    <script src="../js/admin-cursor.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merch Orders | GKK Interns Admin</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        th {
+            background: rgba(255,255,255,0.05);
+            color: var(--c-text-muted);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-processing { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .status-shipped { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .status-delivered { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+        .btn-update {
+            padding: 6px 12px;
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            color: var(--c-text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-update:hover {
+            border-color: var(--c-primary);
+            color: var(--c-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Merch Orders</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="loadOrders()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div id="loadingIndicator" style="text-align: center; padding: 3rem; color: var(--c-text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; color: var(--c-primary);"></i>
+                    <p>Loading Orders...</p>
+                </div>
+                
+                <div id="contentArea" style="display: none; background: var(--c-bg-card); border-radius: 12px; border: 1px solid var(--c-border); overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer Details</th>
+                                <th>Delivery Address</th>
+                                <th>Amount</th>
+                                <th>Shipping Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Update Order Modal -->
+    <div id="updateModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:99999; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this) closeUpdateModal()">
+        <div style="max-width: 500px; width: 100%; background: var(--c-bg-card, #1e293b); border-radius: 12px; border: 1px solid var(--c-border, #334155); overflow: hidden;" onclick="event.stopPropagation()">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--c-border, #334155);">
+                <h3 style="margin:0; font-size:1.1rem; font-weight:600;">Update Shipping Status</h3>
+                <button onclick="closeUpdateModal()" style="background:none; border:none; color:var(--c-text-muted, #94a3b8); cursor:pointer; font-size:1.1rem; padding:4px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <input type="hidden" id="updateOrderId">
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom: 0.5rem; color: var(--c-text-secondary, #cbd5e1); font-size: 0.9rem;">Status</label>
+                    <select id="updateStatus" style="width: 100%; padding: 0.75rem; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--c-border, #334155); color: white; font-size: 0.95rem;">
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display:block; margin-bottom: 0.5rem; color: var(--c-text-secondary, #cbd5e1); font-size: 0.9rem;">Tracking Link (Optional)</label>
+                    <input type="url" id="updateTrackingLink" placeholder="https://delhivery.com/track/..." style="width: 100%; padding: 0.75rem; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--c-border, #334155); color: white; font-size: 0.95rem;">
+                </div>
+            </div>
+            <div style="display:flex; gap:0.75rem; justify-content:flex-end; padding: 1rem 1.5rem; border-top: 1px solid var(--c-border, #334155);">
+                <button onclick="closeUpdateModal()" style="padding: 0.6rem 1.25rem; background:transparent; border:1px solid var(--c-border, #334155); color:white; border-radius:6px; cursor:pointer;">Cancel</button>
+                <button onclick="saveOrderStatus()" id="btnSaveUpdate" style="padding: 0.6rem 1.25rem; background:var(--c-primary, #3b82f6); border:none; color:white; border-radius:6px; cursor:pointer; font-weight:600;">Save Updates</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Order Modal -->
+    <div id="viewModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:99999; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this) closeViewModal()">
+        <div style="max-width: 600px; width: 100%; max-height: 90vh; background: var(--c-bg-card, #1e293b); border-radius: 12px; border: 1px solid var(--c-border, #334155); overflow-y: auto;" onclick="event.stopPropagation()">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--c-border, #334155); position: sticky; top: 0; background: var(--c-bg-card, #1e293b); z-index: 10;">
+                <h3 style="margin:0; font-size:1.1rem; font-weight:600;">Order Details</h3>
+                <button onclick="closeViewModal()" style="background:none; border:none; color:var(--c-text-muted, #94a3b8); cursor:pointer; font-size:1.1rem; padding:4px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="padding: 1.5rem;" id="viewModalContent">
+                <!-- Content injected here -->
+            </div>
+            <div style="display:flex; gap:0.75rem; justify-content:flex-end; padding: 1rem 1.5rem; border-top: 1px solid var(--c-border, #334155); position: sticky; bottom: 0; background: var(--c-bg-card, #1e293b);">
+                <button onclick="downloadAdminInvoice(currentViewOrderId)" style="padding: 0.6rem 1.25rem; background:#10b981; border:none; color:white; border-radius:6px; cursor:pointer; font-weight:600;"><i class="fas fa-file-invoice"></i> Download Invoice</button>
+                <button onclick="closeViewModal()" style="padding: 0.6rem 1.25rem; background:var(--c-primary, #3b82f6); border:none; color:white; border-radius:6px; cursor:pointer; font-weight:600;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-identity.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-smart-features.js"></script>
+    <script>
+        window.allOrders = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await ensureAdminAuth();
+            loadOrders();
+        });
+
+        async function loadOrders() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('contentArea').style.display = 'none';
+
+            try {
+                // Fetch completed orders
+                const { data: orders, error } = await window.supabaseClient
+                    .from('merchandise_orders')
+                    .select('*')
+                    .eq('status', 'completed')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                window.allOrders = orders;
+
+                const tbody = document.getElementById('ordersTableBody');
+                tbody.innerHTML = '';
+
+                if (!orders || orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--c-text-muted); padding: 2rem;">No completed orders found.</td></tr>`;
+                } else {
+                    orders.forEach(order => {
+                        const date = new Date(order.created_at).toLocaleDateString();
+                        const statusClass = order.shipping_status === 'Delivered' ? 'status-delivered' : order.shipping_status === 'Shipped' ? 'status-shipped' : 'status-processing';
+                        const displayStatus = order.shipping_status || 'Processing';
+                        const trackingLink = order.tracking_link || '';
+                        
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600;">${date}</div>
+                                    <div style="font-size: 0.8rem; color: var(--c-text-muted); word-break: break-all; max-width: 150px;">ID: ${order.id}</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600;">${order.user_name || 'N/A'}</div>
+                                    <div style="font-size: 0.85rem; color: var(--c-text-muted);"><i class="fas fa-envelope"></i> ${order.user_email}</div>
+                                    <div style="font-size: 0.85rem; color: var(--c-text-muted);"><i class="fas fa-phone"></i> ${order.phone_number || 'N/A'}</div>
+                                </td>
+                                <td>
+                                    <div style="max-width: 250px; white-space: normal; line-height: 1.4; font-size: 0.9rem;">
+                                        ${order.delivery_address || 'No address'}<br>
+                                        ${order.city || ''}, ${order.state || ''} ${order.zip_code || ''}
+                                    </div>
+                                </td>
+                                <td>₹${order.amount}</td>
+                                <td>
+                                    <span class="status-badge ${statusClass}">${displayStatus}</span>
+                                    ${order.tracking_link ? `<a href="${order.tracking_link}" target="_blank" style="display:block; font-size:0.8rem; margin-top:5px; color:var(--c-primary);"><i class="fas fa-external-link-alt"></i> Track</a>` : ''}
+                                </td>
+                                <td style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                                    <button class="btn-update" onclick="openViewModal('${order.id}')" style="background: var(--c-bg-card); border: 1px solid var(--c-border); color: var(--c-text);">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                    <button class="btn-update" onclick="downloadAdminInvoice('${order.id}')" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981;">
+                                        <i class="fas fa-file-invoice"></i> Invoice
+                                    </button>
+                                    <button class="btn-update" onclick="openUpdateModal('${order.id}', '${displayStatus}', '${trackingLink}')">
+                                        <i class="fas fa-edit"></i> Update
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('contentArea').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load orders");
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function openUpdateModal(id, status, link) {
+            document.getElementById('updateOrderId').value = id;
+            document.getElementById('updateStatus').value = status;
+            document.getElementById('updateTrackingLink').value = link === 'undefined' ? '' : link;
+            document.getElementById('updateModal').style.display = 'flex';
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+        }
+
+        let currentViewOrderId = null;
+
+        function openViewModal(id) {
+            currentViewOrderId = id;
+            const order = window.allOrders.find(o => o.id === id);
+            if (!order) return;
+            
+            const formatDate = (dateStr) => {
+                if (!dateStr) return 'N/A';
+                return new Date(dateStr).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+            };
+
+            const content = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--c-text-secondary); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Order Information</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                        <div>
+                            <span style="color: var(--c-text-muted); font-size: 0.8rem; display: block;">Order ID</span>
+                            <span style="font-weight: 500; word-break: break-all;">${order.id}</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--c-text-muted); font-size: 0.8rem; display: block;">Amount Paid</span>
+                            <span style="font-weight: 500;">₹${order.amount}</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--c-text-muted); font-size: 0.8rem; display: block;">Status</span>
+                            <span class="status-badge status-${order.shipping_status === 'Delivered' ? 'delivered' : order.shipping_status === 'Shipped' ? 'shipped' : 'processing'}">${order.shipping_status || 'Processing'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--c-text-secondary); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Customer Details</h4>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; line-height: 1.5;">
+                        <div><strong>Name:</strong> ${order.user_name || 'N/A'}</div>
+                        <div><strong>Email:</strong> ${order.user_email || 'N/A'}</div>
+                        <div><strong>Phone:</strong> ${order.phone_number || 'N/A'}</div>
+                        <div style="margin-top: 0.5rem;"><strong>Address:</strong><br>${order.delivery_address || 'N/A'}<br>${order.city || ''}, ${order.state || ''} ${order.zip_code || ''}</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--c-text-secondary); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Timeline</h4>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; line-height: 1.5; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Order Placed:</span>
+                            <span style="color: var(--c-text-muted);">${formatDate(order.created_at)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Processed:</span>
+                            <span style="color: var(--c-text-muted);">${formatDate(order.processed_at)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Shipped:</span>
+                            <span style="color: var(--c-text-muted);">${formatDate(order.shipped_at)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Delivered:</span>
+                            <span style="color: var(--c-text-muted);">${formatDate(order.delivered_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('viewModalContent').innerHTML = content;
+            document.getElementById('viewModal').style.display = 'flex';
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').style.display = 'none';
+        }
+
+        async function saveOrderStatus() {
+            const id = document.getElementById('updateOrderId').value;
+            const status = document.getElementById('updateStatus').value;
+            const link = document.getElementById('updateTrackingLink').value.trim();
+            const btn = document.getElementById('btnSaveUpdate');
+
+            if (!id) return;
+
+            try {
+                btn.textContent = 'Saving...';
+                btn.disabled = true;
+
+                let updatePayload = { 
+                    shipping_status: status,
+                    tracking_link: link || null
+                };
+
+                if (status === 'Processing') updatePayload.processed_at = new Date().toISOString();
+                if (status === 'Shipped') updatePayload.shipped_at = new Date().toISOString();
+                if (status === 'Delivered') updatePayload.delivered_at = new Date().toISOString();
+
+                const { error, data: updatedOrder } = await window.supabaseClient
+                    .from('merchandise_orders')
+                    .update(updatePayload)
+                    .eq('id', id)
+                    .select('*, merchandise_products(name)')
+                    .single();
+
+                if (error) throw error;
+
+                // Send email notification for status change
+                try {
+                    const productName = updatedOrder.merchandise_products?.name || 'GKK Merchandise';
+                    const emailHtml = `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                            <div style="background-color: #f59e0b; padding: 20px; text-align: center; color: white;">
+                                <h1 style="margin: 0; font-size: 24px;">Order Status Update</h1>
+                                <p style="margin: 5px 0 0; opacity: 0.9;">There's an update on your recent purchase.</p>
+                            </div>
+                            <div style="padding: 30px;">
+                                <p style="font-size: 16px; color: #374151;">Hi ${updatedOrder.user_name || 'Customer'},</p>
+                                <p style="font-size: 16px; color: #374151;">Your order for <strong>${productName}</strong> (Order ID: ${updatedOrder.razorpay_order_id}) has a new status update.</p>
+                                
+                                <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                                    <h3 style="margin: 0 0 10px 0; color: #111827;">Current Status:</h3>
+                                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #d97706;">${status}</p>
+                                </div>
+
+                                ${link ? `
+                                <div style="margin-top: 20px;">
+                                    <h4 style="margin-bottom: 10px; color: #111827;">Tracking Information:</h4>
+                                    <p style="margin: 0; color: #4b5563;">You can track your package directly via the courier's website:</p>
+                                    <a href="${link}" target="_blank" style="display: inline-block; margin-top: 10px; background-color: #374151; color: white; text-decoration: none; padding: 10px 20px; border-radius: 4px;">Track Package</a>
+                                </div>
+                                ` : ''}
+
+                                <div style="margin-top: 30px; text-align: center;">
+                                    <p style="color: #4b5563; font-size: 14px; margin-bottom: 15px;">You can also check your detailed timeline on our website.</p>
+                                    <a href="https://gkkintern.in/merchandise" style="display: inline-block; background-color: #3b82f6; color: white; text-decoration: none; padding: 12px 24px; border-radius: 24px; font-weight: bold;">View Order Details</a>
+                                </div>
+                            </div>
+                            <div style="background-color: #f9fafb; padding: 15px; text-align: center; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px;">
+                                <p style="margin: 0;">© ${new Date().getFullYear()} GKK Intern Team. All rights reserved.</p>
+                            </div>
+                        </div>
+                    `;
+
+                    const { data: emailData, error: emailErr } = await window.supabaseClient.functions.invoke('send-email', {
+                        body: {
+                            to: updatedOrder.user_email,
+                            subject: `Order Update: ${status} - ${updatedOrder.razorpay_order_id}`,
+                            text: `Your order status is now: ${status}`,
+                            html: emailHtml
+                        }
+                    });
+
+                    if (emailErr) {
+                        console.error("Supabase edge function error:", emailErr);
+                        showToast("Status updated, but email failed to send.", "error");
+                    } else if (emailData && emailData.error) {
+                        console.error("Email API error:", emailData.error);
+                        showToast("Status updated, but email failed: " + emailData.error, "error");
+                    } else {
+                        // Success
+                        showToast("Order status updated and email sent!", "success");
+                    }
+                } catch (err) {
+                    console.error("Error trying to send email:", err);
+                    showToast("Status updated, but failed to send email.", "error");
+                }
+
+                closeUpdateModal();
+                loadOrders(); // Refresh table
+            } catch (err) {
+                console.error(err);
+                alert("Failed to update status");
+            } finally {
+                btn.textContent = 'Save Updates';
+                btn.disabled = false;
+            }
+        }
+        async function downloadAdminInvoice(orderId) {
+            const order = window.allOrders.find(o => o.id === orderId);
+            if (!order) { alert('Order not found'); return; }
+
+            // Fetch product name
+            let productName = 'GKK Merchandise';
+            let basePrice = order.amount;
+            let deliveryCharge = 0;
+            let deliveryType = 'included';
+            try {
+                const { data: prod } = await window.supabaseClient
+                    .from('merchandise_products')
+                    .select('name, price, delivery_charge, delivery_charge_type')
+                    .eq('id', order.product_id)
+                    .single();
+                if (prod) {
+                    productName = prod.name;
+                    basePrice = prod.price;
+                    deliveryCharge = prod.delivery_charge || 0;
+                    deliveryType = prod.delivery_charge_type || 'included';
+                }
+            } catch(e) { console.warn('Could not fetch product details', e); }
+
+            const JSPDF = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jspdf || window.jsPDF);
+            const doc = new JSPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const orderDate = new Date(order.created_at);
+
+            // Header
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, pageWidth, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INVOICE', 14, 22);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('GKK Intern Team', 14, 30);
+            doc.text('Invoice Date: ' + orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), pageWidth - 14, 22, { align: 'right' });
+            doc.text('Time: ' + orderDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), pageWidth - 14, 30, { align: 'right' });
+
+            // Order ID bar
+            doc.setFillColor(30, 41, 59);
+            doc.rect(0, 40, pageWidth, 12, 'F');
+            doc.setTextColor(96, 165, 250);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Order ID: ' + (order.razorpay_order_id || order.id), 14, 48);
+
+            let y = 62;
+            doc.setTextColor(30, 41, 59);
+
+            // Customer Details
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Customer Details', 14, y);
+            y += 2;
+            doc.setDrawColor(59, 130, 246);
+            doc.setLineWidth(0.5);
+            doc.line(14, y, 90, y);
+            y += 8;
+            doc.setFontSize(10);
+            const custDetails = [
+                ['Name', order.user_name],
+                ['Email', order.user_email],
+                ['Phone', order.phone_number],
+                ['Address', order.delivery_address],
+                ['City', order.city],
+                ['State', order.state],
+                ['ZIP Code', order.zip_code],
+            ];
+            custDetails.forEach(([label, value]) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(label + ':', 14, y);
+                doc.setFont('helvetica', 'normal');
+                doc.text((value || 'N/A'), 55, y);
+                y += 6;
+            });
+
+            y += 6;
+
+            // Product Details
+            const totalAmount = basePrice + deliveryCharge;
+            const deliveryLabel = deliveryType === 'included' || !deliveryCharge ? 'Free (Included)' : '₹' + deliveryCharge;
+
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Product Details', 14, y);
+            y += 2;
+            doc.setDrawColor(59, 130, 246);
+            doc.line(14, y, 90, y);
+            y += 8;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Item', 'Base Price', 'Delivery', 'Total']],
+                body: [[productName, '₹' + basePrice, deliveryLabel, '₹' + totalAmount]],
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+                bodyStyles: { fontSize: 10, textColor: [30, 41, 59] },
+                columnStyles: { 0: { cellWidth: 70 } },
+                margin: { left: 14, right: 14 },
+            });
+
+            y = doc.lastAutoTable.finalY + 12;
+
+            // Amount Summary
+            doc.setFillColor(241, 245, 249);
+            doc.roundedRect(14, y, pageWidth - 28, 28, 3, 3, 'F');
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(71, 85, 105);
+            doc.text('Base Price:', 20, y + 9);
+            doc.text('₹' + basePrice, pageWidth - 20, y + 9, { align: 'right' });
+            doc.text('Delivery Charge:', 20, y + 17);
+            doc.text(deliveryLabel, pageWidth - 20, y + 17, { align: 'right' });
+            y += 28;
+            doc.setFillColor(15, 23, 42);
+            doc.roundedRect(14, y, pageWidth - 28, 14, 3, 3, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(13);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL PAID', 20, y + 10);
+            doc.text('₹' + totalAmount, pageWidth - 20, y + 10, { align: 'right' });
+
+            y += 24;
+
+            const payDetails = [
+                ['Gateway', 'Razorpay'],
+                ['Order ID', order.razorpay_order_id || order.id],
+                ['Payment ID', order.razorpay_payment_id || 'N/A'],
+                ['Currency', order.currency || 'INR'],
+                ['Status', order.status === 'completed' ? 'Paid' : order.status],
+            ];
+
+            let splitY = y;
+            
+            // --- Left Side: Payment Information ---
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Payment Information', 14, splitY);
+            let leftY = splitY + 2;
+            doc.setDrawColor(59, 130, 246);
+            doc.line(14, leftY, 100, leftY);
+            leftY += 8;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            payDetails.forEach(([label, value]) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(label + ':', 14, leftY);
+                doc.setFont('helvetica', 'normal');
+                doc.text(value || 'N/A', 55, leftY);
+                leftY += 6;
+            });
+
+            // --- Right Side: Company Details ---
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Company Details', 110, splitY);
+            let rightY = splitY + 2;
+            doc.setDrawColor(59, 130, 246);
+            doc.line(110, rightY, 196, rightY);
+            rightY += 8;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            const companyDetails = [
+                'GKK Intern Team',
+                'Sector V, Salt Lake, Kolkata,',
+                'West Bengal, 700091, India',
+                'Web: https://gkkintern.in',
+                'Email: support@gkkintern.in',
+                'Phone: +91 8910894306'
+            ];
+            companyDetails.forEach(text => {
+                doc.text(text, 110, rightY);
+                rightY += 6;
+            });
+
+            // Continue rendering below the longer column
+            y = Math.max(leftY, rightY) + 6;
+
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                
+                // Footer
+                doc.setFillColor(241, 245, 249);
+                doc.rect(0, pageHeight - 25, pageWidth, 25, 'F');
+                doc.setTextColor(100, 116, 139);
+                doc.setFontSize(8);
+                doc.text('This is a computer-generated invoice. No signature is required.', pageWidth / 2, pageHeight - 16, { align: 'center' });
+                doc.text('© ' + new Date().getFullYear() + ' GKK Intern Team. All rights reserved.', pageWidth / 2, pageHeight - 10, { align: 'center' });
+                doc.text('For refunds, exchanges, or order tracking, please keep this invoice safe.', pageWidth / 2, pageHeight - 4, { align: 'center' });
+
+                // Watermark
+                try {
+                    const logoImg = new Image();
+                    logoImg.crossOrigin = 'anonymous';
+                    await new Promise((resolve) => {
+                        logoImg.onload = resolve;
+                        logoImg.onerror = resolve;
+                        logoImg.src = '../assets/gkk-intern-logo.png';
+                    });
+                    if (logoImg.complete && logoImg.naturalWidth > 0) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = logoImg.naturalWidth;
+                        canvas.height = logoImg.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.globalAlpha = 0.12; // Deeper opacity
+                            ctx.drawImage(logoImg, 0, 0);
+                            const wmData = canvas.toDataURL('image/png');
+                            const wmW = 190; // Bigger watermark
+                            const wmH = (logoImg.naturalHeight / logoImg.naturalWidth) * wmW;
+                            doc.addImage(wmData, 'PNG', (pageWidth - wmW) / 2, (pageHeight - wmH) / 2, wmW, wmH);
+                        }
+                    }
+                } catch(e) { /* continue */ }
+            }
+
+            doc.save('GKK-Invoice-' + (order.razorpay_order_id || order.id).substring(0, 12) + '.pdf');
+        }
+    </script>
+</body>
+</html>

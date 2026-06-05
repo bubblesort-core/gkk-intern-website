@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessions & Recordings | GKK Interns - Code. Build. Deploy.</title>
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <style>
+        /* ═══ Page-Specific Styles ═══ */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .mini-stat {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .mini-stat .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .mini-stat .val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--c-text-primary);
+        }
+
+        .mini-stat .lbl {
+            font-size: 0.8rem;
+            color: var(--c-text-muted);
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--c-text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--c-text-primary);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--c-border);
+            background: transparent;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .pill:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .live-banner {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .live-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 0;
+        }
+
+        @media(max-width:1024px) {
+            .live-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .live-video {
+            background: #000;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .live-video iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .live-chat {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 400px;
+            border-left: 1px solid rgba(239, 68, 68, 0.15);
+        }
+
+        .live-chat-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--c-border);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .live-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .live-chat-input {
+            padding: 12px;
+            border-top: 1px solid var(--c-border);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-bubble {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            max-width: 90%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--c-border);
+        }
+
+        .chat-bubble.admin {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.2);
+            align-self: flex-end;
+            color: #93c5fd;
+        }
+
+        .chat-bubble .sender {
+            font-size: 0.7rem;
+            color: var(--c-text-muted);
+            margin-bottom: 2px;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .rec-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .rec-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--c-accent-blue);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .rec-thumb {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #0f172a;
+            overflow: hidden;
+        }
+
+        .rec-thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .rec-card:hover .rec-thumb img {
+            transform: scale(1.05);
+        }
+
+        .rec-thumb .play-circle {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .rec-card:hover .play-circle {
+            opacity: 1;
+        }
+
+        .play-circle i {
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .rec-body {
+            padding: 14px;
+        }
+
+        .rec-body h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--c-text-primary);
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .rec-body .meta {
+            font-size: 0.8rem;
+            color: var(--c-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rec-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        /* Intern Sidebar */
+        .intern-sidebar {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 420px;
+            height: 100%;
+            background: var(--c-bg-card);
+            border-left: 1px solid var(--c-border);
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .intern-sidebar.open {
+            right: 0;
+        }
+
+        @media(max-width:480px) {
+            .intern-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .intern-sidebar.open {
+                right: 0;
+            }
+        }
+
+        .recording-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .recording-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .recording-modal-content {
+            width: 90%;
+            max-width: 1100px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recording-modal-overlay.active .recording-modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .recording-modal-header {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .recording-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .recording-modal-title i {
+            color: var(--c-primary);
+        }
+
+        .recording-modal-close {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--c-text-muted);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.25rem;
+        }
+
+        .recording-modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        .recording-modal-body {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            /* 16:9 Aspect Ratio */
+            background: #000;
+        }
+
+        .recording-modal-body iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .recording-modal-content {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                border: none;
+            }
+
+            .recording-modal-header {
+                padding: 1rem;
+            }
+
+            .recording-modal-body {
+                height: calc(100% - 73px);
+                padding-top: 0;
+            }
+        }
+
+        /* Custom Player Controls Specific Styles */
+        .rec-player-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 25%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .recording-modal-body:hover .rec-player-overlay,
+        .rec-player-overlay.paused,
+        .rec-player-overlay.active {
+            opacity: 1;
+        }
+
+        .rec-big-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 11;
+        }
+
+        .rec-big-play-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: #3b82f6;
+        }
+
+        .rec-controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .rec-control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .rec-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Volume Slider */
+        .rec-volume-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .rec-volume-slider {
+            width: 0;
+            opacity: 0;
+            transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+            cursor: pointer;
+            accent-color: #3b82f6;
+            height: 4px;
+            margin-left: 0;
+        }
+
+        .rec-volume-container:hover .rec-volume-slider,
+        .rec-volume-slider:focus {
+            width: 70px;
+            opacity: 1;
+            margin-left: 0.5rem;
+        }
+
+        /* Progress Bar */
+        .rec-progress-container {
+            flex: 1;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .rec-progress-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rec-progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            pointer-events: none;
+        }
+
+        /* Loading Overlay inside Player */
+        .rec-loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 20;
+            font-size: 1.2rem;
+        }
+
+        .rec-time-display {
+            color: white;
+            font-size: 0.9rem;
+            font-variant-numeric: tabular-nums;
+            margin-left: 0.5rem;
+        }
+
+        /* ═══ Security: Prevent YouTube native UI interaction ═══ */
+        .rec-security-shield {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            cursor: pointer;
+            background: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .rec-yt-cover-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 54px;
+            z-index: 13;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .rec-yt-cover-bottom-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 140px;
+            height: 42px;
+            z-index: 13;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        /* Block pointer events on YouTube iframe itself */
+        #recPlayerIframeContainer iframe,
+        .custom-player-wrapper iframe {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:45;display:none;"></div>
+
+    <!-- Recording Player Modal -->
+    <div class="recording-modal-overlay" id="recordingPlayerModal" onclick="closeRecordingPlayer(event)">
+        <div class="recording-modal-content" onclick="event.stopPropagation()">
+            <div class="recording-modal-header">
+                <h3 class="recording-modal-title" id="recordingPlayerTitle">
+                    <i class="fas fa-play-circle"></i> <span>Session Recording</span>
+                </h3>
+                <button class="recording-modal-close" onclick="closeRecordingPlayer()" aria-label="Close Player">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="recording-modal-body" id="recordingPlayerBody">
+                <div id="recPlayerIframeContainer"></div>
+
+                <!-- Security: Block YouTube native UI -->
+                <div class="rec-security-shield" onclick="toggleRecPlay()"></div>
+                <div class="rec-yt-cover-top" onclick="toggleRecPlay()"></div>
+                <div class="rec-yt-cover-bottom-right" onclick="toggleRecPlay()"></div>
+
+                <!-- Loading State -->
+                <div class="rec-loading-overlay" id="recLoadingOverlay">
+                    <i class="fas fa-circle-notch fa-spin fa-3x"
+                        style="color:var(--accent-primary, #3b82f6); margin-bottom:1rem;"></i>
+                    <p>Loading Recording...</p>
+                </div>
+
+                <!-- Custom Overlay UI -->
+                <button class="rec-big-play-btn" id="recBigPlayBtn" onclick="toggleRecPlay()"><i class="fas fa-play"
+                        style="margin-left: 5px;"></i></button>
+
+                <div class="rec-player-overlay paused" id="recPlayerOverlay">
+                    <div class="rec-controls-bar">
+                        <button class="rec-control-btn" id="recPlayPauseBtn" onclick="toggleRecPlay()"><i
+                                class="fas fa-play"></i></button>
+
+                        <div class="rec-volume-container">
+                            <button class="rec-control-btn" id="recMuteBtn" onclick="toggleRecMute()"><i
+                                    class="fas fa-volume-up"></i></button>
+                            <input type="range" id="recVolumeSlider" class="rec-volume-slider" min="0" max="100"
+                                value="100" oninput="setRecVolume(this.value)">
+                        </div>
+
+                        <div class="rec-progress-container" id="recProgressContainer" onclick="seekRecVideo(event)">
+                            <div class="rec-progress-track">
+                                <div class="rec-progress-fill" id="recProgressFill"></div>
+                            </div>
+                        </div>
+
+                        <div class="rec-time-display"><span id="recCurrentTime">0:00</span> / <span
+                                id="recTotalTime">0:00</span></div>
+
+                        <button class="rec-control-btn" onclick="toggleRecFullscreen()"><i
+                                class="fas fa-expand"></i></button>
+                        <button class="rec-control-btn" id="recSpeedBtn" onclick="cycleRecSpeed()"
+                            title="Playback Speed"
+                            style="font-size:0.75rem;font-weight:700;width:auto;padding:0 8px;background:rgba(255,255,255,0.1);border-radius:6px;">1x</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="admin-layout">
+        <aside class="sidebar" id="sidebar"></aside>
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex;align-items:center;gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+                    <h1 class="page-title">Sessions & Recordings</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="location.reload()" title="Refresh"><i
+                            class="fas fa-sync-alt"></i></button>
+                </div>
+            </header>
+            <div class="page-body">
+                <!-- Stats -->
+                <div class="stats-row" id="statsRow">
+                    <div class="mini-stat">
+                        <div class="icon" style="background:rgba(59,130,246,0.1);color:#60a5fa;"><i
+                                class="fas fa-calendar-alt"></i></div>
+                        <div>
+                            <div class="val" id="statTotal">-</div>
+                            <div class="lbl">Total Sessions</div>
+                        </div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="icon" style="background:rgba(239,68,68,0.1);color:#f87171;"><i
+                                class="fas fa-broadcast-tower"></i></div>
+                        <div>
+                            <div class="val" id="statLive">-</div>
+                            <div class="lbl">Live Now</div>
+                        </div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="icon" style="background:rgba(251,191,36,0.1);color:#fbbf24;"><i
+                                class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="val" id="statUpcoming">-</div>
+                            <div class="lbl">Upcoming</div>
+                        </div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="icon" style="background:rgba(16,185,129,0.1);color:#34d399;"><i
+                                class="fas fa-play-circle"></i></div>
+                        <div>
+                            <div class="val" id="statRecordings">-</div>
+                            <div class="lbl">Recordings</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tab-bar">
+                    <button class="tab-btn active" onclick="switchTab('sessions')"><i class="fas fa-video"></i>
+                        Sessions</button>
+                    <button class="tab-btn" onclick="switchTab('recordings')"><i class="fas fa-play-circle"></i>
+                        Recordings</button>
+                </div>
+
+                <!-- ═══ SESSIONS TAB ═══ -->
+                <div class="tab-panel active" id="panel-sessions">
+                    <!-- Live Banner (hidden by default) -->
+                    <div class="live-banner" id="liveBanner" style="display:none;">
+                        <div class="live-grid">
+                            <div class="live-video" id="liveVideoContainer">
+                                <div style="color:white;text-align:center;"><i class="fab fa-youtube"
+                                        style="font-size:3rem;margin-bottom:1rem;"></i>
+                                    <div>Preview</div>
+                                </div>
+                            </div>
+                            <div class="live-chat">
+                                <div class="live-chat-header"><span class="badge badge-success"
+                                        style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.3);"><i
+                                            class="fas fa-circle" style="font-size:0.5rem;"></i> LIVE</span> <span
+                                        id="liveTopic">Session</span></div>
+                                <div class="live-chat-messages" id="liveChatMessages">
+                                    <div style="text-align:center;color:var(--c-text-muted);padding:20px;">Waiting for
+                                        messages...</div>
+                                </div>
+                                <div class="live-chat-input">
+                                    <input type="text" id="adminChatInput" class="form-input" placeholder="Type..."
+                                        onkeypress="if(event.key==='Enter')sendAdminMessage()" style="flex:1;">
+                                    <button class="btn btn-primary btn-sm" onclick="sendAdminMessage()"><i
+                                            class="fas fa-paper-plane"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(239,68,68,0.15);background:rgba(0,0,0,0.1);">
+                            <span id="liveSessionTitle" style="font-weight:600;"></span>
+                            <button class="btn btn-secondary btn-sm"
+                                style="color:var(--c-error);border-color:var(--c-error);" onclick="endSession()"><i
+                                    class="fas fa-stop-circle"></i> End Session</button>
+                        </div>
+                    </div>
+
+                    <!-- Create Session Form -->
+                    <div class="card" id="createForm">
+                        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                            <h3 class="card-title"><i class="fas fa-plus-circle"
+                                    style="color:var(--c-primary);margin-right:8px;"></i>Create Session</h3>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-sm btn-primary" id="btnModeInstant"
+                                    onclick="setMode('instant')">Instant Live</button>
+                                <button class="btn btn-sm btn-secondary" id="btnModeSchedule"
+                                    onclick="setMode('schedule')">Schedule</button>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding-top:20px;">
+                            <div class="form-group"><label class="form-label">Title</label><input type="text"
+                                    id="fTitle" class="form-input" placeholder="e.g. Weekly Q&A Session"></div>
+                            <div style="display:flex;gap:16px;">
+                                <div class="form-group" style="flex:1;"><label class="form-label">Platform</label>
+                                    <select id="fPlatform" class="form-input" onchange="onPlatformChange()">
+                                        <option value="youtube">YouTube Live / Recording</option>
+                                        <option value="google_meet">Google Meet</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;"><label class="form-label"
+                                        id="fLinkLabel">YouTube URL</label><input type="text" id="fLink"
+                                        class="form-input" placeholder="https://youtube.com/..."></div>
+                            </div>
+                            <!-- Targeting -->
+                            <div style="display:flex;gap:16px;">
+                                <div class="form-group" style="flex:1;"><label class="form-label">Audience</label>
+                                    <select id="fTarget" class="form-input" onchange="onTargetChange()">
+                                        <option value="all">All Interns</option>
+                                        <option value="batch">Specific Phase</option>
+                                        <option value="team">Specific Team</option>
+                                        <option value="intern">Specific Interns</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;display:none;" id="targetInputWrap">
+                                    <label class="form-label" id="targetInputLabel">Select</label>
+                                    <div style="display:flex;gap:8px;">
+                                        <select id="targetDropdown" class="form-input" style="display:none;"></select>
+                                        <button class="btn btn-secondary" id="openInternSidebar" style="display:none;"
+                                            onclick="toggleInternSidebar()"><i class="fas fa-user-plus"></i>
+                                            Select</button>
+                                    </div>
+                                    <div id="selectedChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Schedule Fields -->
+                            <div id="scheduleFields" style="display:none;">
+                                <div style="display:flex;gap:16px;">
+                                    <div class="form-group" style="flex:1;"><label class="form-label">Start
+                                            Time</label><input type="datetime-local" id="fStartTime" class="form-input">
+                                    </div>
+                                    <div class="form-group" style="flex:1;"><label class="form-label">End Time
+                                            (optional)</label><input type="datetime-local" id="fEndTime"
+                                            class="form-input"></div>
+                                </div>
+                                <button class="btn btn-primary" style="width:100%;"
+                                    onclick="createSession('scheduled')"><i class="fas fa-calendar-plus"></i> Schedule
+                                    Session</button>
+                            </div>
+                            <div id="instantFields"><button class="btn btn-primary" style="width:100%;"
+                                    onclick="createSession('live')"><i class="fas fa-broadcast-tower"></i> Go Live
+                                    Now</button></div>
+                        </div>
+                    </div>
+
+                    <!-- Sessions List -->
+                    <div class="card" style="margin-top:24px;">
+                        <div class="card-header"
+                            style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                            <h3 class="card-title">All Sessions</h3>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <div class="filter-pills">
+                                    <button class="pill active" onclick="filterSessions('all',this)">All</button>
+                                    <button class="pill" onclick="filterSessions('live',this)">Live</button>
+                                    <button class="pill" onclick="filterSessions('scheduled',this)">Upcoming</button>
+                                    <button class="pill" onclick="filterSessions('ended',this)">Past</button>
+                                </div>
+                                <input type="text" class="form-input" placeholder="Search..." style="width:200px;"
+                                    onkeyup="searchSessions(this.value)">
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Session</th>
+                                        <th>Platform</th>
+                                        <th>Scheduled</th>
+                                        <th>Audience</th>
+                                        <th>Status</th>
+                                        <th style="width:140px;text-align:center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sessionsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ RECORDINGS TAB ═══ -->
+                <div class="tab-panel" id="panel-recordings">
+                    <!-- Add Recording Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-plus-circle"
+                                    style="color:var(--c-primary);margin-right:8px;"></i>Add Recording</h3>
+                        </div>
+                        <div class="card-body" style="padding-top:20px;">
+                            <div style="display:flex;gap:16px;">
+                                <div class="form-group" style="flex:1;"><label class="form-label">Title</label><input
+                                        type="text" id="rTitle" class="form-input"
+                                        placeholder="Session Recording Title"></div>
+                                <div class="form-group" style="flex:1;"><label class="form-label">YouTube URL
+                                        (unlisted)</label><input type="text" id="rUrl" class="form-input"
+                                        placeholder="https://youtube.com/watch?v=..."></div>
+                            </div>
+                            <div style="display:flex;gap:16px;">
+                                <div class="form-group" style="flex:1;"><label class="form-label">Duration
+                                        (optional)</label><input type="text" id="rDuration" class="form-input"
+                                        placeholder="e.g. 45:30"></div>
+                                <div class="form-group" style="flex:1;"><label class="form-label">Link to Session
+                                        (optional)</label>
+                                    <select id="rSession" class="form-input">
+                                        <option value="">None (standalone)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:16px;">
+                                <div class="form-group" style="flex:1;"><label class="form-label">Audience</label>
+                                    <select id="rTarget" class="form-input" onchange="onRecTargetChange()">
+                                        <option value="all">All Interns</option>
+                                        <option value="batch">Specific Phase</option>
+                                        <option value="team">Specific Team</option>
+                                        <option value="intern">Specific Interns</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;display:none;" id="recTargetWrap">
+                                    <label class="form-label" id="recTargetLabel">Select</label>
+                                    <select id="recTargetDropdown" class="form-input" style="display:none;"></select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="width:100%;" onclick="addRecording()"><i
+                                    class="fas fa-save"></i> Save Recording</button>
+                        </div>
+                    </div>
+                    <!-- Recordings Grid -->
+                    <div style="margin-top:24px;">
+                        <div
+                            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+                            <h3 style="font-weight:600;">All Recordings</h3>
+                            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                                <div class="filter-pills" id="recFilterPills">
+                                    <button class="pill active" onclick="filterRecordings('all',this)">All</button>
+                                    <button class="pill" onclick="filterRecordings('target_all',this)"><i
+                                            class="fas fa-users" style="margin-right:4px;"></i>All Interns</button>
+                                    <button class="pill" onclick="filterRecordings('batch',this)"><i
+                                            class="fas fa-layer-group" style="margin-right:4px;"></i>Phase</button>
+                                    <button class="pill" onclick="filterRecordings('team',this)"><i
+                                            class="fas fa-user-friends" style="margin-right:4px;"></i>Team</button>
+                                    <button class="pill" onclick="filterRecordings('intern',this)"><i
+                                            class="fas fa-user" style="margin-right:4px;"></i>Intern</button>
+                                </div>
+                                <input type="text" class="form-input" placeholder="Search recordings..."
+                                    style="width:250px;" onkeyup="searchRecordings(this.value)">
+                            </div>
+                        </div>
+                        <div class="rec-grid" id="recordingsGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Intern Selection Sidebar -->
+    <div class="intern-sidebar" id="internSidebar">
+        <div
+            style="padding:16px;border-bottom:1px solid var(--c-border);display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:1.1rem;">Select Interns</h3>
+            <button class="btn btn-sm btn-secondary" onclick="toggleInternSidebar()"><i
+                    class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:12px;border-bottom:1px solid var(--c-border);"><input type="text" id="internSearch"
+                class="form-input" placeholder="Search by name or email..." onkeyup="renderInternList()"></div>
+        <div id="internList" style="flex:1;overflow-y:auto;padding:12px;"></div>
+        <div style="padding:16px;border-top:1px solid var(--c-border);"><button class="btn btn-primary"
+                style="width:100%;" onclick="confirmInterns()">Add Selected (<span id="internCount">0</span>)</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+    <script>
+        /* ═══════════════════════════════════════════
+           SESSIONS & RECORDINGS — ADMIN LOGIC
+        ═══════════════════════════════════════════ */
+
+        // === State ===
+        let allSessions = [], allRecordings = [];
+        let batches = [], teams = [], allInterns = [];
+        let selectedInterns = new Set();
+        let currentLiveSessionId = null;
+        let sessionFilter = 'all', sessionSearch = '';
+        let recFilter = 'all', recSearch = '';
+
+        // === Sidebar Mobile Toggle ===
+        function toggleSidebar() {
+            const s = document.getElementById('sidebar'), o = document.getElementById('sidebarOverlay');
+            s.classList.toggle('open');
+            o.style.display = s.classList.contains('open') ? 'block' : 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
+
+        // === Init ===
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            const session = getAdminSession();
+            await Promise.all([loadSessions(), loadRecordings(), fetchTargetData(), fetchInterns()]);
+            setDefaultScheduleTime();
+        }
+
+        // === Tab Switching ===
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach((b, i) => { b.classList.toggle('active', (tab === 'sessions' ? i === 0 : i === 1)); });
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel-${tab}`).classList.add('active');
+        }
+
+        // === Mode (Instant / Schedule) ===
+        function setMode(mode) {
+            document.getElementById('btnModeInstant').className = `btn btn-sm ${mode === 'instant' ? 'btn-primary' : 'btn-secondary'}`;
+            document.getElementById('btnModeSchedule').className = `btn btn-sm ${mode === 'schedule' ? 'btn-primary' : 'btn-secondary'}`;
+            if (document.getElementById('instantFields')) document.getElementById('instantFields').style.display = mode === 'instant' ? 'block' : 'none';
+            if (document.getElementById('scheduleFields')) document.getElementById('scheduleFields').style.display = mode === 'schedule' ? 'block' : 'none';
+        }
+
+        function setDefaultScheduleTime() {
+            const d = new Date(); d.setHours(d.getHours() + 1); d.setMinutes(0);
+            if (document.getElementById('fStartTime')) document.getElementById('fStartTime').value = d.toISOString().slice(0, 16);
+        }
+
+        // === Platform Change ===
+        function onPlatformChange() {
+            const p = (document.getElementById('fPlatform')?.value || '');
+            if (document.getElementById('fLinkLabel')) document.getElementById('fLinkLabel').textContent = p === 'youtube' ? 'YouTube URL' : 'Google Meet Link';
+            document.getElementById('fLink').placeholder = p === 'youtube' ? 'https://youtube.com/...' : 'https://meet.google.com/...';
+        }
+
+        // === Targeting ===
+        async function fetchTargetData() {
+            try {
+                const { data: b } = await supabaseClient.from('batches').select('id,name').order('name');
+                if (b) batches = b;
+                const { data: t } = await supabaseClient.from('teams').select('id,name').order('name');
+                if (t) teams = t;
+            } catch (e) { console.error('Target data error', e); }
+        }
+
+        async function fetchInterns() {
+            try {
+                const { data } = await supabaseClient.from('profiles').select('id,email,full_name').order('full_name');
+                if (data) { allInterns = data; renderInternList(); }
+            } catch (e) { console.error('Interns error', e); }
+        }
+
+        function onTargetChange() {
+            const t = (document.getElementById('fTarget')?.value || '');
+            const wrap = document.getElementById('targetInputWrap');
+            const dd = document.getElementById('targetDropdown');
+            const btn = document.getElementById('openInternSidebar');
+            const chips = document.getElementById('selectedChips');
+            const lbl = document.getElementById('targetInputLabel');
+            dd.style.display = 'none'; btn.style.display = 'none'; chips.innerHTML = ''; selectedInterns.clear(); updateInternCount();
+            if (t === 'all') { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'block';
+            if (t === 'batch') { lbl.textContent = 'Select Phase'; dd.style.display = 'block'; dd.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); }
+            else if (t === 'team') { lbl.textContent = 'Select Team'; dd.style.display = 'block'; dd.innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join(''); }
+            else if (t === 'intern') { lbl.textContent = 'Select Interns'; btn.style.display = 'block'; }
+        }
+
+        function onRecTargetChange() {
+            const t = (document.getElementById('rTarget')?.value || '');
+            const wrap = document.getElementById('recTargetWrap');
+            const dd = document.getElementById('recTargetDropdown');
+            const lbl = document.getElementById('recTargetLabel');
+            dd.style.display = 'none';
+            if (t === 'all') { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'block'; dd.style.display = 'block';
+            if (t === 'batch') { lbl.textContent = 'Select Phase'; dd.innerHTML = batches.map(b => `<option value="${b.id}">${b.name}</option>`).join(''); }
+            else if (t === 'team') { lbl.textContent = 'Select Team'; dd.innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join(''); }
+        }
+
+        // === Intern Sidebar ===
+        function toggleInternSidebar() { document.getElementById('internSidebar').classList.toggle('open'); }
+        function renderInternList() {
+            const q = ((document.getElementById('internSearch')?.value || '') || '').toLowerCase();
+            const list = document.getElementById('internList');
+            const filtered = allInterns.filter(i => (i.full_name || '').toLowerCase().includes(q) || (i.email || '').toLowerCase().includes(q));
+            list.innerHTML = filtered.map(i => `<label style="display:flex;align-items:center;padding:8px;border-bottom:1px solid var(--c-border);cursor:pointer;gap:10px;"><input type="checkbox" ${selectedInterns.has(i.id) ? 'checked' : ''} onchange="toggleIntern('${i.id}')"><div><div style="font-weight:600;color:var(--c-text-primary);font-size:0.9rem;">${i.full_name || 'No Name'}</div><div style="font-size:0.75rem;color:var(--c-text-muted);">${i.email}</div></div></label>`).join('');
+        }
+        function toggleIntern(id) { selectedInterns.has(id) ? selectedInterns.delete(id) : selectedInterns.add(id); updateInternCount(); renderInternList(); }
+        function updateInternCount() { if (document.getElementById('internCount')) document.getElementById('internCount').textContent = selectedInterns.size; }
+        function confirmInterns() { toggleInternSidebar(); renderChips(); }
+        function renderChips() {
+            if (document.getElementById('selectedChips')) document.getElementById('selectedChips').innerHTML = Array.from(selectedInterns).map(id => {
+                const u = allInterns.find(i => i.id === id);
+                return `<div class="badge badge-primary" style="display:flex;align-items:center;gap:4px;padding:4px 8px;">${u ? u.full_name || u.email : id} <i class="fas fa-times" style="cursor:pointer;font-size:0.7rem;" onclick="removeChip('${id}')"></i></div>`;
+            }).join('');
+        }
+        function removeChip(id) { selectedInterns.delete(id); renderChips(); updateInternCount(); renderInternList(); }
+
+        function getTargetData(prefix = 'f') {
+            const t = document.getElementById(prefix + 'Target').value;
+            let ids = [];
+            if (t === 'batch' || t === 'team') { const v = document.getElementById(prefix === 'f' ? 'targetDropdown' : 'recTargetDropdown').value; if (v) ids = [v]; }
+            else if (t === 'intern') ids = Array.from(selectedInterns);
+            return { type: t, ids };
+        }
+
+        // === YouTube Helper ===
+        function extractVideoId(url) {
+            if (!url) return null;
+            const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^"&?\/\s]{11})/);
+            return m ? m[1] : null;
+        }
+
+        // === LOAD SESSIONS ===
+        async function loadSessions() {
+            const { data, error } = await supabaseClient.from('sessions').select('*').order('scheduled_start', { ascending: false }).limit(100);
+            if (error) { console.error(error); return; }
+            allSessions = data || [];
+            renderStats(); renderSessionsTable(); checkLiveSession(); populateSessionDropdown();
+        }
+
+        function renderStats() {
+            const live = allSessions.filter(s => s.status === 'live').length;
+            const upcoming = allSessions.filter(s => s.status === 'scheduled').length;
+            if (document.getElementById('statTotal')) document.getElementById('statTotal').textContent = allSessions.length;
+            if (document.getElementById('statLive')) document.getElementById('statLive').textContent = live;
+            if (document.getElementById('statUpcoming')) document.getElementById('statUpcoming').textContent = upcoming;
+        }
+
+        function renderSessionsTable() {
+            const tbody = document.getElementById('sessionsTableBody');
+            let filtered = allSessions;
+            if (sessionFilter !== 'all') filtered = filtered.filter(s => s.status === sessionFilter);
+            if (sessionSearch) filtered = filtered.filter(s => (s.title || '').toLowerCase().includes(sessionSearch));
+
+            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--c-text-muted);padding:30px;">No sessions found</td></tr>'; return; }
+
+            tbody.innerHTML = filtered.map(s => {
+                const tgt = s.target_type === 'all' ? 'All Interns' : `${s.target_type} (${(s.target_ids || []).length})`;
+                const statusBadge = s.status === 'live' ? 'badge-success' : s.status === 'scheduled' ? 'badge-warning' : 'badge-neutral';
+                const statusLabel = s.status === 'live' ? '🔴 LIVE' : s.status === 'scheduled' ? 'Upcoming' : s.status === 'cancelled' ? 'Cancelled' : 'Ended';
+                const platformIcon = s.platform === 'google_meet' ? '<i class="fab fa-google" style="color:#4285F4;"></i>' : '<i class="fab fa-youtube" style="color:#FF0000;"></i>';
+                const url = s.join_url || s.video_url || '';
+                const safeTitle = (s.title || '').replace(/'/g, "\\'");
+                const safeIds = JSON.stringify(s.target_ids || []).replace(/"/g, '&quot;');
+
+                return `<tr>
+                <td><div style="font-weight:600;color:var(--c-text-primary);">${s.title}</div>${url ? `<a href="${url}" target="_blank" style="font-size:0.75rem;color:var(--c-accent-blue);">View Link</a>` : ''}</td>
+                <td>${platformIcon} ${s.platform === 'google_meet' ? 'Meet' : 'YouTube'}</td>
+                <td>${new Date(s.scheduled_start).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                <td><span class="badge badge-purple">${tgt}</span></td>
+                <td><span class="badge ${statusBadge}">${statusLabel}</span></td>
+                <td style="text-align:center;"><div style="display:flex;gap:6px;justify-content:center;">
+                    ${s.status === 'scheduled' ? `<button class="btn btn-sm btn-primary" onclick="goLive('${s.id}')" title="Go Live"><i class="fas fa-play"></i></button>` : ''}
+                    ${s.status === 'live' ? `<button class="btn btn-sm btn-secondary" style="color:var(--c-error);border-color:var(--c-error);" onclick="endSession('${s.id}')" title="End"><i class="fas fa-stop"></i></button>` : ''}
+                    <button class="btn btn-sm btn-secondary" onclick="editSession('${s.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                    ${s.status !== 'live' ? `<button class="btn btn-sm btn-secondary" style="color:var(--c-error);border-color:var(--c-error);" onclick="deleteSession('${s.id}','${safeTitle}')" title="Delete"><i class="fas fa-trash-alt"></i></button>` : ''}
+                </div></td>
+            </tr>`;
+            }).join('');
+        }
+
+        function filterSessions(f, el) {
+            sessionFilter = f;
+            document.querySelectorAll('.filter-pills .pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            renderSessionsTable();
+        }
+        function searchSessions(q) { sessionSearch = q.toLowerCase(); renderSessionsTable(); }
+
+        // === CHECK LIVE SESSION ===
+        let adminLivePlayer = null;
+        let isAdminLiveReady = false;
+
+        function checkLiveSession() {
+            const live = allSessions.find(s => s.status === 'live');
+            const banner = document.getElementById('liveBanner');
+            if (!live) { banner.style.display = 'none'; currentLiveSessionId = null; return; }
+            currentLiveSessionId = live.id;
+            banner.style.display = 'block';
+            if (document.getElementById('liveTopic')) document.getElementById('liveTopic').textContent = live.title;
+            if (document.getElementById('liveSessionTitle')) document.getElementById('liveSessionTitle').textContent = live.title;
+
+            const vc = document.getElementById('liveVideoContainer');
+            if (live.platform === 'google_meet') {
+                vc.innerHTML = `<div style="color:white;text-align:center;padding:2rem;"><i class="fas fa-video" style="font-size:3rem;margin-bottom:1rem;color:#4285F4;"></i><div>Google Meet Active</div><a href="${live.join_url}" target="_blank" class="btn btn-primary" style="margin-top:1rem;background:#4285F4;border:none;">Join Meeting</a></div>`;
+            } else if (live.video_url || live.join_url) {
+                const vidUrl = live.video_url || live.join_url;
+
+                // Initialize custom player UI
+                vc.innerHTML = '<div style="color:white;text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Connecting Live Broadcast...</div>';
+
+                if (!window.YT || !window.YT.Player) {
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    const firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                    window.onYouTubeIframeAPIReady = function () {
+                        initAdminLivePlayer(vidUrl, live.id);
+                    };
+                } else {
+                    initAdminLivePlayer(vidUrl, live.id);
+                }
+            }
+            subscribeToChat(live.id);
+        }
+
+        function initAdminLivePlayer(url, sessionId) {
+            const container = document.getElementById('liveVideoContainer');
+            if (!container || !url) return;
+
+            const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+            const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+            if (!videoId) {
+                container.innerHTML = '<div style="color:white; padding:2rem;">Invalid YouTube Live URL</div>';
+                return;
+            }
+
+            // Reusing the same sleek classes from rec-player-overlay
+            container.innerHTML = `
+                <div class="custom-player-wrapper" id="adminLiveWrapper" style="position:relative; width:100%; height:100%; background:#000;">
+                    <div id="adminYtLive"></div>
+                    
+                    <div class="rec-security-shield" onclick="toggleAdminLivePlay()"></div>
+                    <div class="rec-yt-cover-top" onclick="toggleAdminLivePlay()"></div>
+                    <div class="rec-yt-cover-bottom-right" onclick="toggleAdminLivePlay()"></div>
+
+                    <div class="rec-loading-overlay" id="adminLiveLoading" style="display:none;">
+                        <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--c-primary, #10b981); margin-bottom:1rem;"></i>
+                        <p>Loading Live Stream...</p>
+                    </div>
+
+                    <button class="rec-big-play-btn" id="adminLiveBigPlay" onclick="toggleAdminLivePlay()"><i class="fas fa-play" style="margin-left:5px;"></i></button>
+
+                    <div style="position:absolute; top:1rem; left:1rem; background:rgba(239, 68, 68, 0.85); color:white; padding:4px 10px; border-radius:4px; font-weight:bold; font-size:0.8rem; display:flex; align-items:center; gap:6px; z-index:15; box-shadow:0 2px 10px rgba(0,0,0,0.5); backdrop-filter:blur(4px);">
+                        <i class="fas fa-circle" style="font-size:0.5rem; animation: pulse 1.5s infinite;"></i> LIVE
+                    </div>
+
+                    <div class="rec-player-overlay paused" id="adminLiveOverlay">
+                        <div class="rec-controls-bar">
+                            <button class="rec-control-btn" id="adminLiveSmallBtn" onclick="toggleAdminLivePlay()"><i class="fas fa-play"></i></button>
+                            
+                            <div class="rec-volume-container">
+                                <button class="rec-control-btn" id="adminLiveMuteBtn" onclick="toggleAdminLiveMute()"><i class="fas fa-volume-up"></i></button>
+                                <input type="range" id="adminLiveVolume" class="rec-volume-slider" min="0" max="100" value="100" oninput="setAdminLiveVolume(this.value)">
+                            </div>
+                            
+                            <div class="rec-progress-container" style="pointer-events:none; opacity:0.5;">
+                                <div class="rec-progress-track">
+                                    <div class="rec-progress-fill" style="width:100%; background:#ef4444;"></div>
+                                </div>
+                            </div>
+
+                            <button class="rec-control-btn" onclick="toggleAdminLiveFullscreen()"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <style>@keyframes pulse { 0% { opacity:1; } 50% { opacity:0.3; } 100% { opacity:1; } }</style>
+            `;
+
+            adminLivePlayer = new YT.Player('adminYtLive', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'playsinline': 1,
+                    'disablekb': 1,
+                    'origin': window.location.origin
+                },
+                events: {
+                    'onReady': () => { isAdminLiveReady = true; },
+                    'onStateChange': onAdminLiveStateChange,
+                    'onError': (e) => {
+                        if (e.data === 101 || e.data === 150 || e.data === 2) {
+                            const watchUrl = url || `https://www.youtube.com/watch?v=${videoId}`;
+                            container.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg, #0f172a, #1e293b);">
+                                <div style="text-align:center;padding:2rem;">
+                                    <div style="width:80px;height:80px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;border:2px solid rgba(239,68,68,0.2);">
+                                        <i class="fab fa-youtube" style="font-size:2rem;color:#ef4444;"></i>
+                                    </div>
+                                    <h3 style="color:#f1f5f9;margin:0 0 0.5rem;font-size:1.1rem;">Live Stream Available</h3>
+                                    <p style="color:#94a3b8;margin:0 0 1.25rem;font-size:0.9rem;">This live stream needs to be watched directly on YouTube.</p>
+                                    <a href="${watchUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background:#ef4444;border:none;display:inline-flex;align-items:center;gap:8px;">
+                                        <i class="fab fa-youtube"></i> Watch on YouTube <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i>
+                                    </a>
+                                </div>
+                            </div>`;
+                        }
+                    }
+                }
+            });
+        }
+
+        function onAdminLiveStateChange(event) {
+            const overlay = document.getElementById('adminLiveOverlay');
+            const bigBtn = document.getElementById('adminLiveBigPlay');
+            const smallBtn = document.getElementById('adminLiveSmallBtn');
+
+            if (event.data == YT.PlayerState.PLAYING) {
+                if (overlay) overlay.classList.remove('paused');
+                if (bigBtn) bigBtn.style.display = 'none';
+                if (smallBtn) smallBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                if (overlay) overlay.classList.add('paused');
+                if (bigBtn) bigBtn.style.display = 'flex';
+                if (smallBtn) smallBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 5px;"></i>';
+            }
+        }
+
+        function toggleAdminLivePlay() {
+            if (!isAdminLiveReady || !adminLivePlayer) return;
+            const state = adminLivePlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) adminLivePlayer.pauseVideo();
+            else adminLivePlayer.playVideo();
+        }
+
+        function toggleAdminLiveMute() {
+            if (!isAdminLiveReady || !adminLivePlayer) return;
+            const btn = document.getElementById('adminLiveMuteBtn');
+            const slider = document.getElementById('adminLiveVolume');
+            if (adminLivePlayer.isMuted()) {
+                adminLivePlayer.unMute();
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                slider.value = adminLivePlayer.getVolume();
+            } else {
+                adminLivePlayer.mute();
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                slider.value = 0;
+            }
+        }
+
+        function setAdminLiveVolume(val) {
+            if (!isAdminLiveReady || !adminLivePlayer) return;
+            adminLivePlayer.setVolume(val);
+            const btn = document.getElementById('adminLiveMuteBtn');
+            if (val == 0) btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            else {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                if (adminLivePlayer.isMuted()) adminLivePlayer.unMute();
+            }
+        }
+
+        function toggleAdminLiveFullscreen() {
+            const wrapper = document.getElementById('adminLiveWrapper');
+            if (!wrapper) return;
+            if (!document.fullscreenElement) wrapper.requestFullscreen().catch(() => { });
+            else document.exitFullscreen();
+        }
+
+
+        // === CREATE SESSION ===
+        async function createSession(mode) {
+            const title = (document.getElementById('fTitle')?.value || '').trim();
+            const platform = (document.getElementById('fPlatform')?.value || '');
+            const link = (document.getElementById('fLink')?.value || '').trim();
+            if (!title || !link) return Swal.fire('Error', 'Title and link are required', 'error');
+
+            let videoUrl = null, joinUrl = null;
+            if (platform === 'youtube') {
+                const vid = extractVideoId(link);
+                if (!vid) return Swal.fire('Error', 'Invalid YouTube URL', 'error');
+                videoUrl = `https://www.youtube.com/embed/${vid}`;
+                joinUrl = link;
+            } else {
+                joinUrl = link;
+            }
+
+            const target = getTargetData('f');
+            const now = new Date().toISOString();
+            const row = {
+                title, platform, video_url: videoUrl, join_url: joinUrl,
+                status: mode === 'live' ? 'live' : 'scheduled',
+                scheduled_start: mode === 'live' ? now : new Date((document.getElementById('fStartTime')?.value || '')).toISOString(),
+                scheduled_end: mode === 'schedule' && (document.getElementById('fEndTime')?.value || '') ? new Date((document.getElementById('fEndTime')?.value || '')).toISOString() : null,
+                actual_start: mode === 'live' ? now : null,
+                target_type: target.type, target_ids: target.ids,
+                room_name: 'gkk-' + Date.now()
+            };
+
+            try {
+                // Auto-ending live sessions removed to support multiple concurrent Google Meet links
+                // if (mode === 'live') await supabaseClient.from('sessions').update({ status: 'ended', actual_end: now }).eq('status', 'live');
+                const { error } = await supabaseClient.from('sessions').insert([row]);
+                if (error) throw error;
+                Swal.fire({ icon: 'success', title: mode === 'live' ? 'Session is Live!' : 'Scheduled!', timer: 1500, showConfirmButton: false });
+                if (document.getElementById('fTitle')) document.getElementById('fTitle').value = '';
+                if (document.getElementById('fLink')) document.getElementById('fLink').value = '';
+                loadSessions();
+            } catch (e) { console.error(e); Swal.fire('Error', 'Failed to create session', 'error'); }
+        }
+
+        // === GO LIVE (from scheduled) ===
+        async function goLive(id) {
+            const now = new Date().toISOString();
+            // Auto-ending live sessions removed to support multiple concurrent Google Meet links
+            // await supabaseClient.from('sessions').update({ status: 'ended', actual_end: now }).eq('status', 'live');
+            await supabaseClient.from('sessions').update({ status: 'live', actual_start: now }).eq('id', id);
+            loadSessions();
+        }
+
+        // === END SESSION ===
+        async function endSession(id) {
+            const sid = id || currentLiveSessionId;
+            if (!sid) return;
+            await supabaseClient.from('sessions').update({ status: 'ended', actual_end: new Date().toISOString() }).eq('id', sid);
+            loadSessions();
+        }
+
+        // === EDIT SESSION ===
+        async function editSession(id) {
+            const s = allSessions.find(x => x.id === id);
+            if (!s) return;
+            const { value } = await Swal.fire({
+                title: 'Edit Session', background: 'var(--c-bg-card)', color: 'var(--c-text-primary)',
+                html: `<div style="text-align:left;"><label class="form-label">Title</label><input id="swal-t" class="form-input" value="${s.title}" style="margin-bottom:12px;"><label class="form-label">Link</label><input id="swal-l" class="form-input" value="${s.join_url || s.video_url || ''}" style="margin-bottom:12px;"><label class="form-label">Description</label><textarea id="swal-d" class="form-input" rows="2" style="resize:vertical;">${s.description || ''}</textarea></div>`,
+                showCancelButton: true, confirmButtonText: 'Save',
+                preConfirm: () => ({ title: (document.getElementById('swal-t')?.value || ''), link: (document.getElementById('swal-l')?.value || ''), desc: (document.getElementById('swal-d')?.value || '') })
+            });
+            if (!value) return;
+            const upd = { title: value.title, description: value.desc };
+            if (s.platform === 'youtube' && value.link) { const vid = extractVideoId(value.link); if (vid) { upd.video_url = `https://www.youtube.com/embed/${vid}`; upd.join_url = value.link; } }
+            else if (value.link) upd.join_url = value.link;
+            await supabaseClient.from('sessions').update(upd).eq('id', id);
+            loadSessions();
+        }
+
+        // === DELETE SESSION ===
+        async function deleteSession(id, title) {
+            const r = await Swal.fire({ title: 'Delete Session?', html: `Delete <strong>${title}</strong>?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete' });
+            if (!r.isConfirmed) return;
+            await supabaseClient.from('meeting_messages').delete().eq('session_id', id);
+            await supabaseClient.from('recordings').update({ session_id: null }).eq('session_id', id);
+            await supabaseClient.from('sessions').delete().eq('id', id);
+            loadSessions();
+            Swal.fire({ title: 'Deleted', icon: 'success', timer: 1200, showConfirmButton: false });
+        }
+
+        // === CHAT ===
+        function subscribeToChat(sid) {
+            const el = document.getElementById('liveChatMessages');
+            el.innerHTML = '';
+            supabaseClient.channel('chat-' + sid)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'meeting_messages', filter: `session_id=eq.${sid}` }, p => appendChat(p.new))
+                .subscribe();
+            // Load existing
+            supabaseClient.from('meeting_messages').select('*').eq('session_id', sid).order('created_at').then(({ data }) => { if (data) data.forEach(appendChat); });
+        }
+        function appendChat(msg) {
+            const el = document.getElementById('liveChatMessages');
+            if (el.innerHTML.includes('Waiting')) el.innerHTML = '';
+            const d = document.createElement('div');
+            d.className = `chat-bubble ${msg.user_name === 'Admin' ? 'admin' : ''}`;
+            d.innerHTML = `<div class="sender">${msg.user_name}</div>${msg.message}`;
+            el.appendChild(d);
+            el.scrollTop = el.scrollHeight;
+        }
+        async function sendAdminMessage() {
+            const inp = document.getElementById('adminChatInput');
+            if (!inp.value.trim() || !currentLiveSessionId) return;
+            await supabaseClient.from('meeting_messages').insert([{ session_id: currentLiveSessionId, meeting_id: currentLiveSessionId, user_name: 'Admin', message: inp.value.trim() }]);
+            inp.value = '';
+        }
+
+        // === LOAD RECORDINGS ===
+        async function loadRecordings() {
+            const { data, error } = await supabaseClient.from('recordings').select('*').order('created_at', { ascending: false }).limit(100);
+            if (error) { console.error(error); return; }
+            allRecordings = data || [];
+            if (document.getElementById('statRecordings')) document.getElementById('statRecordings').textContent = allRecordings.length;
+            renderRecordings();
+        }
+
+        function getTargetLabel(r) {
+            if (!r.target_type || r.target_type === 'all') return { text: 'All Interns', cls: 'badge-primary', icon: 'fa-users' };
+            const ids = r.target_ids || [];
+            if (r.target_type === 'batch') {
+                const names = ids.map(id => { const b = batches.find(x => x.id === id); return b ? b.name : 'Phase'; }).join(', ');
+                return { text: names || 'Phase', cls: 'badge-warning', icon: 'fa-layer-group' };
+            }
+            if (r.target_type === 'team') {
+                const names = ids.map(id => { const t = teams.find(x => x.id === id); return t ? t.name : 'Team'; }).join(', ');
+                return { text: names || 'Team', cls: 'badge-purple', icon: 'fa-user-friends' };
+            }
+            if (r.target_type === 'intern') return { text: `${ids.length} Intern${ids.length !== 1 ? 's' : ''}`, cls: 'badge-neutral', icon: 'fa-user' };
+            return { text: 'Unknown', cls: 'badge-neutral', icon: 'fa-question' };
+        }
+
+        function renderRecordings() {
+            const grid = document.getElementById('recordingsGrid');
+            let recs = allRecordings;
+
+            // Apply audience filter
+            if (recFilter === 'target_all') recs = recs.filter(r => !r.target_type || r.target_type === 'all');
+            else if (recFilter === 'batch') recs = recs.filter(r => r.target_type === 'batch');
+            else if (recFilter === 'team') recs = recs.filter(r => r.target_type === 'team');
+            else if (recFilter === 'intern') recs = recs.filter(r => r.target_type === 'intern');
+
+            // Apply search
+            if (recSearch) recs = recs.filter(r => (r.title || '').toLowerCase().includes(recSearch));
+
+            if (!recs.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--c-text-muted);"><i class="fas fa-play-circle" style="font-size:3rem;opacity:0.3;margin-bottom:16px;display:block;"></i>No recordings found</div>'; return; }
+
+            grid.innerHTML = recs.map(r => {
+                const vid = r.youtube_video_id || extractVideoId(r.youtube_url);
+                const thumb = vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : '';
+                const safeTitle = (r.title || '').replace(/'/g, "\\'");
+                const tgt = getTargetLabel(r);
+                return `<div class="rec-card">
+                <div class="rec-thumb">
+                    ${thumb ? `<img src="${thumb}" alt="${r.title}" loading="lazy" onerror="this.style.display='none'">` : ''}
+                    <div class="play-circle"><i class="fas fa-play" style="margin-left:2px;"></i></div>
+                    ${r.duration_label ? `<span style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.8);color:white;padding:2px 6px;border-radius:4px;font-size:0.7rem;">${r.duration_label}</span>` : ''}
+                    <span style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:white;padding:3px 8px;border-radius:6px;font-size:0.7rem;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px);"><i class="fas ${tgt.icon}" style="font-size:0.6rem;"></i> ${tgt.text}</span>
+                </div>
+                <div class="rec-body">
+                    <h4>${r.title}</h4>
+                    <div class="meta"><span><i class="far fa-calendar"></i> ${new Date(r.created_at).toLocaleDateString()}</span></div>
+                    <div class="rec-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="openRecordingPlayer('${r.youtube_url}', '${safeTitle}')"><i class="fas fa-external-link-alt"></i> Watch</button>
+                        <button class="btn btn-sm btn-secondary" onclick="editRecording('${r.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-secondary" style="color:var(--c-error);border-color:var(--c-error);" onclick="deleteRecording('${r.id}','${safeTitle}')"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            </div>`;
+            }).join('');
+        }
+        function filterRecordings(f, el) {
+            recFilter = f;
+            document.querySelectorAll('#recFilterPills .pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            renderRecordings();
+        }
+        function searchRecordings(q) { recSearch = q.toLowerCase(); renderRecordings(); }
+
+        // === ADD RECORDING ===
+        async function addRecording() {
+            const title = (document.getElementById('rTitle')?.value || '').trim();
+            const url = (document.getElementById('rUrl')?.value || '').trim();
+            if (!title || !url) return Swal.fire('Error', 'Title and URL required', 'error');
+            const vid = extractVideoId(url);
+            const target = getTargetData('r');
+            const sessionId = (document.getElementById('rSession')?.value || '') || null;
+            const row = {
+                title, youtube_url: url, youtube_video_id: vid,
+                thumbnail_url: vid ? `https://img.youtube.com/vi/${vid}/maxresdefault.jpg` : null,
+                duration_label: (document.getElementById('rDuration')?.value || '').trim() || null,
+                target_type: target.type, target_ids: target.ids,
+                session_id: sessionId
+            };
+            const { error } = await supabaseClient.from('recordings').insert([row]);
+            if (error) { console.error(error); return Swal.fire('Error', 'Failed to save', 'error'); }
+            if (document.getElementById('rTitle')) document.getElementById('rTitle').value = ''; if (document.getElementById('rUrl')) document.getElementById('rUrl').value = ''; if (document.getElementById('rDuration')) document.getElementById('rDuration').value = '';
+            Swal.fire({ icon: 'success', title: 'Recording Saved!', timer: 1200, showConfirmButton: false });
+            loadRecordings();
+        }
+
+        // === EDIT RECORDING (Enhanced with target editing) ===
+        async function editRecording(id) {
+            const r = allRecordings.find(x => x.id === id);
+            if (!r) return;
+
+            // Build phase/team options
+            const batchOpts = batches.map(b => `<option value="${b.id}" ${(r.target_type === 'batch' && (r.target_ids || []).includes(b.id)) ? 'selected' : ''}>${b.name}</option>`).join('');
+            const teamOpts = teams.map(t => `<option value="${t.id}" ${(r.target_type === 'team' && (r.target_ids || []).includes(t.id)) ? 'selected' : ''}>${t.name}</option>`).join('');
+
+            const showBatch = r.target_type === 'batch' ? 'block' : 'none';
+            const showTeam = r.target_type === 'team' ? 'block' : 'none';
+
+            const { value } = await Swal.fire({
+                title: 'Edit Recording', background: 'var(--c-bg-card)', color: 'var(--c-text-primary)',
+                width: 560,
+                html: `<div style="text-align:left;">
+                    <label class="form-label">Title</label>
+                    <input id="swal-rt" class="form-input" value="${(r.title || '').replace(/"/g, '&quot;')}" style="margin-bottom:12px;">
+                    <label class="form-label">YouTube URL</label>
+                    <input id="swal-ru" class="form-input" value="${r.youtube_url || ''}" style="margin-bottom:12px;">
+                    <div style="display:flex;gap:12px;">
+                        <div style="flex:1;"><label class="form-label">Duration</label>
+                            <input id="swal-rd" class="form-input" value="${r.duration_label || ''}">
+                        </div>
+                        <div style="flex:1;"><label class="form-label">Audience</label>
+                            <select id="swal-rtarget" class="form-input" onchange="if (document.getElementById('swal-rbatch-wrap')) document.getElementById('swal-rbatch-wrap').style.display =this.value==='batch'?'block':'none'; if (document.getElementById('swal-rteam-wrap')) document.getElementById('swal-rteam-wrap').style.display =this.value==='team'?'block':'none';">
+                                <option value="all" ${r.target_type === 'all' || !r.target_type ? 'selected' : ''}>All Interns</option>
+                                <option value="batch" ${r.target_type === 'batch' ? 'selected' : ''}>Specific Phase</option>
+                                <option value="team" ${r.target_type === 'team' ? 'selected' : ''}>Specific Team</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="swal-rbatch-wrap" style="display:${showBatch};margin-top:12px;"><label class="form-label">Select Phase</label>
+                        <select id="swal-rbatch" class="form-input">${batchOpts}</select>
+                    </div>
+                    <div id="swal-rteam-wrap" style="display:${showTeam};margin-top:12px;"><label class="form-label">Select Team</label>
+                        <select id="swal-rteam" class="form-input">${teamOpts}</select>
+                    </div>
+                </div>`,
+                showCancelButton: true, confirmButtonText: 'Save Changes',
+                preConfirm: () => {
+                    const tType = (document.getElementById('swal-rtarget')?.value || '');
+                    let tIds = [];
+                    if (tType === 'batch') { const v = (document.getElementById('swal-rbatch')?.value || ''); if (v) tIds = [v]; }
+                    else if (tType === 'team') { const v = (document.getElementById('swal-rteam')?.value || ''); if (v) tIds = [v]; }
+                    return {
+                        t: (document.getElementById('swal-rt')?.value || ''),
+                        u: (document.getElementById('swal-ru')?.value || ''),
+                        d: (document.getElementById('swal-rd')?.value || ''),
+                        targetType: tType, targetIds: tIds
+                    };
+                }
+            });
+            if (!value) return;
+            const vid = extractVideoId(value.u);
+            await supabaseClient.from('recordings').update({
+                title: value.t, youtube_url: value.u, youtube_video_id: vid,
+                thumbnail_url: vid ? `https://img.youtube.com/vi/${vid}/maxresdefault.jpg` : null,
+                duration_label: value.d || null,
+                target_type: value.targetType, target_ids: value.targetIds
+            }).eq('id', id);
+            loadRecordings();
+        }
+
+        // === DELETE RECORDING ===
+        async function deleteRecording(id, title) {
+            const r = await Swal.fire({ title: 'Delete Recording?', html: `Delete <strong>${title}</strong>?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete' });
+            if (!r.isConfirmed) return;
+            await supabaseClient.from('recordings').delete().eq('id', id);
+            loadRecordings();
+            Swal.fire({ title: 'Deleted', icon: 'success', timer: 1200, showConfirmButton: false });
+        }
+
+        // === Populate session dropdown for recordings ===
+        function populateSessionDropdown() {
+            const sel = document.getElementById('rSession');
+            const ended = allSessions.filter(s => s.status === 'ended');
+            sel.innerHTML = '<option value="">None (standalone)</option>' + ended.map(s => `<option value="${s.id}">${s.title} (${new Date(s.scheduled_start).toLocaleDateString()})</option>`).join('');
+        }
+
+        // === Custom Video Player logic ===
+        let recPlayer = null;
+        let isRecPlayerReady = false;
+        let recProgressInterval;
+        let recCurrentSpeed = 1;
+        const REC_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
+        function openRecordingPlayer(videoUrl, title) {
+            if (!videoUrl) return;
+
+            // Extract Video ID
+            const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=)|y2u\.be\/)([^&?]+)/);
+            const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+            if (!videoId) {
+                // Fallback to opening in new tab if regex fails
+                window.open(videoUrl, '_blank');
+                return;
+            }
+
+            const modal = document.getElementById('recordingPlayerModal');
+            const titleEl = document.getElementById('recordingPlayerTitle').querySelector('span');
+
+            titleEl.textContent = title || 'Session Recording';
+
+            // Show loading initially
+            if (document.getElementById('recLoadingOverlay')) document.getElementById('recLoadingOverlay').style.display = 'flex';
+            if (document.getElementById('recBigPlayBtn')) document.getElementById('recBigPlayBtn').style.display = 'none';
+            document.getElementById('recPlayerOverlay').classList.add('paused');
+            if (document.getElementById('recPlayPauseBtn')) document.getElementById('recPlayPauseBtn').innerHTML = '<i class="fas fa-play"></i>';
+            if (document.getElementById('recProgressFill')) document.getElementById('recProgressFill').style.width = '0%';
+            document.getElementById('recCurrentTime').innerText = '0:00';
+            document.getElementById('recTotalTime').innerText = '0:00';
+            recCurrentSpeed = 1;
+            if (document.getElementById('recSpeedBtn')) document.getElementById('recSpeedBtn').textContent = '1x';
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+            // Init YT Player
+            if (!window.YT || !window.YT.Player) {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+                window.onYouTubeIframeAPIReady = function () {
+                    initRecPlayer(videoId);
+                };
+            } else {
+                initRecPlayer(videoId);
+            }
+        }
+
+        function initRecPlayer(videoId) {
+            // Destroy existing if any
+            if (recPlayer && typeof recPlayer.destroy === 'function') {
+                recPlayer.destroy();
+            }
+
+            // Generate a fresh dive for YT API
+            const container = document.getElementById('recPlayerIframeContainer');
+            container.innerHTML = '<div id="ytRecPlayerElement"></div>';
+
+            recPlayer = new YT.Player('ytRecPlayerElement', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0, // Disable native controls completely
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'showinfo': 0,
+                    'disablekb': 1,
+                    'iv_load_policy': 3
+                },
+                events: {
+                    'onReady': onRecPlayerReady,
+                    'onStateChange': onRecPlayerStateChange
+                }
+            });
+        }
+
+        function onRecPlayerReady(event) {
+            isRecPlayerReady = true;
+            if (document.getElementById('recLoadingOverlay')) document.getElementById('recLoadingOverlay').style.display = 'none';
+
+            const totalDuration = recPlayer.getDuration();
+            document.getElementById('recTotalTime').innerText = formatRecTime(totalDuration);
+
+            // Start progress tracker if autoplayed
+            startRecProgressTracking();
+        }
+
+        function onRecPlayerStateChange(event) {
+            const overlay = document.getElementById('recPlayerOverlay');
+            const bigBtn = document.getElementById('recBigPlayBtn');
+            const smallBtn = document.getElementById('recPlayPauseBtn');
+
+            if (event.data === YT.PlayerState.PLAYING) {
+                overlay.classList.remove('paused');
+                bigBtn.style.display = 'none';
+                smallBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                startRecProgressTracking();
+            } else {
+                overlay.classList.add('paused');
+                bigBtn.style.display = 'flex';
+                smallBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 5px;"></i>';
+                stopRecProgressTracking();
+            }
+        }
+
+        function toggleRecPlay() {
+            if (!isRecPlayerReady || !recPlayer) return;
+            const state = recPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                recPlayer.pauseVideo();
+            } else {
+                recPlayer.playVideo();
+            }
+        }
+
+        function toggleRecMute() {
+            if (!isRecPlayerReady || !recPlayer) return;
+            const btn = document.getElementById('recMuteBtn');
+            const slider = document.getElementById('recVolumeSlider');
+            if (recPlayer.isMuted()) {
+                recPlayer.unMute();
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                slider.value = recPlayer.getVolume();
+            } else {
+                recPlayer.mute();
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                slider.value = 0;
+            }
+        }
+
+        function setRecVolume(val) {
+            if (!isRecPlayerReady || !recPlayer) return;
+            recPlayer.setVolume(val);
+            const btn = document.getElementById('recMuteBtn');
+            if (val == 0) {
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                if (recPlayer.isMuted()) recPlayer.unMute();
+            }
+        }
+
+        function toggleRecFullscreen() {
+            const bodyEl = document.getElementById('recordingPlayerBody');
+            if (!document.fullscreenElement) {
+                bodyEl.requestFullscreen().catch(err => {
+                    console.error("Error attempting to enable fullscreen:", err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function seekRecVideo(event) {
+            if (!isRecPlayerReady || !recPlayer) return;
+            const container = document.getElementById('recProgressContainer');
+            const rect = container.getBoundingClientRect();
+            const pos = (event.clientX - rect.left) / rect.width;
+
+            const duration = recPlayer.getDuration();
+            const newTime = pos * duration;
+
+            recPlayer.seekTo(newTime, true);
+            if (document.getElementById('recProgressFill')) document.getElementById('recProgressFill').style.width = (pos * 100) + '%';
+        }
+
+        function cycleRecSpeed() {
+            if (!isRecPlayerReady || !recPlayer) return;
+            const idx = REC_SPEEDS.indexOf(recCurrentSpeed);
+            recCurrentSpeed = REC_SPEEDS[(idx + 1) % REC_SPEEDS.length];
+            recPlayer.setPlaybackRate(recCurrentSpeed);
+            if (document.getElementById('recSpeedBtn')) document.getElementById('recSpeedBtn').textContent = recCurrentSpeed + 'x';
+        }
+
+        function startRecProgressTracking() {
+            stopRecProgressTracking();
+            recProgressInterval = setInterval(() => {
+                if (!isRecPlayerReady || !recPlayer) return;
+
+                // YouTube API takes a moment between playing and reporting duration
+                const duration = recPlayer.getDuration();
+                if (!duration) return;
+
+                const current = recPlayer.getCurrentTime();
+                const progressPct = (current / duration) * 100;
+
+                if (document.getElementById('recProgressFill')) document.getElementById('recProgressFill').style.width = progressPct + '%';
+                document.getElementById('recCurrentTime').innerText = formatRecTime(current);
+                document.getElementById('recTotalTime').innerText = formatRecTime(duration);
+
+            }, 500);
+        }
+
+        function stopRecProgressTracking() {
+            if (recProgressInterval) clearInterval(recProgressInterval);
+        }
+
+        function formatRecTime(seconds) {
+            seconds = Math.floor(seconds || 0);
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        function closeRecordingPlayer(event) {
+            // Only close if exactly clicking the background overlay
+            if (event && event.target !== document.getElementById('recordingPlayerModal')) {
+                return;
+            }
+
+            const modal = document.getElementById('recordingPlayerModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+
+            stopRecProgressTracking();
+            if (recPlayer && typeof recPlayer.destroy === 'function') {
+                recPlayer.destroy();
+                recPlayer = null;
+                isRecPlayerReady = false;
+            }
+        }
+
+        // Add escape key listener to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('recordingPlayerModal');
+                if (modal && modal.classList.contains('active')) {
+                    closeRecordingPlayer();
+                }
+            }
+        });
+
+        // Security: prevent right-click on player areas
+        ['recordingPlayerBody', 'liveVideoContainer'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('contextmenu', e => e.preventDefault());
+        });
+
+        init();
+    </script>
+    <script src="../js/admin-cursor.js"></script>
+</body>
+
+</html>

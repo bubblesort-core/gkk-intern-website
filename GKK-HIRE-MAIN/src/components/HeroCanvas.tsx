@@ -48,32 +48,40 @@ const HeroCanvas = () => {
             rAF = requestAnimationFrame(render);
         };
 
+        let hoverTicking = false;
         let lastE: MouseEvent | null = null;
         const hover = (e?: Event) => {
             if (window.innerWidth < 768) return;
             if (e && e.type === 'mousemove') lastE = e as MouseEvent;
             if (!lastE) return;
-            const rect = parent.getBoundingClientRect();
             
-            // Explicitly detect if the element scrolled out from under the stationary cursor
-            const out = lastE.clientX < rect.left || lastE.clientX > rect.right || 
-                        lastE.clientY < rect.top || lastE.clientY > rect.bottom;
-                        
-            const mx = out ? -999 : lastE.clientX - rect.left;
-            const my = out ? -999 : lastE.clientY - rect.top;
+            if (!hoverTicking) {
+                requestAnimationFrame(() => {
+                    const rect = parent.getBoundingClientRect();
+                    
+                    // Explicitly detect if the element scrolled out from under the stationary cursor
+                    const out = lastE!.clientX < rect.left || lastE!.clientX > rect.right || 
+                                lastE!.clientY < rect.top || lastE!.clientY > rect.bottom;
+                                
+                    const mx = out ? -999 : lastE!.clientX - rect.left;
+                    const my = out ? -999 : lastE!.clientY - rect.top;
 
-            dots.forEach(d => {
-                const dist = Math.hypot(d.x - mx, d.y + d.dy - my);
-                const inRange = dist < 110;
-                if (d.hover !== inRange) {
-                    d.hover = inRange;
-                    anime({
-                        targets: d, a: inRange ? 0.6 : 0.1, r: inRange ? 2.2 : 1.2,
-                        c: inRange ? '34,216,122' : '240,239,233',
-                        duration: e ? 380 : 500, easing: 'easeOutExpo'
+                    dots.forEach(d => {
+                        const dist = Math.hypot(d.x - mx, d.y + d.dy - my);
+                        const inRange = dist < 110;
+                        if (d.hover !== inRange) {
+                            d.hover = inRange;
+                            anime({
+                                targets: d, a: inRange ? 0.6 : 0.1, r: inRange ? 2.2 : 1.2,
+                                c: inRange ? '34,216,122' : '240,239,233',
+                                duration: e ? 380 : 500, easing: 'easeOutExpo'
+                            });
+                        }
                     });
-                }
-            });
+                    hoverTicking = false;
+                });
+                hoverTicking = true;
+            }
         };
 
         const click = (e: MouseEvent) => {
@@ -88,7 +96,6 @@ const HeroCanvas = () => {
         const resize = () => { clearTimeout(resizeId); resizeId = setTimeout(init, 150); };
         
         window.addEventListener('resize', resize);
-        window.addEventListener('scroll', () => hover());
         parent.addEventListener('mousemove', hover as EventListener);
         parent.addEventListener('mouseleave', () => { lastE = null; hover(); });
         parent.addEventListener('click', click as EventListener);
@@ -96,7 +103,6 @@ const HeroCanvas = () => {
         init(); render();
         return () => {
             window.removeEventListener('resize', resize);
-            window.removeEventListener('scroll', () => hover());
             parent.removeEventListener('mousemove', hover as EventListener);
             parent.removeEventListener('mouseleave', () => { lastE = null; hover(); });
             parent.removeEventListener('click', click as EventListener);

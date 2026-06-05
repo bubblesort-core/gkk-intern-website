@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import gsap from 'gsap';
 import { CustomEase } from 'gsap/all';
 import TransitionOverlay from './TransitionOverlay';
+import { useNavigate } from 'react-router-dom';
 
 // Register CustomEase (if available from the package, otherwise use standard ease)
 // Note: CustomEase is a bonus plugin, often requires registration. 
@@ -14,10 +15,10 @@ try {
 }
 
 interface NavigationMenuProps {
-    onNavigate: (sectionIndex: number) => void;
+    onNavigate?: (sectionIndex: number) => void;
 }
 
-const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
+const NavigationMenu = ({ onNavigate }: NavigationMenuProps = {}) => {
     const [isOpen, setIsOpen] = useState(false);
     const [transitionInfo, setTransitionInfo] = useState<{ active: boolean, type: 'login' | 'apply' | 'register' | 'dashboard' | 'unlock', url: string }>({ active: false, type: 'login', url: '' });
 
@@ -31,18 +32,20 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
     };
 
     const onTransitionComplete = () => {
+        sessionStorage.setItem('cross_app_transition', transitionInfo.type);
         window.location.href = transitionInfo.url;
     };
 
     const menuItems = [
-        { label: "Home", index: 0 },
+        { label: "Home", index: -1, transitionType: 'dashboard', transitionUrl: '/dashboard/' },
         { label: "About", index: 1 },
         { label: "Services", index: 2 },
         { label: "Alumni", index: 3 }, // Since Portfolio was removed, Alumni starts at 300vh
         { label: "Achievements", index: 6 }, // After Alumni (300vh)
         { label: "Clients", index: -1, href: "/clients.html" }, // Separate page
         { label: "Contact", index: 8 }, // After Achievement (100vh) + CTA (100vh)
-    ] as { label: string; index: number; href?: string }[];
+        { label: "Merchandise", index: -1, reactRouterPath: '/merchandise' }, // New!
+    ] as { label: string; index: number; href?: string; transitionType?: string; transitionUrl?: string, reactRouterPath?: string }[];
 
     useEffect(() => {
         // Initialize GSAP timeline
@@ -101,11 +104,13 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
     const handleLinkPress = (index: number) => {
         toggleMenu();
         setTimeout(() => {
-            if (index >= 0) {
+            if (index >= 0 && onNavigate) {
                 onNavigate(index);
             }
         }, 800); // Wait for close animation
     };
+
+    const navigate = useNavigate();
 
     return (
         <>
@@ -142,9 +147,35 @@ const NavigationMenu = ({ onNavigate }: NavigationMenuProps) => {
                 <div ref={linksRef} className="flex flex-col gap-2 md:gap-4 max-w-4xl">
                     {menuItems.map((item, idx) => (
                         <div key={idx} className="overflow-hidden">
-                            {item.href ? (
+                            {item.transitionUrl ? (
+                                <a
+                                    href={item.transitionUrl}
+                                    onClick={(e) => { e.preventDefault(); toggleMenu(); triggerTransition(item.transitionType as any, item.transitionUrl!); }}
+                                    className="menu-link-item cursor-pointer group block no-underline"
+                                >
+                                    <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">
+                                        {item.label}
+                                    </h3>
+                                </a>
+                            ) : item.href ? (
                                 <a
                                     href={item.href}
+                                    className="menu-link-item cursor-pointer group block no-underline"
+                                >
+                                    <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">
+                                        {item.label}
+                                    </h3>
+                                </a>
+                            ) : item.reactRouterPath ? (
+                                <a
+                                    href={item.reactRouterPath}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        toggleMenu();
+                                        setTimeout(() => {
+                                            navigate(item.reactRouterPath!);
+                                        }, 800);
+                                    }}
                                     className="menu-link-item cursor-pointer group block no-underline"
                                 >
                                     <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent)] group-hover:translate-x-4 duration-300">

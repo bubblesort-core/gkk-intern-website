@@ -1,11 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 
 const MaintenanceGuard = ({ children }) => {
-  const [maintenance, setMaintenance] = useState({ loading: true, enabled: false, title: '', message: '' });
+  const [maintenance, setMaintenance] = useState({ loading: true, enabled: false, title: '', message: '', target: 'all' });
+  const location = useLocation();
 
   useEffect(() => {
     const checkMaintenance = async () => {
+      // Check for bypass token in URL
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('bypass') === 'admin') {
+        localStorage.setItem('maintenance_bypass', 'true');
+      } else if (params.get('bypass') === 'off') {
+        localStorage.removeItem('maintenance_bypass');
+      }
+
+      // If bypassed, skip the database check entirely
+      if (localStorage.getItem('maintenance_bypass') === 'true') {
+        setMaintenance({ loading: false, enabled: false, title: '', message: '' });
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('system_config')
@@ -23,13 +39,14 @@ const MaintenanceGuard = ({ children }) => {
           setMaintenance({
             loading: false,
             enabled: data.value.enabled,
+            target: data.value.target || 'all',
             title: data.value.title || 'Scheduled Maintenance',
             message: data.value.message || 'We are currently undergoing scheduled maintenance. Please check back soon.'
           });
         }
       } catch (err) {
         console.error('Failed to fetch maintenance status:', err);
-        setMaintenance({ loading: false, enabled: false });
+        setMaintenance({ loading: false, enabled: false, target: 'all' });
       }
     };
 
@@ -45,7 +62,18 @@ const MaintenanceGuard = ({ children }) => {
     </div>;
   }
 
+  let shouldBlock = false;
   if (maintenance.enabled) {
+    if (maintenance.target === 'all') {
+      shouldBlock = true;
+    } else if (maintenance.target === 'dashboard' && !location.pathname.startsWith('/user/')) {
+      shouldBlock = true;
+    } else if (maintenance.target === 'auth' && location.pathname.startsWith('/user/')) {
+      shouldBlock = true;
+    }
+  }
+
+  if (shouldBlock) {
     return (
       <div style={{
         position: 'fixed', inset: 0, zIndex: 99999, background: '#0f172a', color: 'white',

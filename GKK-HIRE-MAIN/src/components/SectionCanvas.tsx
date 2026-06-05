@@ -69,32 +69,40 @@ const SectionCanvas: React.FC<SectionCanvasProps> = ({
             rAF = requestAnimationFrame(render);
         };
 
+        let hoverTicking = false;
         let lastE: MouseEvent | null = null;
         const hover = (e?: Event) => {
             if (window.innerWidth < 768) return;
             if (e && e.type === 'mousemove') lastE = e as MouseEvent;
             if (!lastE) return;
-            const rect = parent.getBoundingClientRect();
-            
-            const out = lastE.clientX < rect.left || lastE.clientX > rect.right || 
-                        lastE.clientY < rect.top || lastE.clientY > rect.bottom;
-                        
-            const mx = out ? -999 : lastE.clientX - rect.left;
-            const my = out ? -999 : lastE.clientY - rect.top;
 
-            dots.forEach(d => {
-                const dist = Math.hypot(d.x - mx, d.y + d.dy - my);
-                const inRange = dist < 110;
-                if (d.hover !== inRange) {
-                    d.hover = inRange;
-                    anime({
-                        targets: d, 
-                        r: inRange ? 2.2 : 1.2,
-                        color: inRange ? accentColor : dotColor,
-                        duration: e ? 380 : 500, easing: 'easeOutExpo'
+            if (!hoverTicking) {
+                requestAnimationFrame(() => {
+                    const rect = parent.getBoundingClientRect();
+                    
+                    const out = lastE!.clientX < rect.left || lastE!.clientX > rect.right || 
+                                lastE!.clientY < rect.top || lastE!.clientY > rect.bottom;
+                                
+                    const mx = out ? -999 : lastE!.clientX - rect.left;
+                    const my = out ? -999 : lastE!.clientY - rect.top;
+
+                    dots.forEach(d => {
+                        const dist = Math.hypot(d.x - mx, d.y + d.dy - my);
+                        const inRange = dist < 110;
+                        if (d.hover !== inRange) {
+                            d.hover = inRange;
+                            anime({
+                                targets: d, 
+                                r: inRange ? 2.2 : 1.2,
+                                color: inRange ? accentColor : dotColor,
+                                duration: e ? 380 : 500, easing: 'easeOutExpo'
+                            });
+                        }
                     });
-                }
-            });
+                    hoverTicking = false;
+                });
+                hoverTicking = true;
+            }
         };
 
         const click = (e: MouseEvent) => {
@@ -108,9 +116,7 @@ const SectionCanvas: React.FC<SectionCanvasProps> = ({
 
         const resize = () => { clearTimeout(resizeId); resizeId = setTimeout(init, 150); };
         
-        const handleScroll = () => hover();
         window.addEventListener('resize', resize);
-        window.addEventListener('scroll', handleScroll, true);
         parent.addEventListener('mousemove', hover as EventListener);
         parent.addEventListener('mouseleave', () => { lastE = null; hover(); });
         parent.addEventListener('click', click as EventListener);
@@ -118,7 +124,6 @@ const SectionCanvas: React.FC<SectionCanvasProps> = ({
         init(); render();
         return () => {
             window.removeEventListener('resize', resize);
-            window.removeEventListener('scroll', handleScroll, true);
             parent.removeEventListener('mousemove', hover as EventListener);
             parent.removeEventListener('mouseleave', () => { lastE = null; hover(); });
             parent.removeEventListener('click', click as EventListener);

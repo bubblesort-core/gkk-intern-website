@@ -31,11 +31,17 @@ serve(async (req) => {
         // NOTE: In production, it's safer to use Environment Variables for these credentials.
         // For this task, we are using the provided credentials directly as requested/agreed.
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false, // Use STARTTLS
             auth: {
-                user: 'noreplay.gkk26@gmail.com',
-                pass: 'yutfmttgqvligqsm',
+                user: Deno.env.get('SMTP_USER') || 'noreplay.gkk26@gmail.com',
+                pass: Deno.env.get('SMTP_PASS') || 'yutfmttgqvligqsm',
             },
+            tls: {
+                ciphers: 'SSLv3',
+                rejectUnauthorized: false
+            }
         });
 
         // Send Email

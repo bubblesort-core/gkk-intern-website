@@ -1,0 +1,896 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Email | GKK Interns - Code. Build. Deploy.</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        /* Page Specific Styles */
+        .email-form-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-card);
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Gradient top border */
+        .email-form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--c-primary), var(--c-accent-blue));
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            color: #60a5fa;
+            font-size: 0.95rem;
+        }
+
+        .info-box i {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Modal Sidebar Style - Premium Update (Dark Theme) */
+        .recipient-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .recipient-modal {
+            position: fixed;
+            top: 0;
+            right: -480px;
+            width: 480px;
+            height: 100%;
+            background: var(--c-bg-card);
+            z-index: 101;
+            box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--c-border);
+        }
+
+        .recipient-modal.open {
+            right: 0;
+        }
+
+        .recipient-modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(8px);
+        }
+
+        .recipient-modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            letter-spacing: -0.01em;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .recipient-modal-body {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .recipient-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .intern-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--c-border);
+            background: var(--c-bg-card);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .intern-item:hover {
+            border-color: var(--c-primary);
+            background: rgba(31, 41, 55, 0.8);
+        }
+
+        .intern-item.selected {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--c-primary);
+        }
+
+        .intern-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .intern-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--c-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--c-text-primary);
+            flex-shrink: 0;
+        }
+
+        .intern-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--c-text-primary);
+        }
+
+        .intern-email {
+            font-size: 0.8rem;
+            color: var(--c-text-secondary);
+        }
+
+        .intern-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--c-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin-right: 12px;
+        }
+
+        .intern-item.selected .intern-checkbox {
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+            position: relative;
+        }
+
+        .intern-item.selected .intern-checkbox::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            color: white;
+            font-size: 10px;
+        }
+
+        /* Status Badges */
+        .badge-pill {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .badge-approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .badge-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge-shortlisted {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+        }
+
+        .badge-interview {
+            background: rgba(249, 115, 22, 0.2);
+            color: #fb923c;
+        }
+
+        .badge-default {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+
+        /* Action Bar */
+        .action-bar-info {
+            font-size: 0.9rem;
+            color: var(--c-text-secondary);
+        }
+
+        .action-bar-count {
+            color: #6366f1;
+            font-weight: 700;
+        }
+
+        /* Status Filter Pills */
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 0 4px;
+        }
+
+        .filter-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--c-border);
+            background: transparent;
+            color: var(--c-text-secondary);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .filter-pill:hover {
+            border-color: var(--c-text-muted);
+            color: var(--c-text-primary);
+        }
+
+        .filter-pill.active {
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+            color: #fff;
+        }
+
+        .filter-pill .pill-count {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .filter-pill:not(.active) .pill-count {
+            background: rgba(148, 163, 184, 0.15);
+        }
+
+        /* Section label inside modal */
+        .modal-section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--c-text-muted);
+            margin-bottom: 8px;
+            margin-top: 20px;
+        }
+
+        .modal-section-label:first-child {
+            margin-top: 0;
+        }
+
+        /* Intern list spacing */
+        .intern-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .recipient-modal-body {
+            flex: 1;
+            padding: 20px 24px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <!-- Recipient Selector Modal -->
+    <div class="recipient-modal-overlay" id="recipientModalOverlay" onclick="toggleRecipientModal()"></div>
+    <div class="recipient-modal" id="recipientModal">
+        <div class="recipient-modal-header">
+            <h3 style="margin:0;">Select Candidates</h3>
+            <button onclick="toggleRecipientModal()"
+                style="background:none; border:none; cursor:pointer; color: var(--c-text-secondary); transition: color 0.2s; padding: 4px;">
+                <i class="fas fa-times" style="font-size: 1.25rem;"></i>
+            </button>
+        </div>
+
+        <div class="recipient-modal-body">
+            <!-- Search -->
+            <div class="modal-section-label">Search</div>
+            <div style="position: relative;">
+                <i class="fas fa-search"
+                    style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--c-text-muted);"></i>
+                <input type="text" id="internSearch" class="form-input" placeholder="Search by name or email..."
+                    style="padding-left: 38px;" oninput="filterInterns()">
+            </div>
+
+            <!-- Status Filters -->
+            <div class="modal-section-label" style="margin-top: 18px;">Filter by Status</div>
+            <div class="filter-pills" id="filterPills">
+                <button class="filter-pill active" data-status="all" onclick="setStatusFilter('all', this)">All <span
+                        class="pill-count" id="count-all">0</span></button>
+                <button class="filter-pill" data-status="approved" onclick="setStatusFilter('approved', this)">Approved
+                    <span class="pill-count" id="count-approved">0</span></button>
+                <button class="filter-pill" data-status="shortlisted"
+                    onclick="setStatusFilter('shortlisted', this)">Shortlisted <span class="pill-count"
+                        id="count-shortlisted">0</span></button>
+                <button class="filter-pill" data-status="INTERVIEW_READY"
+                    onclick="setStatusFilter('INTERVIEW_READY', this)">Interview Ready <span class="pill-count"
+                        id="count-INTERVIEW_READY">0</span></button>
+                <button class="filter-pill" data-status="pending" onclick="setStatusFilter('pending', this)">Pending
+                    <span class="pill-count" id="count-pending">0</span></button>
+                <button class="filter-pill" data-status="rejected" onclick="setStatusFilter('rejected', this)">Rejected
+                    <span class="pill-count" id="count-rejected">0</span></button>
+            </div>
+
+            <!-- Select All / Count -->
+            <div
+                style="display:flex; justify-content:space-between; margin-top: 18px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--c-border);">
+                <label
+                    style="cursor:pointer; display:flex; align-items:center; font-size: 0.85rem; font-weight: 500; color: var(--c-text-secondary);">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="intern-checkbox"
+                        style="margin-right:10px; border-color: var(--c-text-muted);">
+                    Select All <span
+                        style="margin-left:4px; color:var(--c-text-muted); font-weight:400;">(filtered)</span>
+                </label>
+                <span id="listTotalCount" style="font-size: 0.8rem; color: var(--c-text-muted);">Loading...</span>
+            </div>
+
+            <!-- Candidate List -->
+            <div id="internList" class="intern-list" style="margin-top: 12px;">
+                <div style="text-align:center; padding:40px; color:var(--c-text-muted);">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 12px;">Loading Database...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="recipient-modal-footer">
+            <div class="action-bar-info">
+                <span id="selectedCount" class="action-bar-count">0</span> candidates <span
+                    style="font-weight: 400;">selected</span>
+            </div>
+            <button class="btn btn-primary" onclick="addSelectedRecipients()"
+                style="padding: 10px 24px; border-radius: 8px; font-weight: 600;">
+                Add to Recipients
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-layout">
+        <!-- Sidebar ... (No changes) ... -->
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Send Custom Email</h1>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="email-form-card">
+                    <div class="info-box">
+                        <i class="fas fa-info-circle" style="margin-top: 2px;"></i>
+                        <div>
+                            <strong>Professional Layout</strong><br>
+                            Emails are automatically formatted with the official GKK Hire branding.
+                        </div>
+                    </div>
+
+                    <form id="emailForm" onsubmit="sendEmail(event)">
+                        <div class="form-group">
+                            <label class="form-label">Load Template</label>
+                            <select id="templateSelect" class="form-select" onchange="loadTemplate()">
+                                <option value="">-- Start from Blank --</option>
+                                <option value="meeting">?? Meeting Invitation (Google Meet)</option>
+                                <option value="urgent">?? Urgent / Action Required</option>
+                                <option value="update">?? General Update</option>
+                            </select>
+                        </div>
+
+                        <!-- Interview Details (Hidden by default) -->
+                        <div id="interviewFields"
+                            style="display: none; background: rgba(59, 130, 246, 0.05); border: 1px dashed var(--c-primary); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                            <h4
+                                style="margin: 0 0 12px 0; font-size: 0.9rem; color: var(--c-primary); display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-video"></i> Interview Details
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                <div>
+                                    <label class="form-label" style="font-size: 0.85rem;">Date</label>
+                                    <input type="date" id="interviewDate" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.85rem;">Time</label>
+                                    <input type="time" id="interviewTime" class="form-input">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.85rem;">Google Meet Link</label>
+                                <div style="position: relative;">
+                                    <i class="fas fa-link"
+                                        style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--c-text-muted);"></i>
+                                    <input type="url" id="meetLink" class="form-input"
+                                        placeholder="https://meet.google.com/..." style="padding-left: 38px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="recipientEmail">Recipient Email(s)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="recipientEmail" class="form-input"
+                                    placeholder="candidate@example.com, candidate2@example.com" required>
+                                <button type="button" class="btn btn-secondary" onclick="toggleRecipientModal()"
+                                    title="Select Interns"
+                                    style="width: 44px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <small style="color: var(--c-text-muted);">Manually enter emails separated by commas, or use
+                                the <strong>+ button</strong> to select from database.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="emailSubject">Subject</label>
+                            <input type="text" id="emailSubject" class="form-input"
+                                placeholder="e.g., Interview Scheduled: Next Steps" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="emailBody">Message Body</label>
+                            <textarea id="emailBody" class="form-textarea"
+                                placeholder="Write your professional message here..." required rows="12"
+                                style="min-height: 300px; resize: vertical;"></textarea>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--c-text-muted);">
+                                Standard text formatting. New lines are preserved.
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                            <button type="submit" class="btn btn-primary" id="sendBtn">
+                                <i class="fas fa-paper-plane"></i> Send Email
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) overlay.style.display = 'block';
+            else overlay.style.display = 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
+
+        // Global State
+        let allInterns = [];
+        let selectedEmails = new Set();
+
+        const templates = {
+            meeting: {
+                subject: "Invitation: GKK Hire Team Meeting",
+                body: "Dear Candidate,\n\nWe would like to invite you to a meeting to discuss your progress.\n\n?? Date: [Insert Date]\n? Time: [Insert Time]\n\n?? Google Meet Link:\n[PASTE LINK HERE]\n\nPlease make sure to join 5 minutes early. We look forward to speaking with you."
+            },
+            urgent: {
+                subject: "Action Required: Urgent Update Regarding Your Application",
+                body: "Dear Candidate,\n\nThis is an urgent message regarding your recent application/submission.\n\nWe noticed that [Describe Issue].\n\nPlease address this immediately by logging into your dashboard or replying to this email.\n\nThank you,\nGKK Hire Admin"
+            },
+            update: {
+                subject: "Update: GKK Internship Program",
+                body: "Hello,\n\nWe have an important update regarding the internship program.\n\n[Insert Update Details Here]\n\nIf you have any questions, feel free to reach out.\n\nBest regards,\nGKK Hire Team"
+            }
+        };
+
+        function loadTemplate() {
+            const type = (document.getElementById('templateSelect')?.value || '');
+            const subjectInput = document.getElementById('emailSubject');
+            const bodyInput = document.getElementById('emailBody');
+            const interviewFields = document.getElementById('interviewFields');
+
+            // Reset visibility
+            if (interviewFields) interviewFields.style.display = 'none';
+
+            if (type && templates[type]) {
+                subjectInput.value = templates[type].subject;
+                bodyInput.value = templates[type].body;
+
+                // Special handling for meeting
+                if (type === 'meeting') {
+                    if (interviewFields) interviewFields.style.display = 'block';
+                    // Clear body as it will be auto-generated by backend or we can leave a placeholder
+                    bodyInput.value = "Detailed interview instructions will be generated automatically based on the details above.";
+                }
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('emailForm').reset();
+            selectedEmails.clear();
+            updateSelectedCount();
+            renderInterns(getVisibleInterns()); // Refresh checkboxes
+        }
+
+        // --- Recipient Modal Logic ---
+
+        async function toggleRecipientModal() {
+            const modal = document.getElementById('recipientModal');
+            const overlay = document.getElementById('recipientModalOverlay');
+
+            if (modal.classList.contains('open')) {
+                modal.classList.remove('open');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            } else {
+                overlay.style.display = 'block';
+                // Trigger reflow for transition
+                overlay.offsetHeight;
+                overlay.style.opacity = '1';
+                modal.classList.add('open');
+
+                if (allInterns.length === 0) {
+                    await fetchInterns();
+                } else {
+                    if (document.getElementById('listTotalCount')) document.getElementById('listTotalCount').textContent = `${allInterns.length} total`;
+                }
+            }
+        }
+
+        async function fetchInterns() {
+            try {
+                const { data: apps, error } = await supabaseClient
+                    .from('applications')
+                    .select('full_name, email, status')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Deduplicate
+                const unique = new Map();
+                apps.forEach(app => {
+                    if (app.email && !unique.has(app.email.toLowerCase())) {
+                        unique.set(app.email.toLowerCase(), app);
+                    }
+                });
+
+                allInterns = Array.from(unique.values());
+                updateFilterCounts();
+                if (document.getElementById('listTotalCount')) document.getElementById('listTotalCount').textContent = `${allInterns.length} total`;
+                renderInterns(getVisibleInterns());
+
+            } catch (err) {
+                console.error('Error fetching interns:', err);
+                if (document.getElementById('internList')) document.getElementById('internList').innerHTML = `
+                    <div style="text-align:center; padding:30px; color:#ef4444;">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                        <p style="margin-top:10px">Failed to load intern database.</p>
+                    </div>`;
+            }
+        }
+
+        function getInitials(name) {
+            if (!name) return '??';
+            return name.split(' ')
+                .map(n => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase();
+        }
+
+        function getRandomColor(name) {
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function renderInterns(list) {
+            const container = document.getElementById('internList');
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:40px; color: var(--c-text-muted);">
+                         <i class="fas fa-search fa-2x" style="opacity:0.3; margin-bottom:10px;"></i>
+                        <p>No interns found matching your search.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(intern => {
+                const isSelected = selectedEmails.has(intern.email);
+                const initials = getInitials(intern.full_name);
+                const avatarColor = getRandomColor(intern.email); // Consistent color per email
+
+                return `
+                <div class="intern-item ${isSelected ? 'selected' : ''}" onclick="toggleSelection('${intern.email}', this)">
+                    <div class="intern-checkbox"></div>
+                    
+                    <div class="intern-avatar" style="color: ${avatarColor}; background: ${avatarColor}15; border: 1px solid ${avatarColor}30;">
+                        ${initials}
+                    </div>
+                    
+                    <div class="intern-info">
+                        <div class="intern-name">${intern.full_name || 'Unknown'}</div>
+                        <div class="intern-email">${intern.email}</div>
+                    </div>
+                    
+                    ${getBadgeHtml(intern.status)}
+                </div>
+                `;
+            }).join('');
+        }
+
+        function getBadgeHtml(status) {
+            const s = (status || '').toLowerCase();
+            let badgeClass = 'badge-default';
+            if (s === 'approved') badgeClass = 'badge-approved';
+            else if (s === 'rejected') badgeClass = 'badge-rejected';
+            else if (s === 'pending') badgeClass = 'badge-pending';
+            else if (s === 'shortlisted') badgeClass = 'badge-shortlisted';
+            else if (s === 'interview_ready' || s === 'interview') badgeClass = 'badge-interview';
+
+            return `<span class="badge-pill ${badgeClass}">${status || 'N/A'}</span>`;
+        }
+
+        function toggleSelection(email, element) {
+            // Check current state from Set, not UI, to avoid sync issues
+            if (selectedEmails.has(email)) {
+                selectedEmails.delete(email);
+                element.classList.remove('selected');
+            } else {
+                selectedEmails.add(email);
+                element.classList.add('selected');
+            }
+            // Animate effect
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            if (document.getElementById('selectedCount')) document.getElementById('selectedCount').textContent = selectedEmails.size;
+        }
+
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('selectAllCheckbox').checked;
+            const visibleInterns = getVisibleInterns();
+
+            visibleInterns.forEach(intern => {
+                if (isChecked) selectedEmails.add(intern.email);
+                else selectedEmails.delete(intern.email);
+            });
+
+            // Re-render to show updates visually
+            renderInterns(visibleInterns);
+            updateSelectedCount();
+        }
+
+        let activeStatusFilter = 'all';
+
+        function filterInterns() {
+            const visible = getVisibleInterns();
+            renderInterns(visible);
+            if (document.getElementById('listTotalCount')) document.getElementById('listTotalCount').textContent = `${visible.length} shown`;
+        }
+
+        function getVisibleInterns() {
+            const term = (document.getElementById('internSearch')?.value || '').toLowerCase();
+            return allInterns.filter(i => {
+                const matchesSearch =
+                    (i.full_name && i.full_name.toLowerCase().includes(term)) ||
+                    (i.email && i.email.toLowerCase().includes(term));
+                const matchesStatus =
+                    activeStatusFilter === 'all' ||
+                    (i.status || '').toLowerCase() === activeStatusFilter.toLowerCase();
+                return matchesSearch && matchesStatus;
+            });
+        }
+
+        function setStatusFilter(status, btn) {
+            activeStatusFilter = status;
+            // Update active pill
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            filterInterns();
+        }
+
+        function updateFilterCounts() {
+            const counts = { all: allInterns.length };
+            allInterns.forEach(i => {
+                const s = (i.status || 'unknown').toLowerCase();
+                counts[s] = (counts[s] || 0) + 1;
+            });
+
+            // Update each pill count
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                const status = pill.dataset.status;
+                const countEl = pill.querySelector('.pill-count');
+                if (countEl) countEl.textContent = counts[status.toLowerCase()] || 0;
+            });
+        }
+
+        function addSelectedRecipients() {
+            const input = document.getElementById('recipientEmail');
+            // Parse existing
+            const current = input.value.split(',').map(e => e.trim()).filter(e => e);
+
+            // Combine
+            const combined = new Set([...current, ...selectedEmails]);
+            input.value = Array.from(combined).join(', ');
+
+            toggleRecipientModal();
+
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: 'success',
+                title: `${selectedEmails.size} candidates added`,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#1e293b',
+                color: '#fff'
+            });
+        }
+
+        // Send Email & Session Check
+        async function sendEmail(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('sendBtn');
+            const email = (document.getElementById('recipientEmail')?.value || '');
+            const subject = (document.getElementById('emailSubject')?.value || '');
+            const bodyContent = (document.getElementById('emailBody')?.value || '');
+
+            // Basic Validation
+            if (!email || !subject || !bodyContent) {
+                Swal.fire('Error', 'Please fill in all fields', 'warning');
+                return;
+            }
+
+            // Disable button
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            try {
+                // Gather interview details if present
+                const templateType = (document.getElementById('templateSelect')?.value || '');
+                let requestType = 'custom';
+                let meetLink = null;
+                let interviewDate = null;
+                let interviewTime = null;
+
+                if (templateType === 'meeting') {
+                    requestType = 'interview';
+                    meetLink = (document.getElementById('meetLink')?.value || '');
+                    interviewDate = (document.getElementById('interviewDate')?.value || '');
+                    interviewTime = (document.getElementById('interviewTime')?.value || '');
+
+                    if (!meetLink) {
+                        Swal.fire('Missing Link', 'Please provide a Google Meet link for the interview.', 'warning');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
+                        return;
+                    }
+                }
+
+                const { data, error } = await supabaseClient.functions.invoke('send-decision-email', {
+                    body: {
+                        type: requestType,
+                        email: email,
+                        // If multiple, backend treats as "Candidate" for generic greeting
+                        name: 'Candidate',
+                        customSubject: subject,
+                        customBody: bodyContent,
+                        // New fields
+                        meetLink: meetLink,
+                        preferredDate: interviewDate,
+                        preferredTiming: interviewTime
+                    }
+                });
+
+                if (error) throw error;
+                if (data && data.success === false) throw new Error(data.error);
+
+                Swal.fire({
+                    title: 'Sent!',
+                    text: 'Custom email has been sent successfully.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                resetForm();
+
+            } catch (err) {
+                if (err instanceof TypeError && err.message.includes('null')) return; // SPA detachment safe abort
+                console.error('Database Error:', err);
+                Swal.fire('Failed', 'Could not send email: ' + (err.message || 'Unknown error'), 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
+            }
+        }
+
+        // Init Session Check
+        const session = getAdminSession();
+        if (!session) window.location.href = 'login.html';
+
+    </script>
+    <script src="../js/admin-cursor.js"></script>
+</body>
+
+</html>

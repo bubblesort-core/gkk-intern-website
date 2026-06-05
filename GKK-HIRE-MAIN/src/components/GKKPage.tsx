@@ -7,6 +7,7 @@ import TransitionOverlay from './TransitionOverlay';
 import anime from 'animejs/lib/anime.es.js';
 import Marquee from './Marquee';
 import { MagneticButton } from './MagneticButton';
+import { useNavigate } from 'react-router-dom';
 
 const StaggerButton = ({ onClick }: { onClick: (e: React.MouseEvent) => void }) => {
     return (
@@ -45,11 +46,88 @@ const StaggerButton = ({ onClick }: { onClick: (e: React.MouseEvent) => void }) 
     );
 };
 
+const NAV_ITEMS_LEFT = [
+    { name: 'Home', desc: 'Main Page', transitionType: 'dashboard', transitionUrl: '/dashboard/' },
+    { name: 'About', desc: 'Our Mission', index: 1 },
+    { name: 'Services', desc: 'What We Do', index: 2 },
+    { name: 'Alumni', desc: 'Past Interns', index: 3 },
+];
+
+const NAV_ITEMS_RIGHT = [
+    { name: 'Achievements', desc: 'Our Wins', index: 6 },
+    { name: 'Clients', desc: 'Who We Work With', href: '/clients.html' },
+    { name: 'Contact', desc: 'Get In Touch', index: 8 },
+    { name: 'Merchandise', desc: 'Shop Gear', reactRouterPath: '/merchandise' },
+];
+
+const NavItem = ({ item, side, onNavigate, onTransition, navigate }: { item: any, side: 'left' | 'right', onNavigate: (idx: number) => void, onTransition?: (type: string, url: string) => void, navigate: any }) => {
+    return (
+        <motion.div 
+            className="group relative cursor-pointer py-4"
+            onClick={() => {
+                if (item.transitionType && item.transitionUrl && onTransition) {
+                    onTransition(item.transitionType, item.transitionUrl);
+                } else if (item.href) {
+                    window.location.href = item.href;
+                } else if (item.reactRouterPath) {
+                    navigate(item.reactRouterPath);
+                } else if (item.index !== undefined) {
+                    onNavigate(item.index);
+                }
+            }}
+            whileHover="hover"
+            initial="initial"
+        >
+            <div className={`flex items-center gap-5 ${side === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <motion.div 
+                    variants={{
+                        initial: { width: "24px", height: "4px", backgroundColor: "rgba(255,255,255,0.3)" },
+                        hover: { width: "56px", height: "4px", backgroundColor: "#22d87a" }
+                    }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                />
+                
+                <div className={`flex flex-col justify-center ${side === 'right' ? 'items-end' : 'items-start'}`}>
+                    <motion.span 
+                        variants={{
+                            initial: { opacity: 0.7, color: "#f0efe9", x: 0 },
+                            hover: { opacity: 1, color: "#ffffff", x: side === 'left' ? 8 : -8 }
+                        }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="text-sm md:text-lg font-black uppercase tracking-[0.2em]"
+                    >
+                        {item.name}
+                    </motion.span>
+                    
+                    <motion.div 
+                        variants={{
+                            initial: { opacity: 0, height: 0, y: -5, display: "none" },
+                            hover: { opacity: 0.85, height: "auto", y: 0, display: "block" }
+                        }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                    >
+                        <span className="text-xs md:text-sm font-bold text-[#22d87a] uppercase tracking-widest mt-1 block">
+                            {item.desc}
+                        </span>
+                    </motion.div>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
 const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
+    const navigate = useNavigate();
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [transitionType, setTransitionType] = useState<'login' | 'apply' | 'register' | 'dashboard'>('dashboard');
+    const [transitionUrl, setTransitionUrl] = useState<string>('');
 
-
+    const handleTransition = (type: string, url?: string) => {
+        setTransitionType(type as any);
+        if (url) setTransitionUrl(url);
+        setIsTransitioning(true);
+    };
 
     React.useEffect(() => {
         const handlePageShow = (event: PageTransitionEvent) => {
@@ -132,6 +210,21 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
 
                     {/* Main Content Area */}
                     <View style={styles.mainContent}>
+                        
+                        {/* LEFT NAV */}
+                        <div className="absolute left-6 xl:left-12 top-1/2 -translate-y-1/2 flex-col gap-4 z-50 hidden lg:flex">
+                            {NAV_ITEMS_LEFT.map(item => (
+                                <NavItem key={item.name} item={item} side="left" onNavigate={onNavigate} onTransition={handleTransition} navigate={navigate} />
+                            ))}
+                        </div>
+
+                        {/* RIGHT NAV */}
+                        <div className="absolute right-6 xl:right-12 top-1/2 -translate-y-1/2 flex-col gap-4 z-50 hidden lg:flex">
+                            {NAV_ITEMS_RIGHT.map(item => (
+                                <NavItem key={item.name} item={item} side="right" onNavigate={onNavigate} onTransition={handleTransition} navigate={navigate} />
+                            ))}
+                        </div>
+
                         <motion.div
                             initial="zoom"
                             animate="settle"
@@ -178,8 +271,13 @@ const GKKPage = ({ onNavigate }: { onNavigate: (index: number) => void }) => {
                     isVisible={isTransitioning}
                     type={transitionType}
                     onComplete={() => {
-                        if (transitionType === 'dashboard') window.location.href = 'https://www.gkkintern.in/dashboard';
-                        if (transitionType === 'apply') window.location.href = '/dashboard/apply/';
+                        sessionStorage.setItem('cross_app_transition', transitionType);
+                        if (transitionUrl) {
+                            window.location.href = transitionUrl;
+                        } else {
+                            if (transitionType === 'dashboard') window.location.href = '/dashboard/';
+                            if (transitionType === 'apply') window.location.href = '/dashboard/apply/';
+                        }
                     }}
                 />
 

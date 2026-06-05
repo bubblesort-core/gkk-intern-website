@@ -3,6 +3,7 @@ import { FormProvider, useFormContext } from '@/context/FormContext';
 import { getFormSettings, submitFormData, uploadFileWithId } from '@/lib/supabase';
 import Swal from 'sweetalert2';
 import confetti from 'canvas-confetti';
+import EntranceOverlay from '@/components/EntranceOverlay';
 
 import Header from '@/components/Header';
 import LivePreviewPanel from '@/components/LivePreviewPanel';
@@ -333,6 +334,7 @@ function FormApp() {
 function App() {
     return (
         <FormProvider initialBatch="Phase 1">
+            <EntranceOverlay />
             <FormApp />
         </FormProvider>
     );

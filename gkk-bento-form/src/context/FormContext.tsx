@@ -38,6 +38,8 @@ const initialFormData: FormSubmission = {
     whatsapp_number: '',
     age: '',
     sex: '',
+    state: '',
+    city: '',
     college: '',
     linkedin_url: '',
     github_url: '',

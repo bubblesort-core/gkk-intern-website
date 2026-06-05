@@ -15,11 +15,15 @@
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.27.5",
     "gsap": "^3.14.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-native": "^0.73.0",
     "react-native-web": "^0.19.10",
-    "react-player": "^3.4.0"
+    "react-player": "^3.4.0",
+    "react-router-dom": "^7.16.0",
+    "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

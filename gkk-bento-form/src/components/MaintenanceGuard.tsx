@@ -4,15 +4,30 @@ import { supabase } from '../lib/supabase';
 interface MaintenanceState {
   loading: boolean;
   enabled: boolean;
+  target: string;
   title: string;
   message: string;
 }
 
 const MaintenanceGuard = ({ children }: { children: React.ReactNode }) => {
-  const [maintenance, setMaintenance] = useState<MaintenanceState>({ loading: true, enabled: false, title: '', message: '' });
+  const [maintenance, setMaintenance] = useState<MaintenanceState>({ loading: true, enabled: false, target: 'all', title: '', message: '' });
 
   useEffect(() => {
     const checkMaintenance = async () => {
+      // Check for bypass token in URL
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('bypass') === 'admin') {
+        localStorage.setItem('maintenance_bypass', 'true');
+      } else if (params.get('bypass') === 'off') {
+        localStorage.removeItem('maintenance_bypass');
+      }
+
+      // If bypassed, skip the database check entirely
+      if (localStorage.getItem('maintenance_bypass') === 'true') {
+        setMaintenance({ loading: false, enabled: false, target: 'all', title: '', message: '' });
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('system_config')
@@ -24,18 +39,21 @@ const MaintenanceGuard = ({ children }: { children: React.ReactNode }) => {
           if (error.code !== 'PGRST116') {
              console.error('Error checking maintenance state:', error);
           }
-          setMaintenance({ loading: false, enabled: false, title: '', message: '' });
+          setMaintenance({ loading: false, enabled: false, target: 'all', title: '', message: '' });
         } else if (data && data.value) {
           setMaintenance({
             loading: false,
-            enabled: data.value.enabled,
+            enabled: data.value.enabled === true || data.value.enabled === 'true',
+            target: data.value.target || 'all',
             title: data.value.title || 'Scheduled Maintenance',
             message: data.value.message || 'We are currently undergoing scheduled maintenance. Please check back soon.'
           });
+        } else {
+          setMaintenance({ loading: false, enabled: false, target: 'all', title: '', message: '' });
         }
       } catch (err) {
         console.error('Failed to fetch maintenance status:', err);
-        setMaintenance({ loading: false, enabled: false, title: '', message: '' });
+        setMaintenance({ loading: false, enabled: false, target: 'all', title: '', message: '' });
       }
     };
 
@@ -50,7 +68,14 @@ const MaintenanceGuard = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
+  let shouldBlock = false;
   if (maintenance.enabled) {
+    if (maintenance.target === 'all' || maintenance.target === 'apply') {
+      shouldBlock = true;
+    }
+  }
+
+  if (shouldBlock) {
     return (
       <div style={{
         position: 'fixed', inset: 0, zIndex: 99999, background: '#0f172a', color: 'white',

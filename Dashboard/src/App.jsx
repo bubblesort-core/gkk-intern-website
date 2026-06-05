@@ -24,6 +24,7 @@ const ResourcesSection = lazy(() => import('./pages/dashboard/ResourcesSection')
 const RewardsSection = lazy(() => import('./pages/dashboard/RewardsSection'));
 const ReferralsSection = lazy(() => import('./pages/dashboard/ReferralsSection'));
 const MobileAppSection = lazy(() => import('./pages/dashboard/MobileAppSection'));
+const MerchandiseAdminSection = lazy(() => import('./pages/dashboard/MerchandiseAdminSection'));
 
 function LandingPage() {
     return (
@@ -78,11 +79,12 @@ function DashboardFallback() {
 
 import { AudioProvider } from './contexts/AudioContext';
 import { PandaaBot } from './components/PandaaBot';
-
+import EntranceOverlay from './components/EntranceOverlay';
 
 export default function App() {
     return (
         <AudioProvider>
+            <EntranceOverlay />
 
             <Routes>
                 <Route path="/" element={<LandingPage />} />
@@ -115,6 +117,7 @@ export default function App() {
                     <Route path="rewards" element={<Suspense fallback={<DashboardFallback />}><RewardsSection /></Suspense>} />
                     <Route path="referrals" element={<Suspense fallback={<DashboardFallback />}><ReferralsSection /></Suspense>} />
                     <Route path="mobileapp" element={<Suspense fallback={<DashboardFallback />}><MobileAppSection /></Suspense>} />
+                    <Route path="admin/merchandise" element={<Suspense fallback={<DashboardFallback />}><MerchandiseAdminSection /></Suspense>} />
                     <Route path="*" element={<Navigate to="overview" replace />} />
                 </Route>
             </Routes>

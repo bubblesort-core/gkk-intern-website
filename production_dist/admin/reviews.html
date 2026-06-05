@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Reviews | GKK Interns Admin</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .review-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .review-card.approved {
+            border-top: 4px solid #10b981;
+        }
+        
+        .review-card.pending {
+            border-top: 4px solid #f59e0b;
+        }
+
+        .badge-approved {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-text {
+            color: var(--c-text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Customer Reviews</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="loadData()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div id="loadingIndicator" style="text-align: center; padding: 3rem; color: var(--c-text-muted);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; color: var(--c-primary);"></i>
+                    <p>Loading...</p>
+                </div>
+                
+                <div id="contentArea" style="display: none;">
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                        <select id="filterStatus" class="form-input" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--c-border); background: var(--c-bg-card); color: white;" onchange="renderReviews()">
+                            <option value="all">All Reviews</option>
+                            <option value="pending">Pending Approval</option>
+                            <option value="approved">Approved</option>
+                        </select>
+                    </div>
+
+                    <div id="noReviewsMsg" style="display: none; text-align: center; padding: 3rem; opacity: 0.6; background: var(--c-bg-card); border-radius: 12px; border: 1px solid var(--c-border);">
+                        <i class="fas fa-star-half-alt" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No reviews found matching the selected filter.</p>
+                    </div>
+
+                    <div class="review-grid" id="reviewsGrid">
+                        <!-- Reviews injected here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) overlay.style.display = 'block';
+            else overlay.style.display = 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
+
+        let allReviews = [];
+
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            loadData();
+        }
+
+        async function loadData() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('contentArea').style.display = 'none';
+
+            try {
+                // Load Reviews with product details
+                const { data: reviewsData, error: reviewsError } = await supabaseClient
+                    .from('merchandise_reviews')
+                    .select('*, merchandise_products(name, slug)')
+                    .order('created_at', { ascending: false });
+
+                if (reviewsError) throw reviewsError;
+                allReviews = reviewsData || [];
+                renderReviews();
+
+                document.getElementById('contentArea').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to load reviews data.', 'error');
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function renderReviews() {
+            const grid = document.getElementById('reviewsGrid');
+            const filter = document.getElementById('filterStatus').value;
+            grid.innerHTML = '';
+
+            const filteredReviews = allReviews.filter(r => {
+                if (filter === 'pending') return !r.is_approved;
+                if (filter === 'approved') return r.is_approved;
+                return true;
+            });
+
+            if (filteredReviews.length === 0) {
+                document.getElementById('noReviewsMsg').style.display = 'block';
+                return;
+            }
+            document.getElementById('noReviewsMsg').style.display = 'none';
+
+            let html = '';
+            filteredReviews.forEach(r => {
+                const statusBadge = r.is_approved ? 
+                    '<span class="badge-approved">APPROVED</span>' :
+                    '<span class="badge-pending">PENDING</span>';
+                
+                const productName = r.merchandise_products ? r.merchandise_products.name : 'Unknown Product';
+                const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+
+                html += `
+                    <div class="review-card ${r.is_approved ? 'approved' : 'pending'}">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <div>
+                                <h4 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-user-circle" style="color: var(--c-text-muted);"></i>
+                                    ${escapeHtml(r.user_name)}
+                                </h4>
+                                <div style="font-size: 0.8rem; color: var(--c-text-muted); margin-top: 4px;">
+                                    On: <strong>${escapeHtml(productName)}</strong>
+                                </div>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="stars">${stars}</div>
+                        <div style="font-size: 0.8rem; color: var(--c-text-muted);">
+                            ${new Date(r.created_at).toLocaleString()}
+                        </div>
+                        <div class="review-text">
+                            ${escapeHtml(r.comment)}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: auto;">
+                            ${r.is_approved ? 
+                                `<button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="toggleApproval('${r.id}', false)"><i class="fas fa-times-circle"></i> Reject</button>` :
+                                `<button class="btn btn-primary btn-sm" style="flex: 1; background: #10b981; border-color: #10b981;" onclick="toggleApproval('${r.id}', true)"><i class="fas fa-check-circle"></i> Approve</button>`
+                            }
+                            <button class="btn btn-secondary btn-sm" style="background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.2);" onclick="deleteReview('${r.id}')" title="Delete Review"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        async function toggleApproval(id, approve) {
+            try {
+                const { error } = await supabaseClient
+                    .from('merchandise_reviews')
+                    .update({ is_approved: approve })
+                    .eq('id', id);
+
+                if (error) throw error;
+                
+                // Update local state
+                const reviewIndex = allReviews.findIndex(r => r.id === id);
+                if (reviewIndex !== -1) {
+                    allReviews[reviewIndex].is_approved = approve;
+                }
+                
+                renderReviews();
+                Swal.fire({icon: 'success', title: approve ? 'Review Approved' : 'Review Rejected', toast: true, position:'top-end', showConfirmButton:false, timer:2000, background:'#1e293b', color: '#fff' });
+            } catch (err) {
+                Swal.fire({icon: 'error', title: 'Error', text: err.message, background: '#1e293b', color: '#fff'});
+            }
+        }
+
+        async function deleteReview(id) {
+            const res = await Swal.fire({
+                title: 'Are you sure?',
+                text: "This review will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#3b82f6',
+                confirmButtonText: 'Yes, delete it!',
+                background: '#1e293b', color: '#fff'
+            });
+
+            if (res.isConfirmed) {
+                try {
+                    const { error } = await supabaseClient.from('merchandise_reviews').delete().eq('id', id);
+                    if (error) throw error;
+                    Swal.fire({icon: 'success', title: 'Deleted!', toast: true, position:'top-end', showConfirmButton:false, timer:2000, background:'#1e293b', color: '#fff' });
+                    
+                    // Remove from local state
+                    allReviews = allReviews.filter(r => r.id !== id);
+                    renderReviews();
+                } catch (err) {
+                    Swal.fire({icon: 'error', title: 'Error', text: err.message, background: '#1e293b', color: '#fff'});
+                }
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+         }
+
+        init();
+    </script>
+    <script src="../js/admin-identity.js"></script>
+</body>
+
+</html>

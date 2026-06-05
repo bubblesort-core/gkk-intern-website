@@ -1,0 +1,455 @@
+/* ============================================
+   PROJECT WORKSPACE - MIDNIGHT DEVELOPER THEME
+   Premium Dark UI
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    /* Core Palette - Midnight Developer Dark Theme */
+    --ws-bg-main: #0f172a;
+    /* Matches --bg-body */
+    --ws-bg-card: #1e293b;
+    /* Matches --bg-card */
+    --ws-bg-card-hover: #334155;
+    /* Matches --bg-card-hover */
+
+    /* Borders & Glass */
+    --ws-border: #334155;
+    /* Matches --border */
+    --ws-glass: none;
+    /* consistent solid backgrounds */
+
+    /* Typography */
+    --ws-font-sans: 'Inter',
+        sans-serif;
+    /* Match main font */
+    --ws-font-mono: 'JetBrains Mono',
+        monospace;
+    --ws-text-primary: #f8fafc;
+    /* Matches --text-primary */
+    --ws-text-secondary: #94a3b8;
+    /* Matches --text-secondary */
+
+    /* Accents */
+    --ws-accent: #3b82f6;
+    /* Blue */
+    --ws-success: #10b981;
+    --ws-warning: #f59e0b;
+    --ws-error: #ef4444;
+
+    /* Spacing */
+    --ws-radius: 16px;
+}
+
+/* Base Reset for Project Section */
+#projects {
+    font-family: var(--ws-font-sans);
+    color: var(--ws-text-primary);
+    background-color: var(--ws-bg-main);
+    /* Ensure background applies */
+    min-height: 100vh;
+    /* Ensure full height coverage */
+    padding: 2rem;
+    /* Add some padding context */
+    transition: background-color 0.3s ease, color 0.3s ease;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   Layout
+   ============================================ */
+.workspace-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+.ws-header {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+    border: 1px solid var(--ws-border);
+    border-radius: var(--ws-radius);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: var(--ws-glass);
+    transition: background 0.3s ease;
+}
+
+.ws-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ws-accent), transparent);
+}
+
+.ws-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.ws-project-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    /* Dark Mode Gradient (White to Slate 400) */
+    background: linear-gradient(to right, #fff, #94a3b8);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ws-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid var(--ws-border);
+    /* Use variable */
+}
+
+/* Status badge variants */
+.ws-status-badge.pending {
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.ws-status-badge.submitted {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.ws-status-badge.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.ws-status-badge.warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.ws-status-badge.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.ws-status-badge.info {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.ws-status-badge.primary {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ... status variants remain same as they use colors ... */
+
+/* ... */
+
+.form-input {
+    width: 100%;
+    background: var(--ws-bg-card-hover);
+    /* Use variable */
+    border: 1px solid var(--ws-border);
+    padding: 12px;
+    border-radius: 8px;
+    color: var(--ws-text-primary);
+    /* Use variable */
+    font-family: var(--ws-font-mono);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--ws-accent);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Progress Tracker */
+.progress-track {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-top: 32px;
+    margin-bottom: 10px;
+}
+
+.progress-track::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 0;
+}
+
+.progress-step {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.step-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #0f172a;
+    border: 2px solid var(--ws-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    /* Icon size */
+    color: var(--ws-text-secondary);
+    transition: all 0.3s;
+}
+
+.progress-step.active .step-dot {
+    background: var(--ws-accent);
+    border-color: var(--ws-accent);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.progress-step.completed .step-dot {
+    background: var(--ws-success);
+    border-color: var(--ws-success);
+    color: white;
+}
+
+.progress-line-fill {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    height: 2px;
+    background: var(--ws-accent);
+    z-index: 0;
+    transition: width 0.5s ease;
+    width: 0%;
+    /* Dynamic */
+}
+
+.step-label {
+    font-size: 0.75rem;
+    color: var(--ws-text-secondary);
+    font-weight: 500;
+}
+
+.progress-step.active .step-label {
+    color: white;
+}
+
+/* Empty State */
+.empty-project {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ws-text-secondary);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* Resources List */
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: var(--ws-text-secondary);
+    transition: background 0.2s;
+}
+
+.resource-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+/* ============================================
+   Responsive Styles
+   ============================================ */
+@media (max-width: 768px) {
+    #projects {
+        padding: 1rem;
+    }
+
+    .workspace-container {
+        gap: 16px;
+    }
+
+    .ws-header {
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .ws-title-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ws-project-title {
+        font-size: 1.5rem;
+    }
+
+    .ws-status-badge {
+        align-self: flex-start;
+    }
+
+    .ws-description {
+        font-size: 0.9rem;
+    }
+
+    .ws-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    .ws-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .ws-card h3 {
+        font-size: 1rem;
+    }
+
+    .progress-steps {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .progress-step {
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .progress-line,
+    .progress-line-fill {
+        display: none;
+    }
+
+    .form-input,
+    .btn-submit {
+        padding: 14px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #projects {
+        padding: 0.75rem;
+    }
+
+    .ws-header {
+        padding: 16px;
+    }
+
+    .ws-project-title {
+        font-size: 1.25rem;
+    }
+
+    .ws-card {
+        padding: 14px;
+    }
+
+    .empty-project {
+        padding: 40px 16px;
+    }
+
+    .empty-icon {
+        font-size: 2.5rem;
+    }
+}
+
+/* ============================================
+   GLOBAL OVERRIDES (Rectangle Buttons)
+   ============================================ */
+button,
+.btn,
+.btn-submit,
+.btn-primary,
+.btn-secondary,
+.btn-sm,
+.btn-lg,
+.pro-btn,
+.pro-btn-primary,
+.pro-btn-secondary,
+.pro-btn-ghost,
+.auth-btn,
+a.btn {
+    border-radius: 0 !important;
+}
+
+button:hover,
+.btn:hover,
+.btn-submit:hover,
+.btn-primary:hover,
+.btn-secondary:hover,
+.pro-btn:hover,
+.auth-btn:hover,
+a.btn:hover {
+    border-radius: 0 !important;
+}

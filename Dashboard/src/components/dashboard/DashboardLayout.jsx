@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     FiCreditCard, FiGrid, FiUser, FiLayers, FiUsers, 
     FiBell, FiVideo, FiPlayCircle, FiBookOpen, FiGift, FiSmartphone,
-    FiRefreshCcw, FiLogOut, FiLock, FiX, FiMenu, FiMoon, FiSun, FiChevronLeft, FiChevronRight
+    FiRefreshCcw, FiLogOut, FiLock, FiX, FiMenu, FiMoon, FiSun, FiChevronLeft, FiChevronRight, FiShoppingCart
 } from 'react-icons/fi';
 
 
@@ -135,6 +135,7 @@ const SECTION_TITLES = {
     'leaderboard': 'Intern Leaderboard',
     'resources': 'Learning Resources',
     'rewards': 'Rewards & Coupons',
+    'admin/merchandise': 'Merchandise Management',
 };
 
 const LOCKED_SECTIONS = ['overview', 'announcements', 'meetings', 'recordings', 'projects', 'team', 'resources', 'rewards'];
@@ -391,6 +392,15 @@ export default function DashboardLayout() {
     const userInitial = userName[0]?.toUpperCase() || 'I';
 
     const displayedNavGroups = [...NAV_GROUPS];
+    
+    if (isAdmin) {
+        displayedNavGroups.push({
+            label: 'ADMIN',
+            items: [
+                { id: 'admin-merchandise', icon: <FiShoppingCart />, label: 'Merchandise', path: 'admin/merchandise' }
+            ]
+        });
+    }
 
     const mobileNavItems = displayedNavGroups.flatMap(group => group.items)
         .filter(item => !item.paymentOnly || isLocked)

@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects | GKK Interns - Code. Build. Deploy.</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <style>
+        /* Extra styles specific to Projects */
+        .view-switcher .btn {
+            padding: 8px 12px;
+        }
+
+        .view-switcher .btn.active {
+            background: var(--c-bg-card);
+            color: var(--c-primary);
+            border-color: var(--c-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Project Card Specifics */
+        .project-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--c-primary);
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--c-primary) 0%, var(--c-accent-blue) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            line-height: 1.3;
+            margin-bottom: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--c-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+            margin-bottom: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--c-border);
+            padding-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--c-text-primary);
+        }
+
+        .team-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Status Badge Override */
+        .status-badge {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        /* Kanban Specifics */
+        .kanban-board {
+            display: flex;
+            gap: 24px;
+            overflow-x: auto;
+            min-height: 500px;
+            padding-bottom: 20px;
+        }
+
+        .kanban-column {
+            flex: 0 0 320px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--c-border);
+        }
+
+        .kanban-header {
+            padding: 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            color: var(--c-text-primary);
+        }
+
+        .kanban-body {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 200px;
+        }
+
+        .kanban-card {
+            background: var(--c-bg-card);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            cursor: grab;
+            border: 1px solid var(--c-border);
+            transition: all 0.2s;
+        }
+
+        .kanban-card:hover {
+            border-color: var(--c-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Tech Tag Input Styles */
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            background: var(--c-bg-card);
+            min-height: 48px;
+            transition: all 0.2s;
+        }
+
+        .tag-container:focus-within {
+            border-color: var(--c-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .tech-tag {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .tech-tag i {
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .tech-tag i:hover {
+            opacity: 1;
+        }
+
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 0.9rem;
+            min-width: 80px;
+            padding: 4px;
+            background: transparent;
+            color: var(--c-text-primary);
+        }
+
+        /* View Toggle Buttons */
+        .btn-view {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-view:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--c-text-primary);
+        }
+
+        .btn-view.active {
+            background: var(--c-bg-card);
+            color: var(--c-primary);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--c-border);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Projects</h1>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadProjects()" title="Refresh Data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i> New Project
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Loading State -->
+                <div id="loadingState" style="text-align: center; padding: 40px; display: none;">
+                    <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--c-primary);"></i>
+                    <p style="margin-top: 10px; color: var(--c-text-secondary);">Loading projects...</p>
+                </div>
+
+                <!-- List View (Default - Only View) -->
+                <div id="view-list" class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Status</th>
+                                    <th>Team</th>
+                                    <th>Deadline</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Project Modal -->
+    <div class="modal-overlay" id="createProjectModal">
+        <div class="modal-container" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Create New Project</h3>
+                <button class="modal-close" onclick="closeModal('createProjectModal')"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="projectForm">
+                    <input type="hidden" id="edit-project-id">
+                    <div class="form-group">
+                        <label class="form-label">Project Title *</label>
+                        <input type="text" id="p-title" class="form-input" placeholder="e.g. E-Commerce Dashboard"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description *</label>
+                        <textarea id="p-description" class="form-textarea" rows="4"
+                            placeholder="Detailed project description..." required></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Deadline</label>
+                            <input type="text" id="p-deadline" class="form-input" placeholder="Select Deadline">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select id="p-priority" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Status is now managed only via Submissions page -->
+
+                    <div class="form-group">
+                        <label class="form-label">Target Tech Stack (Type and press Enter)</label>
+                        <div class="tag-container" onclick="if (document.getElementById('p-tech-input')) document.getElementById('p-tech-input').focus()">
+                            <div id="tech-tags-list" style="display:contents;"></div>
+                            <input type="text" id="p-tech-input" class="tag-input" placeholder="Add tech...">
+                        </div>
+                        <small style="color: var(--c-text-muted);">E.g., React, Node.js, Supabase, Tailwind</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Assign Team</label>
+                        <select id="p-team" class="form-select">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                        <small style="color: var(--c-text-muted);">You can assign this later if needed.</small>
+                    </div>
+
+                    <!-- Resources Section (Optional enhancement) -->
+                    <div class="form-group">
+                        <label class="form-label">Resource Links (One per line)</label>
+                        <textarea id="p-resources" class="form-textarea" rows="2"
+                            placeholder="https://figma.com/...\nhttps://docs.github.com/..."></textarea>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createProjectModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitProject()"><span id="submitBtnText">Create
+                        Project</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script src="../js/skeleton-ui.js"></script>
+    <!-- Removed broken admin-smart-features.js dependency for core logic -->
+
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+
+            if (sidebar.classList.contains('open')) {
+                sidebarOverlay.style.display = 'block';
+            } else {
+                sidebarOverlay.style.display = 'none';
+            }
+        }
+
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
+            toggleSidebar(); // Close it
+        });
+
+        let allProjects = [];
+        let techStack = []; // Store tags
+
+        // --- Initialization ---
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            const session = getAdminSession();
+
+            await Promise.all([
+                loadTeamsDropdown(),
+                loadProjects()
+            ]);
+
+            setupTagInput();
+
+            // Init Flatpickr for Deadline
+            flatpickr("#p-deadline", { theme: "dark", dateFormat: "Y-m-d" });
+        }
+
+        // --- Tag Input Logic ---
+        function setupTagInput() {
+            const input = document.getElementById('p-tech-input');
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag(input.value);
+                    input.value = '';
+                }
+                if (e.key === 'Backspace' && input.value === '' && techStack.length > 0) {
+                    removeTag(techStack.length - 1);
+                }
+            });
+        }
+
+        function addTag(text) {
+            const tag = text.trim();
+            if (tag && !techStack.includes(tag)) {
+                techStack.push(tag);
+                renderTags();
+            }
+        }
+
+        function removeTag(index) {
+            techStack.splice(index, 1);
+            renderTags();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tech-tags-list');
+            container.innerHTML = techStack.map((tag, i) => `
+                <span class="tech-tag">
+                    ${tag} <i class="fas fa-times" onclick="removeTag(${i})"></i>
+                </span>
+            `).join('');
+        }
+
+        // --- Data Loading ---
+        async function loadProjects() {
+            const loading = document.getElementById('loadingState');
+            const tbody = document.getElementById('projectsTableBody');
+
+            if (tbody) tbody.innerHTML = SkeletonUI.generateTableRows(5, 5); // 5 columns, 5 rows
+            // if (loading) loading.style.display = 'block'; // Hide old spinner
+
+            try {
+                // Fetch projects WITH team names
+                // Syntax: select(*, relationName(columns))
+                // Assuming relation name is 'teams' based on table name 'teams'
+                const { data, error } = await supabaseClient
+                    .from('projects')
+                    .select('*, teams(name)')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allProjects = data || [];
+
+                // Render the list view
+                renderProjectsList();
+
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                // Fallback attempt without join if relation fails
+                if (error.code === 'PGRST200') { // relation not found potentially
+                    console.warn('Retrying without team join...');
+                    const { data: fallbackData } = await supabaseClient.from('projects').select('*');
+                    allProjects = fallbackData || [];
+                    renderProjectsList();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to load projects',
+                        text: error.message,
+                    });
+                }
+            } finally {
+                if (loading) loading.style.display = 'none';
+            }
+        }
+
+        async function loadTeamsDropdown() {
+            const { data } = await supabaseClient.from('teams').select('id, name');
+            if (data) {
+                const opts = '<option value="">-- Unassigned --</option>' +
+                    data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+                if (document.getElementById('p-team')) document.getElementById('p-team').innerHTML = opts;
+            }
+        }
+
+        // --- Rendering ---
+        // List View Rendering (Table)
+        function renderProjectsList() {
+            const tbody = document.getElementById('projectsTableBody');
+
+            if (allProjects.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--c-text-muted);">
+                            <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                            No projects yet. <a href="#" onclick="openCreateModal(); return false;">Create one!</a>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = allProjects.map(p => {
+                const isActive = p.is_active !== false;
+                const teamName = p.teams?.name || 'Unassigned';
+                const deadlineStr = p.deadline ? new Date(p.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+                // Status badge - handle undefined/null status
+                const projectStatus = p.status || 'draft';
+                let statusColor = 'neutral';
+                let statusLabel = projectStatus.replace('_', ' ');
+                if (projectStatus === 'draft') { statusColor = 'neutral'; statusLabel = 'Draft'; }
+                if (projectStatus === 'assigned') { statusColor = 'warning'; statusLabel = 'Assigned'; }
+                if (projectStatus === 'in_progress') { statusColor = 'primary'; statusLabel = 'In Progress'; }
+                if (projectStatus === 'under_review' || projectStatus === 'reviewing') { statusColor = 'info'; statusLabel = 'Under Review'; }
+                if (projectStatus === 'completed' || projectStatus === 'approved') { statusColor = 'success'; statusLabel = projectStatus === 'approved' ? 'Approved' : 'Completed'; }
+                if (projectStatus === 'rejected') { statusColor = 'error'; statusLabel = 'Rejected'; }
+                if (projectStatus === 'changes_requested') { statusColor = 'warning'; statusLabel = 'Changes Requested'; }
+
+                return `
+                    <tr style="opacity: ${isActive ? '1' : '0.6'};">
+                        <td>
+                            <div style="font-weight: 600;">${p.title}</div>
+                            <div style="font-size: 0.8rem; color: var(--c-text-muted);">${(p.tech_stack || []).slice(0, 2).join(', ') || 'No tech specified'}</div>
+                        </td>
+                        <td><span class="badge badge-${statusColor}">${statusLabel}</span></td>
+                        <td>${teamName}</td>
+                        <td style="font-size: 0.9rem;">${deadlineStr}</td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary btn-sm" onclick="showProjectTeamInfo('${p.id}')" title="View Team Info" style="color: var(--c-primary);">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="openEditModal('${p.id}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="spaNavigate('submissions.html?project=' + p.id)" title="Review Submissions" style="color: var(--c-primary);">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="deleteProject('${p.id}')" title="Delete" style="color: var(--c-error);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Grid View Rendering
+        function renderProjects() {
+            const grid = document.getElementById('view-grid');
+
+            if (allProjects.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:80px; background: var(--c-bg-card); border-radius: 16px; border: 2px dashed var(--c-border);">
+                        <div style="width: 64px; height: 64px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                             <i class="fas fa-layer-group" style="font-size: 1.8rem; color: #3b82f6;"></i>
+                        </div>
+                        <h3 style="margin-bottom: 8px; color: var(--c-text-primary); font-size: 1.25rem; font-weight: 600;">No Projects Yet</h3>
+                        <p style="color: var(--c-text-secondary); margin-bottom: 32px; max-width: 400px; margin-left: auto; margin-right: auto;">Create your first project to start managing tasks and teams effectively.</p>
+                        <button class="btn btn-primary" onclick="openCreateModal()"><i class="fas fa-plus"></i> Create Project</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = allProjects.map(p => {
+                const isActive = p.is_active !== false;
+                const teamName = p.teams?.name || 'Unassigned';
+                const teamInitial = teamName !== 'Unassigned' ? teamName[0].toUpperCase() : '?';
+                const deadlineStr = p.deadline ? new Date(p.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No Deadline';
+
+                // Color mapping
+                let statusColor = 'neutral';
+                let statusLabel = p.status.replace('_', ' ');
+                if (p.status === 'assigned') { statusColor = 'warning'; }
+                if (p.status === 'in_progress') { statusColor = 'primary'; statusLabel = 'In Progress'; }
+                if (p.status === 'completed') { statusColor = 'success'; }
+
+                return `
+                <div class="project-card" style="opacity: ${isActive ? '1' : '0.6'};">
+                    <div class="card-header-row">
+                        <span class="badge badge-${statusColor} status-badge">${statusLabel}</span>
+                        <div class="actions">
+                             <div class="switch-wrapper" title="Active/Archived" style="display:flex; align-items:center;">
+                                <label class="switch" style="transform: scale(0.7);">
+                                    <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleProjectStatus('${p.id}', this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                             </div>
+                             <button class="btn-ghost btn-sm" onclick="openEditModal('${p.id}')" title="Edit Project" style="width: 28px; height: 28px; padding: 0; display:flex; align-items:center; justify-content:center; color: var(--c-text-secondary);"><i class="fas fa-edit"></i></button>
+                             <button class="btn-ghost btn-sm" onclick="deleteProject('${p.id}')" title="Delete Project" style="width: 28px; height: 28px; padding: 0; display:flex; align-items:center; justify-content:center; color: #ef4444;"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                    
+                    <h3 class="card-title">${p.title}</h3>
+                    
+                    <p class="card-desc">
+                        ${p.description ? p.description : 'No description provided.'}
+                    </p>
+                    
+                    <div class="card-meta">
+                        <div class="meta-item" title="Deadline">
+                            <i class="far fa-calendar-alt" style="color: var(--c-text-muted);"></i> ${deadlineStr}
+                        </div>
+                        <div class="meta-item" title="Priority">
+                            <i class="fas fa-flag" style="color: ${p.priority === 'urgent' ? '#ef4444' : (p.priority === 'high' ? '#f59e0b' : 'var(--c-text-muted)')};"></i> 
+                            <span style="text-transform:capitalize;">${p.priority || 'Medium'}</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+                        ${(p.tech_stack || []).slice(0, 3).map(t => `<span class="badge badge-neutral" style="font-size:0.75rem;">${t}</span>`).join('')}
+                        ${(p.tech_stack || []).length > 3 ? `<span class="badge badge-neutral" style="font-size:0.75rem;">+${p.tech_stack.length - 3}</span>` : ''}
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="team-info">
+                            <div class="team-avatar" style="background: ${p.assigned_team_id ? 'rgba(99, 102, 241, 0.2)' : 'var(--c-border)'}; color: ${p.assigned_team_id ? '#a5b4fc' : 'var(--c-text-muted)'};">
+                                ${teamInitial}
+                            </div>
+                            <span style="color: ${p.assigned_team_id ? 'var(--c-text-primary)' : 'var(--c-text-muted)'};">
+                                ${teamName}
+                            </span>
+                        </div>
+                        <button class="btn-ghost btn-sm" style="font-size: 0.85rem;" onclick="viewProjectDetails('${p.id}')">View Details <i class="fas fa-arrow-right" style="font-size: 0.7rem; margin-left: 4px;"></i></button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function renderKanban(projects) {
+            ['draft', 'assigned', 'in_progress', 'completed'].forEach(status => {
+                const col = document.getElementById(`col-${status}`);
+                const count = document.getElementById(`count-${status}`);
+                const items = projects.filter(p => p.status === status);
+
+                count.textContent = items.length;
+                col.innerHTML = items.map(p => {
+                    const isActive = p.is_active !== false;
+                    const teamName = p.teams?.name || 'Unassigned';
+
+                    return `
+                    <div class="kanban-card" draggable="true" ondragstart="drag(event, '${p.id}')" style="position:relative; opacity: ${isActive ? '1' : '0.6'}">
+                         <div style="position:absolute; top:8px; right:8px; display:flex; gap:4px;">
+                              <button onclick="openEditModal('${p.id}')" style="border:none; background:transparent; color:var(--c-text-muted); cursor:pointer;"><i class="fas fa-edit" style="font-size:0.8rem;"></i></button>
+                         </div>
+                        <div style="font-weight:600; margin-bottom:6px; padding-right:20px;">${p.title}</div>
+                        <div style="font-size:0.8rem; color:var(--c-text-secondary); margin-bottom: 8px;">
+                            ${p.description ? p.description.substring(0, 50) + '...' : ''}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:var(--c-text-secondary);">
+                             <span><i class="fas fa-users"></i> ${teamName}</span>
+                             <span>${new Date(p.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            });
+        }
+
+        // --- Actions ---
+
+        function openCreateModal() {
+            // Reset form
+            document.getElementById('projectForm').reset();
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Create New Project';
+            if (document.getElementById('submitBtnText')) document.getElementById('submitBtnText').textContent = 'Create Project';
+            if (document.getElementById('edit-project-id')) document.getElementById('edit-project-id').value = ''; // Clear ID
+            techStack = []; // clear tags
+            renderTags();
+            // Status is now managed only via Submissions page
+            document.getElementById('createProjectModal').classList.add('open');
+        }
+
+        function openEditModal(id) {
+            const p = allProjects.find(x => x.id === id);
+            if (!p) return;
+
+            if (document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = 'Edit Project';
+            if (document.getElementById('submitBtnText')) document.getElementById('submitBtnText').textContent = 'Save Changes';
+            if (document.getElementById('edit-project-id')) document.getElementById('edit-project-id').value = p.id;
+
+            if (document.getElementById('p-title')) document.getElementById('p-title').value = p.title;
+            if (document.getElementById('p-description')) document.getElementById('p-description').value = p.description || '';
+            // Handle date format YYYY-MM-DD
+            if (p.deadline) {
+                const d = new Date(p.deadline);
+                const yr = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = `${yr}-${mo}-${da}`;
+            } else {
+                if (document.getElementById('p-deadline')) document.getElementById('p-deadline').value = '';
+            }
+            if (document.getElementById('p-priority')) document.getElementById('p-priority').value = p.priority || 'medium';
+            if (document.getElementById('p-team')) document.getElementById('p-team').value = p.assigned_team_id || '';
+
+            // Resources: Array of objects -> String (one per line)
+            if (p.resources && Array.isArray(p.resources)) {
+                if (document.getElementById('p-resources')) document.getElementById('p-resources').value = p.resources.map(r => r.url).join('\n');
+            } else {
+                if (document.getElementById('p-resources')) document.getElementById('p-resources').value = '';
+            }
+
+            techStack = p.tech_stack || [];
+            renderTags();
+
+            // Status is now managed only via Submissions page
+
+            document.getElementById('createProjectModal').classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        async function submitProject() {
+            const id = (document.getElementById('edit-project-id')?.value || ''); // hidden field
+            const title = (document.getElementById('p-title')?.value || '');
+            const desc = (document.getElementById('p-description')?.value || '');
+            const deadline = (document.getElementById('p-deadline')?.value || '');
+            const priority = (document.getElementById('p-priority')?.value || '');
+            const teamId = (document.getElementById('p-team')?.value || '') || null;
+            const resourcesStr = (document.getElementById('p-resources')?.value || '');
+
+            // Form Validation
+            if (!title || !desc) {
+                return Swal.fire('Missing Information', 'Please provide a Project Title and Description', 'warning');
+            }
+
+            // Parse Resources (one per line to Array)
+            const resources = resourcesStr.split('\n').filter(line => line.trim() !== '').map(url => ({ title: 'Link', url: url.trim() }));
+
+            // Determine status changes if relevant, but typically we keep existing status or set to assigned/draft
+            // For simplified logic: if generic status exists, use it. if creating new and team assigned -> assigned.
+            let status = 'draft';
+            if (teamId) status = 'assigned';
+
+            const payload = {
+                title: title,
+                description: desc,
+                deadline: deadline || null,
+                priority: priority,
+                assigned_team_id: teamId,
+                tech_stack: techStack,
+                resources: resources
+            };
+
+            if (id) {
+                // When editing, don't change status - status is managed via Submissions page
+                // Keep existing status unchanged
+            } else {
+                // If creating
+                if (teamId) payload.status = 'assigned';
+                else payload.status = 'draft';
+            }
+
+            const saveBtn = document.querySelector('#createProjectModal .btn-primary');
+            const originalBtnText = document.getElementById('submitBtnText').textContent;
+
+            try {
+                // Disable button and show loading state
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                let error;
+                if (id) {
+                    // Update
+                    const { error: err } = await supabaseClient.from('projects').update(payload).eq('id', id);
+                    error = err;
+                } else {
+                    // Create
+                    payload.is_active = true; // default
+                    const { error: err } = await supabaseClient.from('projects').insert(payload);
+                    error = err;
+                }
+
+                if (error) throw error;
+
+                closeModal('createProjectModal');
+                Swal.fire({
+                    icon: 'success',
+                    title: id ? 'Project Updated' : 'Project Created',
+                    text: `Project has been successfully ${id ? 'updated' : 'created'}.`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                loadProjects(); // Refresh
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to save project. ' + e.message, 'error');
+            } finally {
+                // Restore button state
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<span id="submitBtnText">${originalBtnText}</span>`;
+            }
+        }
+
+        function viewProjectDetails(id) {
+            const p = allProjects.find(x => x.id === id);
+            if (!p) return;
+
+            const techStackHtml = (p.tech_stack || []).map(t => `<span class="badge badge-neutral" style="margin-right:4px; margin-bottom:4px;">${t}</span>`).join('');
+            const resourcesHtml = (p.resources && Array.isArray(p.resources) && p.resources.length > 0)
+                ? `<div style="margin-top:12px; text-align:left;">
+                     <strong>Resources:</strong>
+                     <ul style="margin:4px 0 0 20px; color:var(--c-primary);">
+                       ${p.resources.map(r => `<li><a href="${r.url}" target="_blank" style="text-decoration:underline;">${r.url}</a></li>`).join('')}
+                     </ul>
+                   </div>`
+                : '';
+
+            Swal.fire({
+                title: p.title,
+                html: `
+                    <div style="text-align:left; font-size:0.95rem; line-height:1.6;">
+                        <div style="margin-bottom:16px;">${p.description || 'No description provided.'}</div>
+                        <div style="margin-bottom:12px;"><strong>Deadline:</strong> ${p.deadline ? new Date(p.deadline).toLocaleDateString() : 'None'}</div>
+                         <div style="margin-bottom:12px;">
+                            <strong>Priority:</strong> 
+                            <span style="text-transform:capitalize; color: ${p.priority === 'urgent' ? '#ef4444' : (p.priority === 'high' ? '#f59e0b' : 'var(--c-text-primary)')}; font-weight:600;">${p.priority || 'Medium'}</span>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <div style="margin-bottom:4px;"><strong>Tech Stack:</strong></div>
+                            <div>${techStackHtml || '<span style="color:var(--c-text-muted);">None specified</span>'}</div>
+                        </div>
+                        ${resourcesHtml}
+                    </div>
+                `,
+                width: '600px',
+                showCloseButton: true,
+                showConfirmButton: false,
+                backdrop: `rgba(0,0,0,0.4)`
+            });
+        }
+
+        async function toggleProjectStatus(id, isActive) {
+            try {
+                const { error } = await supabaseClient.from('projects').update({ is_active: isActive }).eq('id', id);
+                if (error) throw error;
+                // Silent update or toast
+                const Toast = Swal.mixin({
+                    toast: true, position: 'top-end', showConfirmButton: false, timer: 1000,
+                });
+                Toast.fire({ icon: 'success', title: `Project ${isActive ? 'Activated' : 'Archived'}` });
+
+                // Refresh to update UI styles
+                loadProjects();
+            } catch (e) {
+                Swal.fire('Error', 'Status update failed', 'error');
+            }
+        }
+
+        // Quick Status Update Function - Removed (now managed via Submissions page)
+
+        async function deleteProject(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const { error } = await supabaseClient.from('projects').delete().eq('id', id);
+                    if (error) {
+                        Swal.fire('Error', 'Could not delete project.', 'error');
+                    } else {
+                        Swal.fire('Deleted!', 'Project has been deleted.', 'success');
+                        loadProjects();
+                    }
+                }
+            });
+        }
+
+        // View Switching
+        window.switchView = function (view) {
+            document.querySelectorAll('.view-switcher .btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`button[onclick="switchView('${view}')"]`).classList.add('active');
+
+            if (document.getElementById('view-grid')) document.getElementById('view-grid').style.display = (view === 'grid') ? 'grid' : 'none';
+            if (document.getElementById('view-kanban')) document.getElementById('view-kanban').style.display = (view === 'kanban') ? 'flex' : 'none';
+        }
+
+        // Drag and Drop
+        window.allowDrop = (ev) => ev.preventDefault();
+        window.drag = (ev, id) => ev.dataTransfer.setData("text", id);
+        window.drop = async (ev, newStatus) => {
+            ev.preventDefault();
+            const id = ev.dataTransfer.getData("text");
+            // Optimistic update?
+            // For now, just call API
+            const { error } = await supabaseClient.from('projects').update({ status: newStatus }).eq('id', id);
+            if (!error) loadProjects();
+        }
+
+        // Show team info for a project
+        async function showProjectTeamInfo(projectId) {
+            const project = allProjects.find(p => p.id === projectId);
+            if (!project) return;
+
+            const teamId = project.assigned_team_id;
+            const teamName = project.teams?.name || 'Unassigned';
+
+            if (!teamId) {
+                Swal.fire({
+                    title: `<i class="fas fa-info-circle" style="margin-right:8px; color:var(--c-primary);"></i> Project Info`,
+                    html: `
+                        <div style="text-align:left;">
+                            <div style="margin-bottom:16px;">
+                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:4px;">Project Name</div>
+                                <div style="font-weight:600; font-size:1.1rem;">${project.title}</div>
+                            </div>
+                            <div style="text-align:center; padding:20px; color:var(--c-text-muted);">
+                                <i class="fas fa-users-slash" style="font-size:2rem; margin-bottom:12px; display:block;"></i>
+                                No team assigned to this project yet.
+                            </div>
+                        </div>
+                    `,
+                    width: '450px',
+                    showCloseButton: true,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            // Fetch team with members
+            try {
+                const { data: team, error } = await supabaseClient
+                    .from('teams')
+                    .select(`
+                        id, name, max_members, is_active,
+                        team_members (
+                            id, user_id, role, is_active
+                        )
+                    `)
+                    .eq('id', teamId)
+                    .single();
+
+                if (error) throw error;
+
+                // Fetch Profiles Securely via RPC
+                const { data: allProfs } = await supabaseClient.rpc('get_all_profile_emails');
+
+                // Merge Data
+                const membersRaw = team.team_members || [];
+                const members = membersRaw.map(m => {
+                    const prof = allProfs ? allProfs.find(p => p.id === m.user_id) : null;
+                    return { ...m, profiles: prof };
+                });
+                const leader = members.find(m => m.role === 'Leader');
+                const otherMembers = members.filter(m => m.role !== 'Leader');
+
+                // Build members HTML
+                const buildMemberHtml = (member, isLeader = false) => {
+                    const name = member.profiles?.full_name || 'Unknown';
+                    const email = member.profiles?.email || '';
+                    const initial = name[0]?.toUpperCase() || '?';
+                    const avatarUrl = member.profiles?.avatar_url;
+
+                    return `
+                        <div style="display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--c-bg-app); border-radius:8px; margin-bottom:8px; ${isLeader ? 'border-left:3px solid #f59e0b;' : ''}">
+                            <div style="width:40px; height:40px; border-radius:50%; background:${isLeader ? 'rgba(245,158,11,0.2)' : 'rgba(99,102,241,0.2)'}; color:${isLeader ? '#fbbf24' : '#a5b4fc'}; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem;">
+                                ${avatarUrl ? `<img src="${getProxiedUrl(avatarUrl)}" loading="lazy" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : initial}
+                            </div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600; display:flex; align-items:center; gap:8px;">
+                                    ${name}
+                                    ${isLeader ? '<span style="background:rgba(245,158,11,0.2); color:#fbbf24; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:700;">LEADER</span>' : ''}
+                                </div>
+                                <div style="font-size:0.8rem; color:var(--c-text-muted);">${email}</div>
+                            </div>
+                        </div>
+                    `;
+                };
+
+                const leaderHtml = leader ? buildMemberHtml(leader, true) : '<div style="color:var(--c-text-muted); text-align:center; padding:12px;">No leader assigned</div>';
+                const membersHtml = otherMembers.length > 0
+                    ? otherMembers.map(m => buildMemberHtml(m, false)).join('')
+                    : '<div style="color:var(--c-text-muted); text-align:center; padding:12px;">No other members</div>';
+
+                // Project status
+                const projectStatus = project.status || 'draft';
+                let statusColor = 'neutral';
+                let statusLabel = projectStatus.replace('_', ' ');
+                if (projectStatus === 'assigned') statusColor = 'warning';
+                if (projectStatus === 'in_progress') { statusColor = 'primary'; statusLabel = 'In Progress'; }
+                if (projectStatus === 'completed' || projectStatus === 'approved') { statusColor = 'success'; statusLabel = projectStatus === 'approved' ? 'Approved' : 'Completed'; }
+                if (projectStatus === 'under_review') { statusColor = 'info'; statusLabel = 'Under Review'; }
+                if (projectStatus === 'rejected') { statusColor = 'error'; statusLabel = 'Rejected'; }
+
+                Swal.fire({
+                    title: `<i class="fas fa-users" style="margin-right:8px; color:var(--c-primary);"></i> ${team.name}`,
+                    html: `
+                        <div style="text-align:left;">
+                            <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
+                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:4px;">Project</div>
+                                <div style="font-weight:600;">${project.title}</div>
+                                <span class="badge badge-${statusColor}" style="margin-top:8px;">${statusLabel}</span>
+                            </div>
+
+                            <div style="margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--c-border);">
+                                <div style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:4px;">Team Status</div>
+                                <span class="badge badge-${team.is_active !== false ? 'success' : 'neutral'}">${team.is_active !== false ? 'Active' : 'Inactive'}</span>
+                                <span style="margin-left:12px; font-size:0.85rem; color:var(--c-text-secondary);">${members.length} / ${team.max_members} Members</span>
+                            </div>
+
+                            <div style="margin-bottom:16px;">
+                                <div style="font-size:0.85rem; font-weight:600; color:var(--c-text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                    <i class="fas fa-crown" style="color:#fbbf24;"></i> Team Leader
+                                </div>
+                                ${leaderHtml}
+                            </div>
+
+                            <div>
+                                <div style="font-size:0.85rem; font-weight:600; color:var(--c-text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                                    <i class="fas fa-user-friends"></i> Team Members
+                                </div>
+                                ${membersHtml}
+                            </div>
+                        </div>
+                    `,
+                    width: '500px',
+                    showCloseButton: true,
+                    showConfirmButton: false
+                });
+
+            } catch (err) {
+                console.error('Error loading team info:', err);
+                Swal.fire('Error', 'Could not load team information', 'error');
+            }
+        }
+
+        // Start
+        window.onload = init;
+
+    </script>
+
+    <script src="../js/admin-cursor.js"></script>
+</body>
+
+</html>

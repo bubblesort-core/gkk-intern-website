@@ -29,3 +29,25 @@ verify_jwt = true
 
 [functions.send-push-notification]
 verify_jwt = false
+
+[functions.merchandise-hold-stock]
+enabled = true
+verify_jwt = true
+import_map = "./functions/merchandise-hold-stock/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/merchandise-hold-stock/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/merchandise-hold-stock/*.html" ]
+
+[functions.merchandise-release-hold]
+enabled = true
+verify_jwt = true
+import_map = "./functions/merchandise-release-hold/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/merchandise-release-hold/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/merchandise-release-hold/*.html" ]

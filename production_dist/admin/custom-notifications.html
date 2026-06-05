@@ -1,0 +1,523 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notifications | GKK Interns - Code. Build. Deploy.</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Minimal CSS -->
+    <link rel="stylesheet" href="../css/admin-minimal.css">
+    <link rel="stylesheet" href="../css/skeleton.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+
+    <style>
+        .notif-compose-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 640px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .notif-compose-card h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--c-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .notif-compose-card .subtitle {
+            font-size: 0.9rem;
+            color: var(--c-text-muted);
+            margin-bottom: 24px;
+        }
+
+        .char-count {
+            font-size: 0.75rem;
+            color: var(--c-text-muted);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .char-count.warning {
+            color: #f59e0b;
+        }
+
+        .char-count.danger {
+            color: #ef4444;
+        }
+
+        .preview-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .preview-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .preview-icon i {
+            color: #10b981;
+            font-size: 1rem;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            color: var(--c-text-primary);
+            font-size: 0.95rem;
+        }
+
+        .preview-body {
+            color: var(--c-text-secondary);
+            font-size: 0.85rem;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .preview-time {
+            font-size: 0.75rem;
+            color: var(--c-text-muted);
+            margin-top: 6px;
+        }
+
+        /* History Table */
+        .history-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .history-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--c-text-primary);
+            margin-bottom: 16px;
+        }
+
+        .notif-history-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .notif-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-history-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notif-history-icon i {
+            color: #10b981;
+            font-size: 0.9rem;
+        }
+
+        .notif-history-meta {
+            flex: 1;
+        }
+
+        .notif-history-title {
+            font-weight: 600;
+            color: var(--c-text-primary);
+            font-size: 0.9rem;
+        }
+
+        .notif-history-body {
+            color: var(--c-text-secondary);
+            font-size: 0.85rem;
+            margin-top: 2px;
+        }
+
+        .notif-history-time {
+            font-size: 0.75rem;
+            color: var(--c-text-muted);
+            margin-top: 4px;
+        }
+
+        .notif-history-badge {
+            font-size: 0.7rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            align-self: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--c-text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"
+        style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:45; display:none;"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Injected via admin-sidebar.js -->
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display:flex; align-items:center; gap:16px;">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Push Notifications</h1>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <!-- Compose Notification -->
+                <div class="notif-compose-card">
+                    <h2><i class="fas fa-bell" style="color:#10b981; margin-right:8px;"></i>Send Push Notification</h2>
+                    <p class="subtitle">Send a custom push notification to interns via FCM</p>
+
+                    <div class="form-group">
+                        <label class="form-label">Target Audience</label>
+                        <select id="targetAudience" class="form-input" onchange="toggleSpecificInterns()">
+                            <option value="all">All Interns</option>
+                            <option value="specific">Specific Interns</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="specificInternsContainer" style="display: none;">
+                        <label class="form-label">Select Interns</label>
+                        <select id="specificInterns" class="form-input" multiple style="height: 120px;">
+                            <option disabled>Loading interns...</option>
+                        </select>
+                        <div class="char-count">Hold Ctrl/Cmd to select multiple</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notification Title *</label>
+                        <input type="text" id="notifTitle" class="form-input" placeholder="e.g. New assignment posted!"
+                            maxlength="100" oninput="updatePreview(); updateCharCount('notifTitle', 100, 'titleCount')">
+                        <div class="char-count" id="titleCount">0 / 100</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message Body *</label>
+                        <textarea id="notifBody" class="form-textarea" rows="3"
+                            placeholder="e.g. Check out the new resources added to your dashboard" maxlength="300"
+                            oninput="updatePreview(); updateCharCount('notifBody', 300, 'bodyCount')"></textarea>
+                        <div class="char-count" id="bodyCount">0 / 300</div>
+                    </div>
+
+                    <!-- Live Preview -->
+                    <div class="preview-card">
+                        <div class="preview-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <div class="preview-title" id="previewTitle">Notification Title</div>
+                            <div class="preview-body" id="previewBody">Your message will appear here...</div>
+                            <div class="preview-time">Just now ï¿½ GKK Intern</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; display:flex; gap:12px;">
+                        <button class="btn btn-primary" id="sendBtn" onclick="sendNotification()">
+                            <i class="fas fa-paper-plane"></i> Send Notification
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notification History -->
+                <div class="history-card">
+                    <h3><i class="fas fa-history" style="color:var(--c-text-muted); margin-right:8px;"></i>Sent
+                        Notifications</h3>
+                    <div id="notifHistory">
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications sent yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-sidebar.js"></script>
+    <script src="../js/admin-router.js"></script>
+    <script src="../js/main-page-btn.js"></script>
+    <script>
+        // Sidebar Mobile Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            sidebarOverlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+        document.getElementById('sidebarOverlay')?.addEventListener('click', () => toggleSidebar());
+
+        // Character count
+        function updateCharCount(inputId, max, countId) {
+            const len = document.getElementById(inputId).value.length;
+            const el = document.getElementById(countId);
+            el.textContent = `${len} / ${max}`;
+            el.className = 'char-count' + (len > max * 0.9 ? ' danger' : len > max * 0.7 ? ' warning' : '');
+        }
+
+        // Live preview
+        function updatePreview() {
+            const title = (document.getElementById('notifTitle')?.value || '') || 'Notification Title';
+            const body = (document.getElementById('notifBody')?.value || '') || 'Your message will appear here...';
+            if (document.getElementById('previewTitle')) document.getElementById('previewTitle').textContent = title;
+            if (document.getElementById('previewBody')) document.getElementById('previewBody').textContent = body;
+        }
+
+        function toggleSpecificInterns() {
+            const targetAudience = (document.getElementById('targetAudience')?.value || '');
+            if (document.getElementById('specificInternsContainer')) document.getElementById('specificInternsContainer').style.display = targetAudience === 'specific' ? 'block' : 'none';
+        }
+
+        // Send push notification
+        async function sendNotification() {
+            const title = (document.getElementById('notifTitle')?.value || '').trim();
+            const body = (document.getElementById('notifBody')?.value || '').trim();
+            const targetAudience = (document.getElementById('targetAudience')?.value || '');
+
+            let targetIds = [];
+
+            if (!title || !body) {
+                return Swal.fire('Missing Fields', 'Both title and message are required', 'warning');
+            }
+
+            if (targetAudience === 'specific') {
+                const options = document.getElementById('specificInterns').selectedOptions;
+                targetIds = Array.from(options).map(opt => opt.value);
+
+                if (targetIds.length === 0) {
+                    return Swal.fire('Missing Selection', 'Please select at least one intern.', 'warning');
+                }
+            }
+
+            const sendToText = targetAudience === 'all' ? 'all interns' : `${targetIds.length} selected intern(s)`;
+
+            const confirm = await Swal.fire({
+                title: 'Send Notification?',
+                html: `<div style="text-align:left; margin-top:12px;">
+                    <strong>Title:</strong> ${title}<br>
+                    <strong>Body:</strong> ${body}<br><br>
+                    This will be sent to <strong>${sendToText}</strong> with the mobile app.
+                </div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Send Now',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#10b981',
+                background: '#1e293b',
+                color: '#fff'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            const btn = document.getElementById('sendBtn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+                // Store notification in Supabase for history
+                const { error: insertError } = await supabaseClient.from('admin_notifications').insert([{
+                    title,
+                    body,
+                    sent_at: new Date().toISOString(),
+                    sent_to: targetAudience === 'all' ? 'All Interns' : `${targetIds.length} Specific Intern(s)`
+                }]);
+
+                // Even if the table doesn't exist yet, we proceed with FCM
+                if (insertError) console.warn('Could not save notification history:', insertError.message);
+
+                // Call the Supabase Edge Function to send FCM
+                const payload = { title, body };
+                if (targetIds.length > 0) payload.targetIds = targetIds;
+
+                const { data, error } = await supabaseClient.functions.invoke('send-push-notification', {
+                    body: payload
+                });
+
+                console.log('FCM Response:', { data, error });
+
+                if (error) {
+                    console.error('FCM Invoke Error:', error);
+                    throw error;
+                }
+                if (data && data.success === false) throw new Error(data.error || 'Unknown FCM error');
+
+                // Clear form
+                if (document.getElementById('notifTitle')) document.getElementById('notifTitle').value = '';
+                if (document.getElementById('notifBody')) document.getElementById('notifBody').value = '';
+                updatePreview();
+                updateCharCount('notifTitle', 100, 'titleCount');
+                updateCharCount('notifBody', 300, 'bodyCount');
+
+                if (data && data.success === true && data.failed_count > 0) {
+                    Swal.fire({
+                        title: 'Partial Success',
+                        html: `
+                            <p>Sent to <b>${data.sent_count}</b> interns, but failed for <b>${data.failed_count}</b>.</p>
+                            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 8px; margin-top: 12px; text-align: left; font-size: 0.85rem;">
+                                <strong style="color: #f87171;">FCM Error:</strong> ${data.first_error || 'Invalid token'}<br>
+                                <strong style="color: #94a3b8;">Project ID:</strong> ${data.project_id || 'Unknown'}<br>
+                                <small style="color: #64748b; display: block; margin-top: 8px;">* Ensure the intern has a valid token and the mobile app is linked to the correct project.</small>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        background: '#1e293b',
+                        color: '#fff'
+                    });
+                } else {
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    Toast.fire({ icon: 'success', title: `Notification sent to ${data?.sent_count || 'all'} interns` });
+                }
+
+                loadHistory();
+
+            } catch (e) {
+                console.error('Send notification error:', e);
+                Swal.fire({
+                    title: 'FCM Push Failed',
+                    html: `Could not send push notification via Firebase Cloud Messaging.<br><br><small style="color:#f87171;">Reason: ${e.message || 'Server error'}</small><br><br><small style="color:#94a3b8;">Check Supabase Edge Function Secrets.</small>`,
+                    icon: 'error',
+                    background: '#1e293b',
+                    color: '#fff'
+                });
+                loadHistory();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Load notification history
+        async function loadHistory() {
+            const container = document.getElementById('notifHistory');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('admin_notifications')
+                    .select('*')
+                    .order('sent_at', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No notifications sent yet</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(n => `
+                    <div class="notif-history-item">
+                        <div class="notif-history-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="notif-history-meta">
+                            <div class="notif-history-title">${n.title}</div>
+                            <div class="notif-history-body">${n.body}</div>
+                            <div class="notif-history-time">${formatDateTime(n.sent_at)}</div>
+                        </div>
+                        <span class="notif-history-badge">${n.sent_to || 'All'}</span>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                // Table might not exist yet ï¿½ show graceful empty state
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No history available yet</p>
+                        <p style="font-size:0.8rem; margin-top:4px;">Create the <code>admin_notifications</code> table in Supabase to enable history</p>
+                    </div>`;
+            }
+        }
+
+        // Load interns for dropdown
+        async function loadInterns() {
+            try {
+                const interns = await getAllInterns(); // Uses helper from supabase-client.js
+                const select = document.getElementById('specificInterns');
+                if (!interns || interns.length === 0) {
+                    select.innerHTML = '<option disabled>No interns found</option>';
+                    return;
+                }
+
+                select.innerHTML = interns.map(i =>
+                    `<option value="${i.id}">${i.full_name} (${i.email})</option>`
+                ).join('');
+            } catch (e) {
+                console.error('Failed to load interns dropdown:', e);
+                if (document.getElementById('specificInterns')) document.getElementById('specificInterns').innerHTML = '<option disabled>Error loading interns</option>';
+            }
+        }
+
+        // Init
+        async function init() {
+            if (!await ensureAdminAuth()) return;
+            loadHistory();
+            loadInterns();
+        }
+
+        init();
+    </script>
+
+    <script src="../js/admin-cursor.js"></script>
+</body>
+
+</html>

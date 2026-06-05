@@ -229,7 +229,7 @@ export default function CustomCursor({ label = "You", color = BASE_COLOR }) {
 
     const processMove = () => {
       rafRef.current = null;
-      const { x, y, target: rawTarget } = lastPointRef.current;
+      const { x, y } = lastPointRef.current;
 
       if (cursorRef.current) {
         cursorRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
@@ -239,20 +239,24 @@ export default function CustomCursor({ label = "You", color = BASE_COLOR }) {
         visibleRef.current = true;
         setVisible(true);
       }
+    };
 
-      const now = performance.now();
-      if (now < nextHoverProbeRef.current) return;
-      nextHoverProbeRef.current = now + 32;
+    const onMove = (e) => {
+      lastPointRef.current = { x: e.clientX, y: e.clientY };
+      if (rafRef.current !== null) return;
+      rafRef.current = window.requestAnimationFrame(processMove);
+    };
 
-      const el = rawTarget || document.elementFromPoint(x, y);
-      const target = el instanceof HTMLElement ? el.closest("[data-cursor]") : null;
-      const actionEl = findActionElement(el || rawTarget);
+    const onMouseOver = (e) => {
+      const rawTarget = e.target;
+      const target = rawTarget instanceof HTMLElement ? rawTarget.closest("[data-cursor]") : null;
+      const actionEl = findActionElement(rawTarget);
 
       const nextHover = target || actionEl || null;
       if (lastHoverRef.current === nextHover) return;
       lastHoverRef.current = nextHover;
 
-      const hoverLabel = autoTooltip(actionEl || el || rawTarget);
+      const hoverLabel = autoTooltip(actionEl || rawTarget);
 
       let nextState = "default";
       let nextLabel = hoverLabel;
@@ -277,18 +281,11 @@ export default function CustomCursor({ label = "You", color = BASE_COLOR }) {
       }
     };
 
-    const onMove = (e) => {
-      lastPointRef.current = { x: e.clientX, y: e.clientY, target: e.target };
-      if (rafRef.current !== null) return;
-      rafRef.current = window.requestAnimationFrame(processMove);
-    };
-
     const onDown = () => setPressing(true);
     const onUp   = () => setPressing(false);
     const hide   = () => {
       visibleRef.current = false;
       lastHoverRef.current = null;
-      nextHoverProbeRef.current = 0;
       setVisible(false);
     };
     const onWindowOut = (e) => {
@@ -299,6 +296,7 @@ export default function CustomCursor({ label = "You", color = BASE_COLOR }) {
     };
 
     window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mouseover", onMouseOver, { passive: true });
     window.addEventListener("mousedown", onDown);
     window.addEventListener("mouseup",   onUp);
     window.addEventListener("mouseout", onWindowOut);
@@ -308,6 +306,7 @@ export default function CustomCursor({ label = "You", color = BASE_COLOR }) {
 
     return () => {
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseover", onMouseOver);
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup",   onUp);
       window.removeEventListener("mouseout", onWindowOut);

@@ -24,6 +24,8 @@ export interface FormSubmission {
     whatsapp_number?: string;
     age?: string;
     sex?: string;
+    state?: string;
+    city?: string;
     college?: string;
     linkedin_url?: string;
     github_url?: string;
@@ -50,6 +52,8 @@ interface ApplicationRecord {
     whatsapp_number?: string;
     age?: string;
     sex?: string;
+    state?: string;
+    city?: string;
     college?: string;
     linkedin_url?: string;
     github_url?: string;
@@ -108,6 +112,8 @@ export async function submitFormData(data: FormSubmission): Promise<string> {
         whatsapp_number: data.whatsapp_number,
         age: data.age,
         sex: data.sex,
+        state: data.state,
+        city: data.city,
         college: data.college,
         linkedin_url: data.linkedin_url,
         github_url: data.github_url,

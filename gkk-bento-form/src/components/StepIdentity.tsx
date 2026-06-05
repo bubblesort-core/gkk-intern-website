@@ -2,6 +2,40 @@ import { useState, useEffect } from 'react';
 import { useFormContext } from '@/context/FormContext';
 import { supabase } from '@/lib/supabase';
 
+const INDIAN_STATES_CITIES: Record<string, string[]> = {
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore"],
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun"],
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh"],
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur"],
+    "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur"],
+    "Goa": ["Panaji", "Margao", "Vasco da Gama"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
+    "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala"],
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Mandi"],
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad"],
+    "Karnataka": ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi"],
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"],
+    "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad"],
+    "Manipur": ["Imphal"],
+    "Meghalaya": ["Shillong"],
+    "Mizoram": ["Aizawl"],
+    "Nagaland": ["Dimapur", "Kohima"],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota"],
+    "Sikkim": ["Gangtok"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"],
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad"],
+    "Tripura": ["Agartala"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Noida"],
+    "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee"],
+    "West Bengal": ["Kolkata", "Asansol", "Siliguri", "Durgapur"],
+    "Delhi": ["New Delhi"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu"],
+    "Chandigarh": ["Chandigarh"]
+};
+
 const StepIdentity: React.FC = () => {
     const { formData, updateFormData, firstName, setFirstName, lastName, setLastName, setCloudyMessage } = useFormContext();
     const [status, setStatus] = useState<'college' | 'dropout' | 'other'>('college');
@@ -285,6 +319,32 @@ const StepIdentity: React.FC = () => {
                         ))}
                     </div>
                 </div>
+                <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">State <span className="text-red-500">*</span></span>
+                    <div className="relative">
+                        <input list="states-list" value={formData.state || ''} onChange={(e) => {
+                            updateFormData({ state: e.target.value, city: '' });
+                        }} placeholder="Select or type state" className="bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10!" />
+                        <datalist id="states-list">
+                            {Object.keys(INDIAN_STATES_CITIES).map(state => (
+                                <option key={state} value={state} />
+                            ))}
+                        </datalist>
+                        {formData.state && <button type="button" onClick={() => updateFormData({ state: '', city: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
+                    </div>
+                </label>
+                <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">City <span className="text-red-500">*</span></span>
+                    <div className="relative">
+                        <input list="cities-list" value={formData.city || ''} onChange={(e) => updateFormData({ city: e.target.value })} placeholder="Select or type city" className="bg-bg-input text-text-primary! border-white/10 w-full px-4 h-12 rounded-xl pr-10!" />
+                        <datalist id="cities-list">
+                            {(INDIAN_STATES_CITIES[formData.state || ''] || []).map(city => (
+                                <option key={city} value={city} />
+                            ))}
+                        </datalist>
+                        {formData.city && <button type="button" onClick={() => updateFormData({ city: '' })} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"><span className="material-symbols-outlined text-[18px]">close</span></button>}
+                    </div>
+                </label>
             </div>
         </div>
     );

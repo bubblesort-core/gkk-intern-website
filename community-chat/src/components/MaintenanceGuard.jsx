@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 
 const MaintenanceGuard = ({ children }) => {
-  const [maintenance, setMaintenance] = useState({ loading: true, enabled: false, title: '', message: '' });
+  const [maintenance, setMaintenance] = useState({ loading: true, enabled: false, target: 'all', title: '', message: '' });
 
   useEffect(() => {
     const checkMaintenance = async () => {
@@ -17,18 +17,19 @@ const MaintenanceGuard = ({ children }) => {
           if (error.code !== 'PGRST116') {
              console.error('Error checking maintenance state:', error);
           }
-          setMaintenance({ loading: false, enabled: false });
+          setMaintenance({ loading: false, enabled: false, target: 'all' });
         } else if (data && data.value) {
           setMaintenance({
             loading: false,
             enabled: data.value.enabled,
+            target: data.value.target || 'all',
             title: data.value.title || 'Scheduled Maintenance',
             message: data.value.message || 'We are currently undergoing scheduled maintenance. Please check back soon.'
           });
         }
       } catch (err) {
         console.error('Failed to fetch maintenance status:', err);
-        setMaintenance({ loading: false, enabled: false });
+        setMaintenance({ loading: false, enabled: false, target: 'all' });
       }
     };
 
@@ -41,7 +42,14 @@ const MaintenanceGuard = ({ children }) => {
     </div>;
   }
 
+  let shouldBlock = false;
   if (maintenance.enabled) {
+    if (maintenance.target === 'all') {
+      shouldBlock = true;
+    }
+  }
+
+  if (shouldBlock) {
     return (
       <div style={{
         position: 'fixed', inset: 0, zIndex: 99999, background: '#0f172a', color: 'white',

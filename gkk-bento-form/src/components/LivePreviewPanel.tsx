@@ -19,8 +19,8 @@ const LivePreviewPanel: React.FC = () => {
     }, [isAllComplete]);
 
     // Validation helpers
-    const s1Complete = !!(firstName && lastName && formData.email && formData.is_email_verified && formData.college && formData.phone && formData.whatsapp_number && formData.age && formData.sex);
-    const s1Fields = [firstName, lastName, formData.email, formData.is_email_verified, formData.college, formData.phone, formData.whatsapp_number, formData.age, formData.sex];
+    const s1Complete = !!(firstName && lastName && formData.email && formData.is_email_verified && formData.college && formData.phone && formData.whatsapp_number && formData.age && formData.sex && formData.state && formData.city);
+    const s1Fields = [firstName, lastName, formData.email, formData.is_email_verified, formData.college, formData.phone, formData.whatsapp_number, formData.age, formData.sex, formData.state, formData.city];
     const s1Progress = (s1Fields.filter(Boolean).length / s1Fields.length) * 100;
 
     const renderIdCard = () => (
@@ -80,12 +80,18 @@ const LivePreviewPanel: React.FC = () => {
                 </div>
 
                 {/* Footer Chips */}
-                <div className="flex gap-2 mt-2 pt-3 border-t border-border/50">
+                <div className="flex flex-wrap gap-2 mt-2 pt-3 border-t border-border/50">
                     <div className={`px-2 py-1 flex items-center gap-1 rounded text-[10px] font-bold ${formData.age ? 'bg-bg-input text-text-primary border border-border' : 'opacity-30 border border-dashed border-border text-text-muted'}`}>
                         AGE: {formData.age || '--'}
                     </div>
                     <div className={`px-2 py-1 flex items-center gap-1 rounded text-[10px] font-bold ${formData.sex ? 'bg-bg-input text-text-primary border border-border' : 'opacity-30 border border-dashed border-border text-text-muted'}`}>
                         SEX: {formData.sex || '--'}
+                    </div>
+                    <div className={`px-2 py-1 flex items-center gap-1 rounded text-[10px] font-bold ${formData.state ? 'bg-bg-input text-text-primary border border-border' : 'opacity-30 border border-dashed border-border text-text-muted'}`}>
+                        STATE: {formData.state || '--'}
+                    </div>
+                    <div className={`px-2 py-1 flex items-center gap-1 rounded text-[10px] font-bold ${formData.city ? 'bg-bg-input text-text-primary border border-border' : 'opacity-30 border border-dashed border-border text-text-muted'}`}>
+                        CITY: {formData.city || '--'}
                     </div>
                 </div>
             </div>
