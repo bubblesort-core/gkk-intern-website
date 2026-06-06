@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/supabase_client.dart';
+import '../../core/cache_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../theme/colors.dart';
@@ -41,27 +42,38 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     return false;
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool forceRefresh = false}) async {
     try {
+      if (!forceRefresh) {
+        final cachedData = CacheService.get('sessions_list');
+        if (cachedData != null) {
+          _processResponse(cachedData);
+        }
+      }
+
       final response = await SupabaseClientConfig.client
           .from('sessions')
           .select('*')
           .order('scheduled_start', ascending: false)
           .limit(50);
 
-      if (mounted) {
-        final visible = (response as List<dynamic>).where(_isEligible).toList();
-        final now = DateTime.now();
-        setState(() {
-          _liveMeetings = visible.where((s) => s['status'] == 'live').toList();
-          _upcomingMeetings = visible.where((s) => s['status'] == 'scheduled' && DateTime.tryParse(s['scheduled_start'] ?? '')?.isAfter(now) == true).toList();
-          _loading = false;
-        });
-      }
+      CacheService.set('sessions_list', response);
+      _processResponse(response);
     } catch (e) {
       debugPrint('Error loading meetings: $e');
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _processResponse(dynamic response) {
+    if (!mounted) return;
+    final visible = (response as List<dynamic>).where(_isEligible).toList();
+    final now = DateTime.now();
+    setState(() {
+      _liveMeetings = visible.where((s) => s['status'] == 'live').toList();
+      _upcomingMeetings = visible.where((s) => s['status'] == 'scheduled' && DateTime.tryParse(s['scheduled_start'] ?? '')?.isAfter(now) == true).toList();
+      _loading = false;
+    });
   }
 
   String _formatDate(String? dateStr) {
@@ -138,7 +150,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                           backgroundColor: AppColors.card,
                           onRefresh: () async {
                             setState(() => _loading = true);
-                            await _load();
+                            await _load(forceRefresh: true);
                           },
                           child: ListView(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

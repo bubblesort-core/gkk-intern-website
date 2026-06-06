@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../theme/colors.dart';
 import '../../widgets/shimmer_loader.dart';
+import '../../core/cache_service.dart';
 
 class ProjectsScreen extends StatefulWidget {
   const ProjectsScreen({super.key});
@@ -56,23 +57,35 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     super.dispose();
   }
 
-  void _loadDataForActiveTab() {
-    if (_activeTab == 'custom') _loadCustomProjects();
-    if (_activeTab == 'reports') _loadReportLinks();
+  void _loadDataForActiveTab({bool forceRefresh = false}) {
+    if (_activeTab == 'custom') _loadCustomProjects(forceRefresh: forceRefresh);
+    if (_activeTab == 'reports') _loadReportLinks(forceRefresh: forceRefresh);
   }
 
-  Future<void> _loadCustomProjects() async {
+  Future<void> _loadCustomProjects({bool forceRefresh = false}) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.profile?['userProfile']?['id'];
     if (userId == null) return;
 
-    setState(() => _loadingData = true);
+    if (!forceRefresh) {
+      final cachedData = CacheService.get('custom_projects_$userId');
+      if (cachedData != null) {
+        if (mounted) setState(() => _customProjects = cachedData);
+      } else {
+        setState(() => _loadingData = true);
+      }
+    } else {
+      setState(() => _loadingData = true);
+    }
+
     try {
       final response = await SupabaseClientConfig.client
           .from('custom_project_submissions')
           .select('*')
           .eq('intern_id', userId)
           .order('created_at', ascending: false);
+          
+      CacheService.set('custom_projects_$userId', response);
       if (mounted) {
         setState(() {
           _customProjects = response;
@@ -85,17 +98,29 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     }
   }
 
-  Future<void> _loadReportLinks() async {
+  Future<void> _loadReportLinks({bool forceRefresh = false}) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (authProvider.profile?['userProfile']?['id'] == null) return;
 
-    setState(() => _loadingData = true);
+    if (!forceRefresh) {
+      final cachedData = CacheService.get('report_links');
+      if (cachedData != null) {
+        if (mounted) setState(() => _reportLinks = cachedData);
+      } else {
+        setState(() => _loadingData = true);
+      }
+    } else {
+      setState(() => _loadingData = true);
+    }
+
     try {
       final response = await SupabaseClientConfig.client
           .from('report_submission_links')
           .select('*')
           .eq('is_enabled', true)
           .order('created_at', ascending: false);
+          
+      CacheService.set('report_links', response);
       if (mounted) {
         setState(() {
           _reportLinks = response;
@@ -465,69 +490,80 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       return _buildEmptyState(Icons.folder_open, 'No Projects', 'No projects assigned yet.');
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: dashboard.currentProjects.length,
-      itemBuilder: (context, index) {
-        final project = dashboard.currentProjects[index];
-        final info = _getStatusInfo(project);
-        final sub = info['sub'];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF1f1f2e)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(color: info['bg'], borderRadius: BorderRadius.circular(12)),
-                child: Text(info['statusText'], style: TextStyle(color: info['statusColor'], fontSize: 12, fontWeight: FontWeight.bold)),
-              ),
-              Text(project['title'] ?? '', style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              if (project['description'] != null)
-                Text(project['description'], maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 14, height: 1.4)),
-              
-              if (sub?['feedback'] != null)
-                Container(
-                  margin: const EdgeInsets.only(top: 10, bottom: 15),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0x1Aef4444),
-                    borderRadius: BorderRadius.circular(8),
-                    border: const Border(left: BorderSide(color: Color(0xFFef4444), width: 3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Admin Feedback', style: TextStyle(color: Color(0xFFef4444), fontSize: 12, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(sub['feedback'], style: const TextStyle(color: Color(0xFFf8fafc), fontSize: 13)),
-                    ],
-                  ),
-                ),
-
-              const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  minimumSize: const Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () => _showTeamModal(project),
-                child: Text(sub != null ? 'Update Submission' : 'Submit Project', style: const TextStyle(color: AppColors.background, fontWeight: FontWeight.bold)),
-              )
-            ],
-          ),
-        );
+    return RefreshIndicator(
+      color: AppColors.primary,
+      backgroundColor: AppColors.card,
+      onRefresh: () async {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final userId = authProvider.profile?['userProfile']?['id'];
+        if (userId != null) {
+          await dashboard.fetchDashboardData(userId, forceRefresh: true);
+        }
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: dashboard.currentProjects.length,
+        itemBuilder: (context, index) {
+          final project = dashboard.currentProjects[index];
+          final info = _getStatusInfo(project);
+          final sub = info['sub'];
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF1f1f2e)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(color: info['bg'], borderRadius: BorderRadius.circular(12)),
+                  child: Text(info['statusText'], style: TextStyle(color: info['statusColor'], fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+                Text(project['title'] ?? '', style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                if (project['description'] != null)
+                  Text(project['description'], maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 14, height: 1.4)),
+                
+                if (sub?['feedback'] != null)
+                  Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 15),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0x1Aef4444),
+                      borderRadius: BorderRadius.circular(8),
+                      border: const Border(left: BorderSide(color: Color(0xFFef4444), width: 3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Admin Feedback', style: TextStyle(color: Color(0xFFef4444), fontSize: 12, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(sub['feedback'], style: const TextStyle(color: Color(0xFFf8fafc), fontSize: 13)),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => _showTeamModal(project),
+                  child: Text(sub != null ? 'Update Submission' : 'Submit Project', style: const TextStyle(color: AppColors.background, fontWeight: FontWeight.bold)),
+                )
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -552,59 +588,66 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               ? const SkeletonList()
               : _customProjects.isEmpty
                   ? _buildEmptyState(Icons.rocket_launch, 'No Custom Projects', "You haven't submitted any custom projects yet.")
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: _customProjects.length,
-                      itemBuilder: (context, index) {
-                        final cp = _customProjects[index];
-                        Color sColor = const Color(0xFF94a3b8);
-                        String sText = 'Pending';
-                        if (cp['status'] == 'approved') { sColor = const Color(0xFF10b981); sText = 'Approved'; }
-                        if (cp['status'] == 'rejected') { sColor = const Color(0xFFef4444); sText = 'Rejected'; }
-                        if (cp['status'] == 'reviewed') { sColor = const Color(0xFFf59e0b); sText = 'Reviewed'; }
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppColors.card,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFF1f1f2e)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(color: sColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
-                                child: Text(sText, style: TextStyle(color: sColor, fontSize: 12, fontWeight: FontWeight.bold)),
-                              ),
-                              Text(cp['title'] ?? '', style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Text(cp['description'] ?? '', style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 14, height: 1.4)),
-                              if (cp['feedback'] != null)
-                                Container(
-                                  margin: const EdgeInsets.only(top: 10),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0x1Aef4444),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: const Border(left: BorderSide(color: Color(0xFFef4444), width: 3)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('Admin Feedback', style: TextStyle(color: Color(0xFFef4444), fontSize: 12, fontWeight: FontWeight.bold)),
-                                      const SizedBox(height: 4),
-                                      Text(cp['feedback'], style: const TextStyle(color: Color(0xFFf8fafc), fontSize: 13)),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
-                        );
+                  : RefreshIndicator(
+                      color: AppColors.primary,
+                      backgroundColor: AppColors.card,
+                      onRefresh: () async {
+                        await _loadCustomProjects(forceRefresh: true);
                       },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: _customProjects.length,
+                        itemBuilder: (context, index) {
+                          final cp = _customProjects[index];
+                          Color sColor = const Color(0xFF94a3b8);
+                          String sText = 'Pending';
+                          if (cp['status'] == 'approved') { sColor = const Color(0xFF10b981); sText = 'Approved'; }
+                          if (cp['status'] == 'rejected') { sColor = const Color(0xFFef4444); sText = 'Rejected'; }
+                          if (cp['status'] == 'reviewed') { sColor = const Color(0xFFf59e0b); sText = 'Reviewed'; }
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: AppColors.card,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFF1f1f2e)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  decoration: BoxDecoration(color: sColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+                                  child: Text(sText, style: TextStyle(color: sColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                                ),
+                                Text(cp['title'] ?? '', style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 8),
+                                Text(cp['description'] ?? '', style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 14, height: 1.4)),
+                                if (cp['feedback'] != null)
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0x1Aef4444),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: const Border(left: BorderSide(color: Color(0xFFef4444), width: 3)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Admin Feedback', style: TextStyle(color: Color(0xFFef4444), fontSize: 12, fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        Text(cp['feedback'], style: const TextStyle(color: Color(0xFFf8fafc), fontSize: 13)),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
         ),
       ],
@@ -619,49 +662,56 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       return _buildEmptyState(Icons.description, 'No Reports Required', 'No active report submission links.');
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: _reportLinks.length,
-      itemBuilder: (context, index) {
-        final link = _reportLinks[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF1f1f2e)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(link['title'] ?? '', style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text(link['description'] ?? '', style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 14)),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  minimumSize: const Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                icon: const Icon(Icons.open_in_new, color: AppColors.background, size: 18),
-                label: const Text('Open Form', style: TextStyle(color: AppColors.background, fontWeight: FontWeight.bold)),
-                onPressed: () async {
-                  if (link['form_url'] != null) {
-                    final url = Uri.parse(link['form_url']);
-                    try {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                    } catch (e) {
-                      debugPrint('Could not launch $url');
-                    }
-                  }
-                },
-              )
-            ],
-          ),
-        );
+    return RefreshIndicator(
+      color: AppColors.primary,
+      backgroundColor: AppColors.card,
+      onRefresh: () async {
+        await _loadReportLinks(forceRefresh: true);
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: _reportLinks.length,
+        itemBuilder: (context, index) {
+          final link = _reportLinks[index];
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF1f1f2e)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(link['title'] ?? '', style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(link['description'] ?? '', style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 14)),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    minimumSize: const Size(double.infinity, 44),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.open_in_new, color: AppColors.background, size: 18),
+                  label: const Text('Open Form', style: TextStyle(color: AppColors.background, fontWeight: FontWeight.bold)),
+                  onPressed: () async {
+                    if (link['form_url'] != null) {
+                      final url = Uri.parse(link['form_url']);
+                      try {
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        debugPrint('Could not launch $url');
+                      }
+                    }
+                  },
+                )
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

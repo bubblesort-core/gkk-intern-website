@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../core/supabase_client.dart';
+import '../core/cache_service.dart';
 
 class DashboardProvider extends ChangeNotifier {
   String? _currentUserId;
@@ -26,11 +27,26 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchDashboardData(String userId) async {
+  Future<void> fetchDashboardData(String userId, {bool forceRefresh = false}) async {
     _currentUserId = userId;
-    _loadingDashboard = true;
     _errorMessage = null;
-    notifyListeners();
+
+    if (!forceRefresh) {
+      final cachedData = CacheService.get('dashboard_$userId');
+      if (cachedData != null) {
+        _currentTeam = cachedData['team'];
+        _currentProjects = cachedData['projects'];
+        _workshops = cachedData['workshops'];
+        _loadingDashboard = false;
+        notifyListeners();
+      } else {
+        _loadingDashboard = true;
+        notifyListeners();
+      }
+    } else {
+      _loadingDashboard = true;
+      notifyListeners();
+    }
 
     try {
       final client = SupabaseClientConfig.client;
@@ -73,6 +89,13 @@ class DashboardProvider extends ChangeNotifier {
           .order('created_at', ascending: false);
           
       _workshops = workshopData;
+
+      // Cache the fetched data
+      CacheService.set('dashboard_$userId', {
+        'team': _currentTeam,
+        'projects': _currentProjects,
+        'workshops': _workshops,
+      });
 
     } catch (err) {
       debugPrint('Error fetching dashboard data: $err');

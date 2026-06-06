@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:screen_protector/screen_protector.dart';
 import 'core/supabase_client.dart';
 import 'providers/auth_provider.dart';
 import 'providers/dashboard_provider.dart';
@@ -10,6 +11,10 @@ import 'components/maintenance_guard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Apply DRM and Screenshot Protection Globally
+  await ScreenProtector.preventScreenshotOn();
+  await ScreenProtector.protectDataLeakageOn();
   
   await SupabaseClientConfig.initialize();
 
@@ -31,9 +36,9 @@ class MyApp extends StatelessWidget {
             final userId = auth.profile?['userProfile']?['id'];
             if (userId != dashboard.currentUserId) {
               if (userId == null) {
-                dashboard.clear();
+                Future.microtask(() => dashboard!.clear());
               } else {
-                dashboard.fetchDashboardData(userId);
+                Future.microtask(() => dashboard!.fetchDashboardData(userId));
               }
             }
             return dashboard;

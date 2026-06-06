@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../theme/colors.dart';
 import '../../widgets/shimmer_loader.dart';
@@ -83,10 +84,21 @@ class TeamScreen extends StatelessWidget {
                               ],
                             ),
                           )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            itemCount: members.length,
-                            itemBuilder: (_, i) => _buildMemberCard(members[i], i),
+                        : RefreshIndicator(
+                            color: AppColors.primary,
+                            backgroundColor: AppColors.card,
+                            onRefresh: () async {
+                              final auth = Provider.of<AuthProvider>(context, listen: false);
+                              final userId = auth.profile?['userProfile']?['id'];
+                              if (userId != null) {
+                                await Provider.of<DashboardProvider>(context, listen: false).fetchDashboardData(userId, forceRefresh: true);
+                              }
+                            },
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                              itemCount: members.length,
+                              itemBuilder: (_, i) => _buildMemberCard(members[i], i),
+                            ),
                           ),
                   ),
                 ],

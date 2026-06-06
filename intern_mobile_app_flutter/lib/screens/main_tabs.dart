@@ -32,7 +32,7 @@ class MainTabsState extends State<MainTabs> {
     const HomeScreen(),
     const ProjectsScreen(),
     const UpdatesScreen(),
-    const MeetingsScreen(),
+    const RecordingsScreen(),
     const ProfileScreen(),
   ];
 
@@ -60,7 +60,7 @@ class MainTabsState extends State<MainTabs> {
       case 'home': return 0;
       case 'projects': return 1;
       case 'updates': return 2;
-      case 'meetings': return 3;
+      case 'recordings': return 3;
       case 'profile': return 4;
       default: return -1; // drawer-only
     }
@@ -200,7 +200,7 @@ class MainTabsState extends State<MainTabs> {
                   _drawerItem('team', Icons.people_outline, 'Team'),
                   _drawerItem('updates', Icons.notifications_active_outlined, 'Updates'),
                   _drawerItem('meetings', Icons.videocam_outlined, 'Meetings'),
-                  _drawerItem('recordings', Icons.play_circle_outline, 'Recordings'),
+                  _drawerItem('recordings', Icons.play_circle_outline, 'Recording'),
 
                   const SizedBox(height: 8),
                   _drawerGroupLabel('ACCOUNT'),
@@ -295,7 +295,7 @@ class MainTabsState extends State<MainTabs> {
               _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
               _navItem(1, Icons.layers_outlined, Icons.layers, 'Projects'),
               _navItem(2, Icons.notifications_none_outlined, Icons.notifications_active, 'Updates'),
-              _navItem(3, Icons.videocam_outlined, Icons.videocam, 'Meetings'),
+              _navItem(3, Icons.play_circle_outline, Icons.play_circle, 'Recording'),
               _navItem(4, Icons.person_outline, Icons.person, 'Profile'),
             ],
           ),

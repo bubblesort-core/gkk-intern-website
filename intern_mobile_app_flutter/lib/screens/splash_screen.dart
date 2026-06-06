@@ -90,29 +90,28 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   void _startAnimationSequence() async {
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _ringController.forward();
     
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _logoController.forward();
-    // Fade out ring
-    _ringOpacity = Tween<double>(begin: 0.3, end: 0.1).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeIn));
     
     await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
     _titleController.forward();
     
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _subtitleController.forward();
     
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _barController.forward();
     
     await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _particleController.forward();
-
-    // After everything, navigate away if we were just showing splash, 
-    // but AppRouter will handle navigation automatically since refreshListenable triggers 
-    // once auth loads. The React Native app waited for auth to load and then hid splash.
-    // In Flutter, the splash screen will just be replaced by the router once loading is false.
   }
 
   @override

@@ -130,17 +130,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Container(
               padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-              color: AppColors.surface,
               width: double.infinity,
               decoration: const BoxDecoration(
+                color: AppColors.surface,
                 border: Border(bottom: BorderSide(color: Color(0xFF1f1f2e))),
               ),
               child: const Text('Profile', style: TextStyle(color: AppColors.text, fontSize: 28, fontWeight: FontWeight.bold)),
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                backgroundColor: AppColors.card,
+                onRefresh: () async {
+                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                  final dashProvider = Provider.of<DashboardProvider>(context, listen: false);
+                  await authProvider.refreshProfile();
+                  final userId = authProvider.profile?['userProfile']?['id'];
+                  if (userId != null) {
+                    await dashProvider.fetchDashboardData(userId, forceRefresh: true);
+                  }
+                },
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
                   // Profile Header
                   Column(
                     children: [
@@ -298,6 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 40),
                 ],
+              ),
               ),
             ),
           ],

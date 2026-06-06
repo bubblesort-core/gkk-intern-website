@@ -140,8 +140,14 @@ class _UpdatesScreenState extends State<UpdatesScreen> {
                           color: AppColors.primary,
                           backgroundColor: AppColors.card,
                           onRefresh: () async {
+                            final auth = Provider.of<AuthProvider>(context, listen: false);
+                            final dash = Provider.of<DashboardProvider>(context, listen: false);
                             setState(() => _loading = true);
                             await _load();
+                            final userId = auth.profile?['userProfile']?['id'];
+                            if (userId != null) {
+                              await dash.fetchDashboardData(userId, forceRefresh: true);
+                            }
                           },
                           child: ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

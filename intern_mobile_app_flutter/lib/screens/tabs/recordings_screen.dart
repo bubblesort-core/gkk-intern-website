@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../secure_video_player_screen.dart';
 import '../../core/supabase_client.dart';
+import '../../core/cache_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../theme/colors.dart';
@@ -41,24 +42,35 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
     return false;
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool forceRefresh = false}) async {
     try {
+      if (!forceRefresh) {
+        final cachedData = CacheService.get('recordings_list');
+        if (cachedData != null) {
+          _processResponse(cachedData);
+        }
+      }
+
       final response = await SupabaseClientConfig.client
           .from('recordings')
           .select('*')
           .order('created_at', ascending: false)
           .limit(50);
 
-      if (mounted) {
-        setState(() {
-          _recordings = (response as List<dynamic>).where(_isEligible).toList();
-          _loading = false;
-        });
-      }
+      CacheService.set('recordings_list', response);
+      _processResponse(response);
     } catch (e) {
       debugPrint('Error loading recordings: $e');
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _processResponse(dynamic response) {
+    if (!mounted) return;
+    setState(() {
+      _recordings = (response as List<dynamic>).where(_isEligible).toList();
+      _loading = false;
+    });
   }
 
   String _formatDate(String? dateStr) {
@@ -130,7 +142,7 @@ class _RecordingsScreenState extends State<RecordingsScreen> {
                           backgroundColor: AppColors.card,
                           onRefresh: () async {
                             setState(() => _loading = true);
-                            await _load();
+                            await _load(forceRefresh: true);
                           },
                           child: ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

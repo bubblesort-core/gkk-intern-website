@@ -112,8 +112,14 @@ class _HomeScreenState extends State<HomeScreen> {
           color: AppColors.primary,
           backgroundColor: AppColors.card,
           onRefresh: () async {
+            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+            final dashboardProvider = Provider.of<DashboardProvider>(context, listen: false);
             setState(() => _loadingAnnouncements = true);
             await _fetchAnnouncements();
+            final userId = authProvider.profile?['userProfile']?['id'];
+            if (userId != null) {
+              await dashboardProvider.fetchDashboardData(userId, forceRefresh: true);
+            }
           },
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -189,10 +195,24 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildTimeline(streak, completedCount, workshopCount, activeProject),
               const SizedBox(height: 28),
 
+              // ─── Special Workshops ───
+              if (workshops.isNotEmpty) ...[
+                _sectionTitle('Special Workshops'),
+                const SizedBox(height: 14),
+                _buildWorkshopsList(workshops),
+                const SizedBox(height: 28),
+              ],
+
               // ─── Quick Actions ───
               _sectionTitle('Quick Actions'),
               const SizedBox(height: 14),
               _buildQuickActions(),
+              const SizedBox(height: 28),
+
+              // ─── Tip of the Day ───
+              _sectionTitle('Tip of the Day'),
+              const SizedBox(height: 14),
+              _buildTipOfTheDay(),
               const SizedBox(height: 28),
 
               // ─── Latest Announcements ───
@@ -439,6 +459,75 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildWorkshopsList(List<dynamic> workshops) {
+    return Column(
+      children: workshops.take(2).map((w) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF14141e),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0x33a855f7)),
+          ),
+          child: Row(
+            children: [
+              if (w['hero_image_url'] != null)
+                Container(
+                  width: 60, height: 60,
+                  margin: const EdgeInsets.only(right: 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: DecorationImage(image: NetworkImage(w['hero_image_url']), fit: BoxFit.cover),
+                  ),
+                ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(w['title'] ?? 'Workshop', style: const TextStyle(color: AppColors.text, fontSize: 15, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(w['description'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.3)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(Icons.chevron_right, color: AppColors.border, size: 20),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildTipOfTheDay() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1a1814),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0x33f59e0b)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lightbulb_outline, color: AppColors.warning, size: 24),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Daily Tip', style: TextStyle(color: AppColors.warning, fontSize: 14, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                const Text('Update your daily status in the Team Chat to keep your mentors informed.', style: TextStyle(color: AppColors.text, fontSize: 14, height: 1.4)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TimelineItem {
@@ -459,26 +548,66 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border(
-          left: BorderSide(color: color, width: 3),
-          top: const BorderSide(color: AppColors.border),
-          right: const BorderSide(color: AppColors.border),
-          bottom: const BorderSide(color: AppColors.border),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1e3a8a), // Deep Blue
+            Color(0xFF3b82f6), // Vibrant Blue
+          ],
         ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3b82f6).withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(color: AppColors.text, fontSize: 24, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 3),
-          Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: Colors.white, size: 20),
+              ),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
