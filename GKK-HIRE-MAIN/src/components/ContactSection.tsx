@@ -132,7 +132,7 @@ const ContactSection = () => {
                             <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 mb-4">
                                 Direct Inquiry
                             </h3>
-                            <div className="flex flex-col sm:flex-row gap-6 sm:gap-12">
+                            <div className="flex flex-col gap-6">
                                 <div>
                                     <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-(--text-muted) mb-2">Study Enquiry</p>
                                     <a href="mailto:noreplay.gkk26@gmail.com" className="text-xl md:text-2xl font-medium text-(--text-primary) hover:text-neutral-300 transition-colors break-words">
