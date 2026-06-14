@@ -87,11 +87,20 @@ export default function Footer() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.1, duration: 0.6 }}
-                            className="space-y-2 text-[var(--text-muted)] text-sm"
+                            className="space-y-4 text-[var(--text-muted)] text-sm"
                         >
-                            <p>noreplay.gkk26@gmail.com</p>
-                            <p>+91 9477564633</p>
-                            <p>India</p>
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-[var(--text-primary)]/60 mb-1">Study Enquiry</p>
+                                <a href="mailto:noreplay.gkk26@gmail.com" className="hover:text-[var(--text-primary)] transition-colors">noreplay.gkk26@gmail.com</a>
+                            </div>
+                            <div>
+                                <p className="text-xs uppercase tracking-wider text-[var(--text-primary)]/60 mb-1">Business Enquiry</p>
+                                <a href="mailto:hello@bubblesort.in" className="hover:text-[var(--text-primary)] transition-colors">hello@bubblesort.in</a>
+                            </div>
+                            <div className="pt-2">
+                                <p>+91 9477564633</p>
+                                <p>India</p>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
@@ -107,7 +116,7 @@ export default function Footer() {
                     <div className="flex flex-col gap-1">
                         <p>© 2025 GKK Interns. All rights reserved.</p>
                         <p className="text-[10px] uppercase tracking-wider opacity-60">
-                            A venture of <a href="https://bubblesort.in" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] underline decoration-white/30 underline-offset-2">Bubblesort</a>.
+                            GKK Interns - A GKK (Global Kompass Krew) venture, under <a href="https://bubblesort.in" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-primary)] underline decoration-white/30 underline-offset-2">Bubblesort</a>.
                         </p>
                     </div>
                     <div className="flex gap-6">

@@ -749,9 +749,10 @@ function ClientApplyForm() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
+                    className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center"
                 >
-                    <ContactCard label="Gmail" value="noreplay.gkk26@gmail.com" href="mailto:noreplay.gkk26@gmail.com" cursor="Email us" />
+                    <ContactCard label="Study Enquiry" value="noreplay.gkk26@gmail.com" href="mailto:noreplay.gkk26@gmail.com" cursor="Email us" />
+                    <ContactCard label="Business Enquiry" value="hello@bubblesort.in" href="mailto:hello@bubblesort.in" cursor="Email us" />
                     <ContactCard label="WhatsApp" value="+91 94775 64633" href="https://wa.me/919477564633" cursor="WhatsApp us" external />
                     <ContactCard label="Phone" value="+91 94775 64633" href="tel:+919477564633" cursor="Call us" />
                 </motion.div>

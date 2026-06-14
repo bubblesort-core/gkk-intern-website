@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GKK-Hire - Join India's Leading Internship Platform</title>
+    <title>GKK Interns - Code. Build. Deploy. | A GKK & Bubblesort Venture</title>
     <meta name="description"
         content="Launch your career with GKK-Hire. Apply for internships, work on real projects, and get certified. Join thousands of successful interns.">
 
@@ -476,9 +476,8 @@
                 <div style="font-size: 0.85rem; color: var(--text-muted);">
                     &copy; 2026 GKK-Hire. All rights reserved.
                     <br>
-                    <span style="font-size: 0.75rem; opacity: 0.7;">Part of <a href="https://bubblesort.in"
-                            target="_blank" style="color: inherit; text-decoration: underline;">Bubblesort
-                            Group</a></span>
+                    <span style="font-size: 0.75rem; opacity: 0.7;">GKK Interns - A GKK (Global Kompass Krew) venture, under <a href="https://bubblesort.in"
+                            target="_blank" style="color: inherit; text-decoration: underline;">Bubblesort</a>.</span>
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <a href="/privacy.html" class="footer-link"

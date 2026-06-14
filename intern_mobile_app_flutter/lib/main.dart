@@ -8,6 +8,7 @@ import 'providers/dashboard_provider.dart';
 import 'router/app_router.dart';
 import 'theme/colors.dart';
 import 'components/maintenance_guard.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,7 @@ void main() async {
   await ScreenProtector.protectDataLeakageOn();
   
   await SupabaseClientConfig.initialize();
+  await NotificationService.initialize();
 
   runApp(const MyApp());
 }

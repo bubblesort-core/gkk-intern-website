@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/supabase_client.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   Session? _session;
@@ -58,6 +59,10 @@ class AuthProvider extends ChangeNotifier {
         'application': appData,
         'userProfile': profileData,
       };
+
+      if (profileData != null) {
+        NotificationService.updateFcmToken(user.id);
+      }
     } catch (error) {
       debugPrint('Error fetching profile: $error');
       _errorMessage = 'Failed to load profile. Please check your connection.';

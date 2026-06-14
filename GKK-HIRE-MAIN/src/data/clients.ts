@@ -32,6 +32,7 @@ export interface ClientMedia {
     type: 'photo' | 'video';
     url: string;
     caption?: string;
+    thumbnail?: string;
 }
 
 // Production client projects shipped by GKK Interns.

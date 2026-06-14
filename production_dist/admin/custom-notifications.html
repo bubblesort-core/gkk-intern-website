@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -221,18 +221,36 @@
 
                     <div class="form-group">
                         <label class="form-label">Target Audience</label>
-                        <select id="targetAudience" class="form-input" onchange="toggleSpecificInterns()">
-                            <option value="all">All Interns</option>
-                            <option value="specific">Specific Interns</option>
+                        <select id="targetAudience" class="form-input" onchange="toggleTargetOptions()">
+                            <option value="all">All Active Users (Approved + Paid)</option>
+                            <option value="batch">Specific Batch</option>
+                            <option value="team">Specific Team</option>
+                            <option value="specific">Specific Users</option>
                         </select>
                     </div>
 
+                    <div class="form-group" id="batchContainer" style="display: none;">
+                        <label class="form-label">Select Batch</label>
+                        <select id="targetBatch" class="form-input">
+                            <option disabled selected>Loading batches...</option>
+                        </select>
+                        <div class="char-count">Only Active (Paid) interns in this batch will receive the notification</div>
+                    </div>
+
+                    <div class="form-group" id="teamContainer" style="display: none;">
+                        <label class="form-label">Select Team</label>
+                        <select id="targetTeam" class="form-input">
+                            <option disabled selected>Loading teams...</option>
+                        </select>
+                        <div class="char-count">Only Active (Paid) members of this team will receive the notification</div>
+                    </div>
+
                     <div class="form-group" id="specificInternsContainer" style="display: none;">
-                        <label class="form-label">Select Interns</label>
+                        <label class="form-label">Select Users</label>
                         <select id="specificInterns" class="form-input" multiple style="height: 120px;">
                             <option disabled>Loading interns...</option>
                         </select>
-                        <div class="char-count">Hold Ctrl/Cmd to select multiple</div>
+                        <div class="char-count">Hold Ctrl/Cmd to select multiple &#x25CF; Only Active (Paid) users shown</div>
                     </div>
 
                     <div class="form-group">
@@ -258,7 +276,7 @@
                         <div>
                             <div class="preview-title" id="previewTitle">Notification Title</div>
                             <div class="preview-body" id="previewBody">Your message will appear here...</div>
-                            <div class="preview-time">Just now ï¿½ GKK Intern</div>
+                            <div class="preview-time">Just now &middot; GKK Intern</div>
                         </div>
                     </div>
 
@@ -316,9 +334,12 @@
             if (document.getElementById('previewBody')) document.getElementById('previewBody').textContent = body;
         }
 
-        function toggleSpecificInterns() {
-            const targetAudience = (document.getElementById('targetAudience')?.value || '');
-            if (document.getElementById('specificInternsContainer')) document.getElementById('specificInternsContainer').style.display = targetAudience === 'specific' ? 'block' : 'none';
+        // Toggle target audience panels
+        function toggleTargetOptions() {
+            const target = (document.getElementById('targetAudience')?.value || '');
+            document.getElementById('specificInternsContainer').style.display = target === 'specific' ? 'block' : 'none';
+            document.getElementById('batchContainer').style.display = target === 'batch' ? 'block' : 'none';
+            document.getElementById('teamContainer').style.display = target === 'team' ? 'block' : 'none';
         }
 
         // Send push notification
@@ -338,11 +359,26 @@
                 targetIds = Array.from(options).map(opt => opt.value);
 
                 if (targetIds.length === 0) {
-                    return Swal.fire('Missing Selection', 'Please select at least one intern.', 'warning');
+                    return Swal.fire('Missing Selection', 'Please select at least one user.', 'warning');
                 }
             }
 
-            const sendToText = targetAudience === 'all' ? 'all interns' : `${targetIds.length} selected intern(s)`;
+            let batchFilter = null;
+            let teamFilter = null;
+
+            if (targetAudience === 'batch') {
+                batchFilter = document.getElementById('targetBatch')?.value;
+                if (!batchFilter) return Swal.fire('Missing Selection', 'Please select a batch.', 'warning');
+            }
+            if (targetAudience === 'team') {
+                teamFilter = document.getElementById('targetTeam')?.value;
+                if (!teamFilter) return Swal.fire('Missing Selection', 'Please select a team.', 'warning');
+            }
+
+            let sendToText = 'all Active interns';
+            if (targetAudience === 'specific') sendToText = `${targetIds.length} selected user(s)`;
+            if (targetAudience === 'batch') sendToText = `Active interns in batch: ${document.getElementById('targetBatch')?.selectedOptions[0]?.text || batchFilter}`;
+            if (targetAudience === 'team') sendToText = `Active members of team: ${document.getElementById('targetTeam')?.selectedOptions[0]?.text || teamFilter}`;
 
             const confirm = await Swal.fire({
                 title: 'Send Notification?',
@@ -374,15 +410,20 @@
                     title,
                     body,
                     sent_at: new Date().toISOString(),
-                    sent_to: targetAudience === 'all' ? 'All Interns' : `${targetIds.length} Specific Intern(s)`
+                    sent_to: sendToText,
+                    target_audience: targetAudience,
+                    batch_filter: batchFilter,
+                    team_filter: teamFilter,
                 }]);
 
                 // Even if the table doesn't exist yet, we proceed with FCM
                 if (insertError) console.warn('Could not save notification history:', insertError.message);
 
                 // Call the Supabase Edge Function to send FCM
-                const payload = { title, body };
+                const payload = { title, body, targetAudience };
                 if (targetIds.length > 0) payload.targetIds = targetIds;
+                if (batchFilter) payload.batchFilter = batchFilter;
+                if (teamFilter) payload.teamFilter = teamFilter;
 
                 const { data, error } = await supabaseClient.functions.invoke('send-push-notification', {
                     body: payload
@@ -478,7 +519,7 @@
                 `).join('');
 
             } catch (e) {
-                // Table might not exist yet ï¿½ show graceful empty state
+                // Table might not exist yet — show graceful empty state
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-bell-slash"></i>
@@ -488,22 +529,65 @@
             }
         }
 
-        // Load interns for dropdown
+        // Load interns for dropdown (only Active/Paid)
         async function loadInterns() {
             try {
-                const interns = await getAllInterns(); // Uses helper from supabase-client.js
+                const { data: interns, error } = await supabaseClient
+                    .from('profiles')
+                    .select('id, full_name, email')
+                    .eq('status', 'active')
+                    .order('full_name');
                 const select = document.getElementById('specificInterns');
-                if (!interns || interns.length === 0) {
-                    select.innerHTML = '<option disabled>No interns found</option>';
+                if (error || !interns || interns.length === 0) {
+                    select.innerHTML = '<option disabled>No active interns found</option>';
                     return;
                 }
-
                 select.innerHTML = interns.map(i =>
-                    `<option value="${i.id}">${i.full_name} (${i.email})</option>`
+                    `<option value="${i.id}">${i.full_name || 'Unknown'} (${i.email})</option>`
                 ).join('');
             } catch (e) {
                 console.error('Failed to load interns dropdown:', e);
                 if (document.getElementById('specificInterns')) document.getElementById('specificInterns').innerHTML = '<option disabled>Error loading interns</option>';
+            }
+        }
+
+        // Load batches for dropdown
+        async function loadBatches() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('batches')
+                    .select('id, name')
+                    .order('name');
+                const select = document.getElementById('targetBatch');
+                if (error || !data || data.length === 0) {
+                    select.innerHTML = '<option disabled>No batches found</option>';
+                    return;
+                }
+                select.innerHTML = data.map(b =>
+                    `<option value="${b.id}">${b.name}</option>`
+                ).join('');
+            } catch (e) {
+                console.error('Failed to load batches:', e);
+            }
+        }
+
+        // Load teams for dropdown
+        async function loadTeams() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('teams')
+                    .select('id, name')
+                    .order('name');
+                const select = document.getElementById('targetTeam');
+                if (error || !data || data.length === 0) {
+                    select.innerHTML = '<option disabled>No teams found</option>';
+                    return;
+                }
+                select.innerHTML = data.map(t =>
+                    `<option value="${t.id}">${t.name}</option>`
+                ).join('');
+            } catch (e) {
+                console.error('Failed to load teams:', e);
             }
         }
 
@@ -512,6 +596,8 @@
             if (!await ensureAdminAuth()) return;
             loadHistory();
             loadInterns();
+            loadBatches();
+            loadTeams();
         }
 
         init();

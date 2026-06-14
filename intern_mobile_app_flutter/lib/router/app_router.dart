@@ -9,6 +9,9 @@ import '../screens/payment_required_screen.dart';
 import '../screens/main_tabs.dart';
 import '../screens/splash_screen.dart';
 import '../screens/error_screen.dart';
+import '../screens/landing_screen.dart';
+import '../screens/apply/application_form_screen.dart';
+import '../screens/secure_video_player_screen.dart';
 
 class AppRouter {
   final AuthProvider authProvider;
@@ -30,7 +33,11 @@ class AppRouter {
       }
 
       if (session == null) {
-        return '/login';
+        final path = state.uri.path;
+        if (path == '/landing' || path == '/login' || path == '/apply') {
+          return null;
+        }
+        return '/landing';
       }
 
       if (authProvider.errorMessage != null) {
@@ -55,7 +62,9 @@ class AppRouter {
       }
 
       // If fully approved and paid, and currently on a non-dashboard path, send to dashboard
+      // Note: '/landing' is allowed to be visited by logged in users
       if (state.uri.path == '/login' || 
+          state.uri.path == '/apply' ||
           state.uri.path == '/splash' || 
           state.uri.path == '/no-account' || 
           state.uri.path == '/pending' || 
@@ -72,8 +81,16 @@ class AppRouter {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: '/landing',
+        builder: (context, state) => const LandingScreen(),
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/apply',
+        builder: (context, state) => const ApplicationFormScreen(),
       ),
       GoRoute(
         path: '/no-account',
@@ -94,6 +111,15 @@ class AppRouter {
       GoRoute(
         path: '/error',
         builder: (context, state) => const ErrorScreen(),
+      ),
+      GoRoute(
+        path: '/video',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final videoId = extra['videoId'] as String? ?? '';
+          final title = extra['title'] as String? ?? 'Video';
+          return SecureVideoPlayerScreen(videoId: videoId, title: title);
+        },
       ),
     ],
   );

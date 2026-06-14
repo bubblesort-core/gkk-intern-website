@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
     return (
@@ -48,9 +48,20 @@ export default function Footer() {
                     {/* Contact */}
                     <div>
                         <div className="footer-title">Contact</div>
-                        <a href="mailto:noreplay.gkk26@gmail.com" className="footer-link" style={{ fontSize: '0.9rem' }}>
-                            <i className="fas fa-envelope" style={{ marginRight: '0.5rem' }}></i>noreplay.gkk26@gmail.com
-                        </a>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                            <div>
+                                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.2rem' }}>Study Enquiry</div>
+                                <a href="mailto:noreplay.gkk26@gmail.com" className="footer-link" style={{ fontSize: '0.9rem', margin: 0 }}>
+                                    <i className="fas fa-envelope" style={{ marginRight: '0.5rem' }}></i>noreplay.gkk26@gmail.com
+                                </a>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', opacity: 0.7, marginBottom: '0.2rem' }}>Business Enquiry</div>
+                                <a href="mailto:hello@bubblesort.in" className="footer-link" style={{ fontSize: '0.9rem', margin: 0 }}>
+                                    <i className="fas fa-envelope" style={{ marginRight: '0.5rem' }}></i>hello@bubblesort.in
+                                </a>
+                            </div>
+                        </div>
                         <a href="tel:+919477564633" className="footer-link" style={{ fontSize: '0.9rem' }}>
                             <i className="fas fa-phone" style={{ marginRight: '0.5rem' }}></i>+91 9477564633
                         </a>
@@ -73,15 +84,15 @@ export default function Footer() {
                         &copy; 2025 GKK Interns. All rights reserved.
                         <br />
                         <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
-                            Part of{' '}
+                            GKK Interns - A GKK (Global Kompass Krew) venture, under{' '}
                             <a
                                 href="https://bubblesort.in"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{ color: 'inherit', textDecoration: 'underline' }}
                             >
-                                Bubblesort Group
-                            </a>
+                                Bubblesort
+                            </a>.
                         </span>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem' }}>

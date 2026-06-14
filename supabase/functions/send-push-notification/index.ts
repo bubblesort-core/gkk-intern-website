@@ -41,7 +41,7 @@ serve(async (req) => {
     }
 
     try {
-        const { title, body, targetType, targetIds } = await req.json()
+        const { title, body, targetAudience, targetIds, batchFilter, teamFilter } = await req.json()
 
         if (!title || !body) {
             throw new Error('Missing required fields: title, body')
@@ -55,25 +55,45 @@ serve(async (req) => {
 
         let finalUserIds: string[] = [];
 
-        if (!targetType || targetType === 'all') {
-            // Send to everyone - finalUserIds remains empty to select all tokens
-        } else if (targetType === 'interns') {
-            finalUserIds = targetIds || [];
-        } else if (targetType === 'teams') {
-            // Resolve team members
+        if (!targetAudience || targetAudience === 'all') {
+            // Get all active users
+            const { data: members, error: allError } = await supabaseClient
+                .from('profiles')
+                .select('id')
+                .eq('status', 'active');
+            
+            if (allError) throw new Error('Failed to resolve active users: ' + allError.message);
+            finalUserIds = members.map((m: any) => m.id);
+
+        } else if (targetAudience === 'specific') {
+            // Only use the specific IDs that are active
+            const { data: members, error: specificError } = await supabaseClient
+                .from('profiles')
+                .select('id')
+                .eq('status', 'active')
+                .in('id', targetIds || []);
+            
+            if (specificError) throw new Error('Failed to validate specific users: ' + specificError.message);
+            finalUserIds = members.map((m: any) => m.id);
+
+        } else if (targetAudience === 'team') {
+            // Resolve team members who are active
             const { data: members, error: teamError } = await supabaseClient
                 .from('team_members')
-                .select('user_id')
-                .in('team_id', targetIds || []);
+                .select('user_id, profiles!inner(status)')
+                .eq('team_id', teamFilter)
+                .eq('profiles.status', 'active');
 
             if (teamError) throw new Error('Failed to resolve team members: ' + teamError.message);
             finalUserIds = members.map((m: any) => m.user_id);
-        } else if (targetType === 'batches') {
-            // Resolve batch members
+
+        } else if (targetAudience === 'batch') {
+            // Resolve batch members who are active
             const { data: members, error: batchError } = await supabaseClient
                 .from('profiles')
                 .select('id')
-                .in('batch_id', targetIds || []);
+                .eq('batch_id', batchFilter)
+                .eq('status', 'active');
 
             if (batchError) throw new Error('Failed to resolve batch members: ' + batchError.message);
             finalUserIds = members.map((m: any) => m.id);

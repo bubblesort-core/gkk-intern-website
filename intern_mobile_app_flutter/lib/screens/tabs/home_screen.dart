@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../theme/colors.dart';
 import '../../widgets/shimmer_loader.dart';
+import '../../widgets/banner_widget.dart';
 import '../main_tabs.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -124,6 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             children: [
+              // ─── Banners from Admin ───
+              const BannerWidget(),
+
               // ─── Hero Section ───
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0.0, end: 1.0),
